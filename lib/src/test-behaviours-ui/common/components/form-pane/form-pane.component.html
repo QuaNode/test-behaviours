@@ -1,0 +1,60 @@
+<div class="container">
+  <div class="row">
+    <form class="mt-5">
+      <div class="d-block d-md-flex gap-2">
+        <select
+          class="form-sm-select px-2 py-2 bg-body-tertiary border-secondary-subtle">
+          <option selected>Get</option>
+          <option value="1">Post</option>
+          <option value="2">Put</option>
+          <option value="3">Patch</option>
+          <option value="4">Delete</option>
+          <option value="5">Copy</option>
+          <option value="6">Link</option>
+        </select>
+        <div class="form-group w-50">
+          <input
+            type="text"
+            placeholder="Enter Request Url"
+            class="w-100 form-control bg-body-tertiary p-2 " />
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary px-4 py-2" type="button">
+            Send
+          </button>
+          <button
+            appDropDown #myDropDown="appDropDown"
+            class="btn btn-primary dropdown-toggle" type="button"
+            data-toggle="dropdown">
+            <span class="sr-only"></span>
+          </button>
+          <div
+            [ngClass]="{'show':myDropDown.isOpen}"
+            class="dropdown-menu mt-5 px-2">
+            Send And Download
+          </div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-light px-4 py-2" type="button">
+            Save
+          </button>
+          <button
+            appDropDown #r="appDropDown"
+            type="button"
+            class="btn btn-sm btn-light dropdown-toggle"
+            data-toggle="dropdown">
+            <span class="sr-only"></span>
+          </button>
+          <div
+            [ngClass]="{'show':r.isOpen}"
+            class="dropdown-menu mt-5 px-2">
+            Save As ...
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>

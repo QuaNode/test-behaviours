@@ -1,19 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
-import { PaneFormComponent } from './common/components/pane-form/pane-form.component';
-
+import { FormPaneComponent } from './common/components/form-pane/form-pane.component';
+import { DropDownDirective } from './common/directives/drop-down.directive';
 
 @NgModule({
   declarations: [
     SideMenuComponent,
-    PaneFormComponent,
+    FormPaneComponent,
+    DropDownDirective
   ],
   imports: [
-    CommonModule,
-    FormsModule
+    CommonModule
   ],
-  exports: [SideMenuComponent, PaneFormComponent]
+  exports: [SideMenuComponent]
 })
 export class TestBehavioursUiModule { }
