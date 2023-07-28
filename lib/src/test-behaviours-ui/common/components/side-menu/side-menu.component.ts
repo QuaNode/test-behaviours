@@ -6,5 +6,9 @@ import { Component } from '@angular/core';
   styleUrls: ['./side-menu.component.scss']
 })
 export class SideMenuComponent {
-
+  requests = [
+    { name: 'lorem ipsum 1' },
+    { name: 'lorem ipsum 1' },
+    { name: 'lorem ipsum 1' },
+  ];
 }
