@@ -33,7 +33,8 @@
                             "node_modules/bootstrap/scss/bootstrap.scss",
                             "src/styles.scss"
                         ],
-                        "scripts": []
+                        "scripts": [
+                        ]
                     },
                     "configurations": {
                         "production": {

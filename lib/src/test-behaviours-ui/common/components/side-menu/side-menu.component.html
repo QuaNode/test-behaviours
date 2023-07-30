@@ -7,17 +7,14 @@
                     <span class="fs-4 d-none d-sm-inline">Requests</span>
                 </a>
                 <ul class="nav nav-pills flex-column mt-2">
-                    <li class="nav-item ">
-                        <a href="" class="nav-link text-white">Lorem ipsum 1</a>
-                    </li>
-                    <li class="nav-item ">
-                        <a href="" class="nav-link text-white">Lorem ipsum 2</a>
-                    </li>
-                    <li class="nav-item ">
-                        <a href="" class="nav-link text-white">Lorem ipsum 3</a>
+                    <li *ngFor="let request of requests" class="nav-item ">
+                        <a href="" class="nav-link text-white">{{request.name}}</a>
                     </li>
                 </ul>
             </div>
+        </div>
+        <div class="col-10">
+          <app-form-pane></app-form-pane>
         </div>
     </div>
 </div>
