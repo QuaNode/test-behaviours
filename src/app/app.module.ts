@@ -4,11 +4,13 @@ import {TestBehavioursUiModule} from '../../lib'
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
+import { JsonTextAreaComponent } from './json-text-area/json-text-area.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    HeaderComponent
+    HeaderComponent,
+    JsonTextAreaComponent
   ],
   imports: [
     BrowserModule,
