@@ -3,5 +3,6 @@
         <a class="navbar-brand" href="#">
             <img src="assets/images/logo.png" alt="Logo" class="d-inline-block align-text-top w-25">
         </a>
+        <a [href]="fileUrl" (click)="export()" download="file.json" class="btn btn-primary ">export</a>
     </div>
 </nav>
