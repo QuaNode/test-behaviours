@@ -1,0 +1,18 @@
+<div class="container-fluid">
+  <div class="row flex-nowrap">
+    <div class="bg-dark col-md-2 col-auto min-vh-100">
+      <div class="p-2">
+        <a href
+          class="d-flex text-decoration-none align-items-center text-white">
+          <span class="fs-4 d-none d-sm-inline">Requests</span>
+        </a>
+        <app-side-menu *ngFor="let request of requests" [request]="request"></app-side-menu>
+      </div>
+    </div>
+
+    <div class="col-10">
+      <app-form-pane></app-form-pane>
+      <app-json-text-area></app-json-text-area>
+    </div>
+  </div>
+</div>
