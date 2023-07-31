@@ -1,10 +1,12 @@
 <div class="container-fluid pl-0 vh-100">
-    <div class="row vh-100">
-        <div class="col-2 bg-dark m-0 vh-100 overflow-auto">
-            <app-side-menu [requests]="requests"></app-side-menu>
-        </div>
-        <div class="col-10">
-            <app-form-pane></app-form-pane>
-            <app-json-text-area></app-json-text-area>
-        </div>
+  <div class="row vh-100">
+    <div class="col-2 bg-dark m-0 vh-100 overflow-auto">
+      <app-side-menu [requests]="requests"></app-side-menu>
     </div>
+    <div class="col-10 text-center">
+
+      <app-form-pane></app-form-pane>
+      <app-json-text-area></app-json-text-area>
+    </div>
+  </div>
+</div>
