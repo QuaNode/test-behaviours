@@ -7,5 +7,12 @@ import { Request } from '../layout/layout.component';
 })
 export class SideMenuComponent {
   @Input() requests!: Request[];
+  setClickedRow : Function;
+  selectedRow !: Number;
+  constructor(){
+    this.setClickedRow = function(index:any){
+      this.selectedRow = index;
+  }
+  }
 
 }
