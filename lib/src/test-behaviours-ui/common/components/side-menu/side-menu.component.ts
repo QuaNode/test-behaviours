@@ -6,6 +6,6 @@ import { Request } from '../layout/layout.component';
   styleUrls: ['./side-menu.component.scss']
 })
 export class SideMenuComponent {
-  @Input() request!: Request;
+  @Input() requests!: Request[];
 
 }
