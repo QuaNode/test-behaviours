@@ -1,11 +1,12 @@
 import { DataService } from './data.service';
 
-const myDataServiceFactory = () => {
-  const instance = new DataService();
-  return { ...instance };
+let instance: DataService | null = null;
+
+const dataServiceFactory = () => {
+  return instance ?  instance : (instance = new DataService());
 }
 
 export const DataServicesFactory = {
   provide: DataService,
-  useFactory: myDataServiceFactory,
+  useFactory: dataServiceFactory
 };
