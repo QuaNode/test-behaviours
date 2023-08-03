@@ -12,11 +12,8 @@ export class SideMenuComponent {
   selectedRow !: Number;
   constructor(private dataService: DataService){
     this.setClickedRow = function(index:any){
-      this.selectedRow = index; 
-      
-           
-      this.dataService.setSharedData(this.requests[index]);
-     
+      this.selectedRow = index;         
+      this.dataService.setSharedData(this.requests[index]); 
   }
   }
 

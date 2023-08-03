@@ -8,10 +8,9 @@ import { DataService } from '../../../../../src/test-behaviours-core/services/da
   styleUrls: ['./json-text-area.component.scss'],
 })
 export class JsonTextAreaComponent {
-json_object = this.dataService.sharedData;
-
+  data: any;
   editor!: ace.Ace.Editor;
-constructor(public dataService: DataService){}
+constructor(private dataService: DataService){}
   ngOnInit() {
     this.initAceEditor();    
   }
@@ -21,12 +20,14 @@ constructor(public dataService: DataService){}
     // => Set editor options
     this.editor.setTheme('ace/theme/monokai'); // Set theme
     this.editor.getSession().setMode('ace/mode/javascript'); // Set language 
-    this.editor.setValue(this.dataService.sharedData); // Set text 
+    this.dataService.sharedData.subscribe((data:any) => {
+      if (data !== this.data) {
+          this.data = data;
+          this.editor.setValue(JSON.stringify(data)); // Set text 
+        }
+  });
   }
-  log(){
-    console.log(JSON.stringify(this.dataService.sharedData));
-    this.editor.setValue(JSON.stringify(this.dataService.sharedData));
-  }
+
 
 
 }

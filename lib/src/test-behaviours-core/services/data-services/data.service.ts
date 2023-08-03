@@ -1,15 +1,14 @@
 import { Injectable } from '@angular/core';
-
+import { BehaviorSubject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
-  public sharedData: any ='testtt';
-
+  private sharedDataSource = new BehaviorSubject<string>("");
+  sharedData = this.sharedDataSource.asObservable();
   setSharedData(data: any) {
-    this.sharedData = data;
+    this.sharedDataSource.next(data);
   }
-
   getSharedData() {
     return {...this.sharedData};
   }
