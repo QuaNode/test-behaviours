@@ -4,13 +4,13 @@ import { Injectable } from '@angular/core';
   providedIn: 'root'
 })
 export class DataService {
-  private static sharedData: any;
+  public sharedData: any ='testtt';
 
   setSharedData(data: any) {
-    DataService.sharedData = data;
+    this.sharedData = data;
   }
 
   getSharedData() {
-    return {...DataService.sharedData};
+    return {...this.sharedData};
   }
 }
