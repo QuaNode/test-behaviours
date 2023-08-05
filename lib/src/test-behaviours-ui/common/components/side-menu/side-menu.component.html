@@ -1,7 +1,7 @@
 <h2 class="text-white">Requests</h2>
 <ul class="nav nav-pills flex-column mt-2">
     <li *ngFor="let request of requests ; let i = index">
-        <a href="#" class="nav-link text-white" (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{ request.name }}</a>
+        <button type="submit" class="nav-link text-white" (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{ request.name }}</button>
         <hr class="text-white" />
     </li>
 </ul>
