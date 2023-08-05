@@ -1,21 +1,21 @@
 <div class="container">
-  <div class="row">
-    <div class>
-      <h2 class="text-400 text-14-sm mt-5">Hi Mahmoud ! Welcome to the
+  <div class="row mx-2">
+    <div class="col-10 text-center w-100 flex-column m-auto mb-5">
+      <h2 class="text-400 mt-5">Hi Mahmoud ! Welcome to the
         Dashboard.</h2>
       <h3 class="fs-4 text-black-50">Your insane backend in dead simple steps!</h3>
       <div class="d-inline-flex flex-column">
-        <button class="fs-4 border-0 bg-transparent text-black-50"> Send me now</button>
+        <a class="fs-4 border-0 bg-transparent text-black-50"> Send me now</a>
         <button
           class="fs-6 py-2 px-2 mt-3 text-light fs-5 rounded-pill border-0 bg-transparent"
           style="background-image: linear-gradient(to top, #f3482d, #eb3449);">
           Add behavior</button>
       </div>
     </div>
-    <form class="mt-5 text-center justify-content-center align-items-center">
-      <div class="d-block d-md-flex gap-3">
+    <div class="d-grid d-lg-flex m-auto gap-lg-3">
+      <div class="col-md-2 m-md-auto">
         <select
-          class="col-sm-10 col-lg-1 form-sm-select p-2 bg-body-tertiary border-secondary-subtle">
+          class="form-select p-2 mb-3 mt-3 border-secondary-subtle">
           <option selected>Get</option>
           <option value="1">Post</option>
           <option value="2">Put</option>
@@ -24,49 +24,52 @@
           <option value="5">Copy</option>
           <option value="6">Link</option>
         </select>
-        <div class="col-sm-10 col-lg-7 my-lg-0 form-group">
-          <input
-            type="text"
-            placeholder="Enter Request Url"
-            class="form-control bg-body-tertiary p-2 " />
-        </div>
-
-        <div class="btn-group">
-          <button class="btn btn-primary px-4 py-2" type="button">
-            Send
-          </button>
-          <button
-            appDropDown #myDropDown="appDropDown"
-            class="btn btn-primary dropdown-toggle" type="button"
-            data-toggle="dropdown">
-            <span class="sr-only"></span>
-          </button>
-          <div
-            [ngClass]="{'show':myDropDown.isOpen}"
-            class="dropdown-menu mt-5 px-2">
-            Send And Download
-          </div>
-        </div>
-
-        <div class="btn-group">
-          <button class="btn btn-light px-4 py-2" type="button">
-            Save
-          </button>
-          <button
-            appDropDown #r="appDropDown"
-            type="button"
-            class="btn btn-sm btn-light dropdown-toggle"
-            data-toggle="dropdown">
-            <span class="sr-only"></span>
-          </button>
-          <div
-            [ngClass]="{'show':r.isOpen}"
-            class="dropdown-menu mt-5 px-2">
-            Save As ...
-          </div>
-        </div>
-
       </div>
-    </form>
+      <div class="col-md-6 m-md-auto">
+        <input type="text" class="form-control mb-3 mt-3 p-2"
+          placeholder="Enter text">
+      </div>
+      <div class="row gap-sm-4 gap-md-0 text-center">
+        <div class="col-sm-10 col-lg-6 m-auto">
+          <div class="btn-group w-100">
+            <button class="btn btn-primary px-4 py-2 w-100" type="button">
+              Send
+            </button>
+            <button
+              appDropDown #myDropDown="appDropDown"
+              type="button"
+              class="btn btn-sm btn-primary dropdown-toggle" type="button"
+              data-toggle="dropdown">
+              <span class="sr-only"></span>
+            </button>
+            <div
+              [ngClass]="{'show':myDropDown.isOpen}"
+              class="dropdown-menu mt-5 px-2">
+              Send And Download
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-10 col-lg-6 m-auto">
+          <div class="btn-group w-100 mx-sm-0 mx-md-2">
+            <button class="btn btn-light px-4 py-2" type="button">
+              Save
+            </button>
+            <button
+              appDropDown #r="appDropDown"
+              type="button"
+              class="btn btn-sm btn-light dropdown-toggle"
+              data-toggle="dropdown">
+              <span class="sr-only"></span>
+            </button>
+            <div
+              [ngClass]="{'show':r.isOpen}"
+              class="dropdown-menu mt-5 px-2">
+              Save As ...
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
   </div>
 </div>
