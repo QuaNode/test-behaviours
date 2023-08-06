@@ -17,7 +17,6 @@ export class JsonTextAreaComponent implements OnInit {
   initAceEditor() {
     ace.config.set('basePath', 'https://unpkg.com/ace-builds@1.4.12/src-noconflict');
     this.editor = ace.edit('editor');
-<<<<<<< HEAD
     // => Set editor options
     this.editor.setTheme('ace/theme/monokai'); // Set theme
     this.editor.getSession().setMode('ace/mode/javascript'); // Set language
@@ -25,26 +24,10 @@ export class JsonTextAreaComponent implements OnInit {
     this.editorDataSubscription();
   }
   editorDataSubscription(){
-||||||| 18e1085
-
-    this.editor.setTheme('ace/theme/monokai');
-    this.editor.getSession().setMode('ace/mode/javascript');
-=======
-    this.editor.setTheme('ace/theme/monokai');
-    this.editor.getSession().setMode('ace/mode/json');
-    this.editor.setReadOnly(true)
->>>>>>> e0e3ba1e75f82632c8f6ff7a70bae9bebb7bab73
     this.dataService.sharedData.subscribe((data: any) => {
       if (data !== this.data) {
         this.data = data;
-<<<<<<< HEAD
-        data = JSON.stringify(data, null, 4);
-        this.editor.setValue(data);
-||||||| 18e1085
-        this.editor.setValue(JSON.stringify(data));
-=======
         this.editor.setValue(JSON.stringify(data, null, '\t'));
->>>>>>> e0e3ba1e75f82632c8f6ff7a70bae9bebb7bab73
       }
     });
   }
