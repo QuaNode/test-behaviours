@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import * as ace from 'ace-builds';
 import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 
@@ -15,14 +15,15 @@ export class JsonTextAreaComponent implements OnInit {
     this.initAceEditor();
   }
   initAceEditor() {
+    ace.config.set('basePath', 'https://unpkg.com/ace-builds@1.4.12/src-noconflict');
     this.editor = ace.edit('editor');
-
     this.editor.setTheme('ace/theme/monokai');
-    this.editor.getSession().setMode('ace/mode/javascript');
+    this.editor.getSession().setMode('ace/mode/json');
+    this.editor.setReadOnly(true)
     this.dataService.sharedData.subscribe((data: any) => {
       if (data !== this.data) {
         this.data = data;
-        this.editor.setValue(JSON.stringify(data));
+        this.editor.setValue(JSON.stringify(data, null, '\t'));
       }
     });
   }
