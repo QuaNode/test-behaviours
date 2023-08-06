@@ -1,20 +1,7 @@
-<div class="container-fluid">
-    <div class="row flex-nowrap">
-
-        <div class="bg-dark col-auto col-md-2 min-vh-100">
-            <div class="p-2">
-                <a href="" class="d-flex text-decoration-none align-items-center text-white">
-                    <span class="fs-4 d-none d-sm-inline">Requests</span>
-                </a>
-                <ul class="nav nav-pills flex-column mt-2">
-                    <li *ngFor="let request of requests" class="nav-item ">
-                        <a href="" class="nav-link text-white">{{request.name}}</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-        <div class="col-10">
-          <app-form-pane></app-form-pane>
-        </div>
-    </div>
-</div>
+<h2 class="text-white">Requests</h2>
+<ul class="nav nav-pills flex-column mt-2">
+    <li *ngFor="let request of requests ; let i = index">
+        <button type="submit" class="nav-link text-white" (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{ request.name }}</button>
+        <hr class="text-white" />
+    </li>
+</ul>
