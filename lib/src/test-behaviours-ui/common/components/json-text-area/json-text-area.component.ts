@@ -16,13 +16,18 @@ export class JsonTextAreaComponent implements OnInit {
   }
   initAceEditor() {
     this.editor = ace.edit('editor');
-
-    this.editor.setTheme('ace/theme/monokai');
-    this.editor.getSession().setMode('ace/mode/javascript');
+    // => Set editor options
+    this.editor.setTheme('ace/theme/monokai'); // Set theme
+    this.editor.getSession().setMode('ace/mode/javascript'); // Set language
+    this.editor.setReadOnly(true);
+    this.editorDataSubscription();
+  }
+  editorDataSubscription(){
     this.dataService.sharedData.subscribe((data: any) => {
       if (data !== this.data) {
         this.data = data;
-        this.editor.setValue(JSON.stringify(data));
+        data = JSON.stringify(data, null, 4);
+        this.editor.setValue(data);
       }
     });
   }

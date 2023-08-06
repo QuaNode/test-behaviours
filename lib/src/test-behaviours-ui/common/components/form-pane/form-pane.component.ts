@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 
 
 @Component({
@@ -7,5 +8,15 @@ import { Component } from '@angular/core';
   styleUrls: ['./form-pane.component.scss']
 })
 export class FormPaneComponent  {
-
+  requestUrl : any;
+  requestMethod : any;
+  constructor(private dataService: DataService){}
+  ngOnInit() {
+    this.dataService.sharedData.subscribe((data: any) => {
+      if (data.url !== this.requestUrl||data.method !== this.requestMethod) {
+        this.requestUrl = data.url;
+        this.requestMethod = data.method;
+      }
+    });
+  }
 }
