@@ -6,7 +6,7 @@ import { BehaviorSubject } from 'rxjs';
 
 
 export class DataService {
-  private static sharedDataSource = new BehaviorSubject<string>("");
+  private static sharedDataSource = new BehaviorSubject<void>(undefined);
   sharedData = DataService.sharedDataSource.asObservable();
 
   setSharedData(data: any) {

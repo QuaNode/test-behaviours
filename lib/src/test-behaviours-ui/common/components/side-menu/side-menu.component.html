@@ -1,7 +1,11 @@
-<h2 class="text-white">Requests</h2>
-<ul class="nav nav-pills flex-column mt-2">
+<div class="side-content text-black-50">
+  <h2>Requests</h2>
+  <ul class="nav nav-pills flex-column mt-1">
     <li *ngFor="let request of requests ; let i = index">
-        <button type="submit" class="nav-link text-white" (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{ request.name }}</button>
-        <hr class="text-white" />
+      <button type="submit" class="nav-link text-black"
+        (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{
+        request.name }}</button>
+      <hr class="text-black" />
     </li>
-</ul>
+  </ul>
+</div>
