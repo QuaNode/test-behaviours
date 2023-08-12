@@ -1,8 +1,12 @@
 export interface RequestFormat{
     method?: string,
+    body?: {
+        mode: "raw",
+        raw: string
+    },
     url?: {
         raw?: string,
-        protocol?: string,
+        protocol?: "http" | "https",
         host?: string[],
         path?: string[],
         query?:
@@ -37,10 +41,13 @@ export interface Collection {
     item?: ItemFormat[]
 }
 
-// this is the required input structure to enable the service to work properly
-export interface InputCollectionFormat{
+export interface InputCollection{
     name?: string,
     method?: string,
-    url?: string,
-    response?: {name?: string, originalReq?: {method?: string, url?: string}, status?: string, code?: number, body?: string}[]
+    host?: string,
+    path?: string,
+    params?: string,
+    response?: string,
+    responseStatus?: string,
+    responseCode?: number,
 }
