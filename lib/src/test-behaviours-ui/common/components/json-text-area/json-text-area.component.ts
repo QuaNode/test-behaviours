@@ -5,9 +5,10 @@ import { EditorTextFormat } from '../../../../test-behaviours-core/models/collec
 import { EditorService } from '../../../services/editor.service';
 
 @Component({
-  selector: 'app-json-text-area',
-  templateUrl: './json-text-area.component.html',
-  styleUrls: ['./json-text-area.component.scss'],
+    selector: 'app-json-text-area',
+    templateUrl: './json-text-area.component.html',
+    styleUrls: ['./json-text-area.component.scss'],
+    standalone: false
 })
 export class JsonTextAreaComponent implements OnInit {
   private dataService = inject(DataService);

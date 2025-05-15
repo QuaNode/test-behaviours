@@ -2,9 +2,10 @@ import { Component, inject, input, Input, signal } from '@angular/core';
 import { Request } from '../layout/layout.component';
 import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 @Component({
-  selector: 'app-side-menu',
-  templateUrl: './side-menu.component.html',
-  styleUrls: ['./side-menu.component.scss'],
+    selector: 'app-side-menu',
+    templateUrl: './side-menu.component.html',
+    styleUrls: ['./side-menu.component.scss'],
+    standalone: false
 })
 export class SideMenuComponent {
   private dataService = inject(DataService);
