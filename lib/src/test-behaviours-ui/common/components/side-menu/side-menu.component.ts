@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, input, Input, signal } from '@angular/core';
 import { Request } from '../layout/layout.component';
 import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 @Component({
@@ -7,13 +7,13 @@ import { DataService } from '../../../../../src/test-behaviours-core/services/da
   styleUrls: ['./side-menu.component.scss'],
 })
 export class SideMenuComponent {
-  @Input() requests!: Request[];
-  setClickedRow: Function;
-  selectedRow!: Number;
-  constructor(private dataService: DataService) {
-    this.setClickedRow = function (index: any) {
-      this.selectedRow = index;
-      this.dataService.setSharedData(this.requests[index]);
-    };
+  private dataService = inject(DataService);
+  requests = input.required<Request[]>();
+  selectedRow = signal<number | null>(null);
+
+  setClickedRow(index: number) {
+    const requestData = this.requests()[index];
+    this.selectedRow.set(index);
+    this.dataService.setSharedData(requestData);
   }
 }

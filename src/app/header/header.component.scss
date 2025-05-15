@@ -1,8 +1,12 @@
-.fixed-header{
+.fixed-header {
   position: fixed;
-      top: 0;
-      width: 100%;
-      z-index: 999;
-      height: 60px;
+  top: 0;
+  width: 100%;
+  z-index: 999;
+  height: 60px;
 }
 
+.export-link {
+  color: white;
+  text-decoration: none;
+}

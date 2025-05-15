@@ -14,10 +14,7 @@ import { JsonTextAreaComponent } from './common/components/json-text-area/json-t
     JsonTextAreaComponent,
     LayoutComponent,
   ],
-  imports: [
-    CommonModule,
-  ],
+  imports: [CommonModule],
   exports: [LayoutComponent],
- })
-
-export class TestBehavioursUiModule { }
+})
+export class TestBehavioursUiModule {}

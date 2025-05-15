@@ -1,18 +1,20 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { EditorTextFormat } from '../../models/collection';
+
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-
-
 export class DataService {
-  private static sharedDataSource = new BehaviorSubject<void>(undefined);
-  sharedData = DataService.sharedDataSource.asObservable();
+  private sharedDataSource = signal<EditorTextFormat>({
+    url: '',
+    name: '',
+    method: '',
+  });
 
-  setSharedData(data: any) {
-    DataService.sharedDataSource.next(data);
-  }
-  getSharedData() {
-    return {...DataService.sharedDataSource};
+  sharedData = this.sharedDataSource.asReadonly();
+
+  setSharedData(data: EditorTextFormat) {
+    this.sharedDataSource.set(data);
   }
 }

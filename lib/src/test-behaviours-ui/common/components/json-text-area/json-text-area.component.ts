@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit } from '@angular/core';
 import * as ace from 'ace-builds';
 import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
+import { EditorTextFormat } from '../../../../test-behaviours-core/models/collection';
+import { EditorService } from '../../../services/editor.service';
 
 @Component({
   selector: 'app-json-text-area',
@@ -8,43 +10,36 @@ import { DataService } from '../../../../../src/test-behaviours-core/services/da
   styleUrls: ['./json-text-area.component.scss'],
 })
 export class JsonTextAreaComponent implements OnInit {
+  private dataService = inject(DataService);
+  private editorService = inject(EditorService);
   multilineEditor!: ace.Ace.Editor;
   readonlyEditor!: ace.Ace.Editor;
-  constructor(private dataService: DataService) {}
 
-  multilineText: any;
-  readonlyText: any;
   ngOnInit() {
-    this.initAceEditor();
+    this.initEditors();
   }
-  initAceEditor() {
-    ace.config.set(
-      'basePath',
-      'https://unpkg.com/ace-builds@1.4.12/src-noconflict'
-    );
-    this.multilineEditor = ace.edit('multilineEditor');
-    this.multilineEditor.setTheme('ace/theme/monokai');
-    this.multilineEditor.getSession().setMode('ace/mode/json');
-    this.multilineEditor.setFontSize('20px');
-    this.dataService.sharedData.subscribe((data: any) => {
-      if (data !== this.multilineText) {
-        this.multilineText = data;
-        this.multilineEditor.setValue(
-          JSON.stringify(this.multilineText, null, '\t')
-        );
-      }
-    });
 
-    this.readonlyEditor = ace.edit('readonlyEditor');
-    this.readonlyEditor.setReadOnly(true);
-    this.readonlyEditor.setFontSize('20px');
-    this.dataService.sharedData.subscribe((data: any) => {
-      if (data !== this.readonlyText) {
-        this.readonlyText = data;
-        this.readonlyEditor.setValue(
-          JSON.stringify(this.readonlyText, null, '\t')
-        );
+  constructor() {
+    effect(() => {
+      const data = this.dataService.sharedData();
+
+      if (data && this.isValidData(data)) {
+        const jsonData = JSON.stringify(data, null, '\t');
+        this.multilineEditor.setValue(jsonData);
+        this.readonlyEditor.setValue(jsonData);
       }
     });
+  }
+
+  private isValidData(data: EditorTextFormat): boolean {
+    return !!(data.url || data.name || data.method);
+  }
+
+  private initEditors() {
+    this.editorService.configureAce();
+    this.multilineEditor =
+      this.editorService.initializeMultilineEditor('multilineEditor');
+    this.readonlyEditor =
+      this.editorService.initializeReadonlyEditor('readonlyEditor');
   }
 }
