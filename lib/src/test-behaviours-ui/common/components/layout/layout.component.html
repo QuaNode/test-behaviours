@@ -1,9 +1,43 @@
-<div class="container-fluid">
-  <div class="row">
-    <div class="col-2 fixed-sidebar">
+
+<div class="container-fluid pt-5 ">
+  
+  <button
+    class="btn btn-outline-dark d-md-none m-3"
+    type="button"
+    data-bs-toggle="offcanvas"
+    data-bs-target="#sideMenu"
+    aria-controls="sideMenu"
+  >
+    ☰
+  </button>
+
+  <div
+    class="offcanvas offcanvas-start d-md-none"
+    tabindex="-1"
+    id="sideMenu"
+    aria-labelledby="sideMenuLabel"
+  >
+    <div class="offcanvas-header">
+
+      <button
+        type="button"
+        class="btn-close"
+        data-bs-dismiss="offcanvas"
+        aria-label="Close"
+      ></button>
+    </div>
+    <div class="offcanvas-body ">
       <app-side-menu [requests]="requests"></app-side-menu>
     </div>
-    <div class="col-10 col-md-7 m-auto mt-5 h-100">
+  </div>
+
+  <div class="row">
+
+    <div class="col-md-2 d-none d-md-block border-end min-vh-100 pt-5">
+      <app-side-menu [requests]="requests"></app-side-menu>
+    </div>
+
+  <div class="col-12 col-md-10 pt-3">
       <app-form-pane></app-form-pane>
     </div>
   </div>

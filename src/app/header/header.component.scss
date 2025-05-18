@@ -6,3 +6,12 @@
       height: 60px;
 }
 
+.responsive-logo img {
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .responsive-logo img {
+    width: 50%;
+  }
+}
