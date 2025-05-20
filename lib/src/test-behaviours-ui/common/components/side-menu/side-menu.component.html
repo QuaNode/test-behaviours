@@ -1,14 +1,28 @@
+
 <div class="side-content text-black-50">
-    <h2 class="fs-3 fw-bold text-black pb-2 ">Requests</h2>
-  <ul class="nav nav-pills flex-column mt-1">
-    <li *ngFor="let request of requests ; let i = index">
-      <button type="submit" class="nav-link text-black"
-        (click)="setClickedRow(i)" [class.active]="i == selectedRow">{{
-        request.name }}</button>
+  <h2 class="fs-3 fw-bold text-black ">Requests</h2>
+  <ul class="nav nav-pills flex-column mt-4">
+    <li *ngFor="let request of requests; let i = index">
+      <button
+        type="button"
+        class="navlink text-start d-flex align-items-center justify-content-start gap-2   bg-transparent border-0 fw-bold p-2 rounded-2"
+        (click)="setClickedRow(i)"
+        [class.active]="i === selectedRow"
+      >
+        <span
+          class="fw-bold text-uppercase"
+          [ngClass]="getMethodClass(request.method)"
+          style="min-width: 50px"
+        >
+          {{ request.method }}
+        </span>
+        <span>{{ request.name }}</span>
+      </button>
       <hr class="text-black" />
     </li>
   </ul>
 </div>
+
 
 
 

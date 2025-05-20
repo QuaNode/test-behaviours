@@ -1,0 +1,36 @@
+.form-select.text-success {
+  color: green;
+}
+.form-select.text-primary {
+  color: #0d6efd;
+}
+.form-select.text-danger {
+  color: #dc3545;
+}
+.form-select.text-warning {
+  color: #ffc107;
+}
+.form-select.text-info {
+  color: #0dcaf0;
+}
+
+
+.send-btn{
+background-image:linear-gradient(to top, #EB3449, #F3482D);
+}
+.send-btn:focus{
+  
+background-image:linear-gradient(to top, #EB3449, #F3482D);
+
+}
+
+
+.form-control:focus {
+  outline: none; 
+  box-shadow: 0 0 0 3px #f3482d; 
+  border: 1px solid #f3482d; }
+  
+.form-select:focus {
+  outline: none; 
+  box-shadow: 0 0 0 3px #f3482d; 
+  border: 1px solid #f3482d; }

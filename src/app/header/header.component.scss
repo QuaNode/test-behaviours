@@ -1,3 +1,4 @@
+
 .fixed-header{
   position: fixed;
       top: 0;
@@ -6,12 +7,41 @@
       height: 60px;
 }
 
+.export__btn {
+
+  background-image:  linear-gradient(to top, #EB3349, #F45C43);;
+  border: solid transparent 2px;
+  box-shadow: 1px 1px 1px rgb(12, 12, 12);
+}
+.btn__color{
+  background-image:  linear-gradient(to top, #EB3349, #F45C43);;
+  border: solid transparent 2px;
+}
+
+
 .responsive-logo img {
   width: 100%;
 }
 
+.navbar .btn-outline-light {
+  background-color: transparent;
+  border: none;
+  font-size: 1.5rem;
+}
+
+
 @media (min-width: 768px) {
   .responsive-logo img {
     width: 50%;
+  }
+}
+
+@media (max-width: 320px) {
+  .navbar-brand img {
+    height: 25px; 
+  }
+  .export__btn {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 }

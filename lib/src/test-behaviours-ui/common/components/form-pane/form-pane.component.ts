@@ -19,4 +19,24 @@ export class FormPaneComponent  {
       }
     });
   }
+  methods: string[] = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'COPY', 'LINK'];
+selectedMethod: string = 'GET';
+
+getMethodClass(method: string): string {
+  switch (method.toLowerCase()) {
+    case 'get':
+      return 'text-success'; // أخضر
+    case 'post':
+      return 'text-primary'; // أزرق
+    case 'put':
+      return 'text-warning'; // أصفر
+    case 'patch':
+      return 'text-info'; // سماوي
+    case 'delete':
+      return 'text-danger'; // أحمر
+    default:
+      return 'text-secondary'; // رمادي
+  }
+}
+
 }

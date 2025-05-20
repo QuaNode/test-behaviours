@@ -1,9 +1,33 @@
-<nav class="navbar bg-dark fixed-header">
-  <div class="container-fluid">
-    <a class="navbar-brand w-25 m-auto responsive-logo" href="#">
-      <img src="assets/images/logo.png" alt="Logo" class="d-inline-block align-text-top">
+
+
+<nav class="navbar navbar-dark bg-dark fixed-header py-2 ">
+  <div class="container-fluid d-flex align-items-center justify-content-between px-2">
+  
+    <button
+      class="btn btn__color btn-outline-dark d-lg-none bg-black text-white m-0 "
+      type="button"
+      data-bs-toggle="offcanvas"
+      data-bs-target="#sideMenu"
+      aria-controls="sideMenu"
+    >
+      ☰
+    </button>
+
+    <a class="navbar-brand mx-auto mx-md-0" href="#">
+      <img src="assets/images/logo.png" alt="Logo" class="d-inline-block align-text-top" height="30">
     </a>
-    <a [href]="fileUrl" (click)="export()" download="file.json"
-      class="btn btn-primary ">export</a>
+
+    
+    <div class="ms-auto d-none d-sm-block">
+      <a [href]="fileUrl" (click)="export()" download="file.json"
+        class="btn text-white export__btn fw-medium">Export</a>
+    </div>
+
+
+    <div class="d-sm-none">
+      <a [href]="fileUrl" (click)="export()" download="file.json"
+        class="btn btn-sm export__btn text-white fw-medium">Export</a>
+    </div>
+
   </div>
 </nav>
