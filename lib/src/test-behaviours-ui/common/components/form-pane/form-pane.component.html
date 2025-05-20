@@ -1,21 +1,16 @@
 <div class="row">
   <div class="d-grid d-lg-flex m-auto gap-lg-3">
     <div class="col-md-2 m-md-auto">
-      <select class="form-select p-2 mb-3 mt-3 border-secondary-subtle">
-        <option selected>Get</option>
-        <option value="1">Post</option>
-        <option value="2">Put</option>
-        <option value="3">Patch</option>
-        <option value="4">Delete</option>
-        <option value="5">Copy</option>
-        <option value="6">Link</option>
+      <select class="form-select p-2 mb-3 mt-3 no-arrow" disabled>
+        <option selected class="">{{ requestData().method }}</option>
       </select>
     </div>
     <div class="col-md-8 m-md-auto">
       <input
         type="text"
         class="form-control mb-3 mt-3 p-2"
-        placeholder="Enter request url"
+        [value]="requestData().url"
+        disabled
       />
     </div>
     <div class="row gap-sm-4 gap-md-0 text-center">
@@ -44,6 +39,26 @@
       </div>
     </div>
   </div>
+
+  @if (requestData().isValid) {
+  <div
+    class="d-flex flex-wrap align-items-center gap-3 mt-3 px-2 justify-content-center"
+  >
+    <span class="badge text-bg-light"
+      ><strong>Version:</strong>
+      <span class="span1">{{ requestData().version }}</span></span
+    >
+    <span class="badge text-bg-light"
+      ><strong>Prefix:</strong>
+      <span class="span1">{{ requestData().prefix }}</span></span
+    >
+    <span class="badge text-bg-light"
+      ><strong>Events:</strong>
+      <span class="span1">{{ requestData().events }}</span></span
+    >
+  </div>
+  }
+
   <div class="mt-5 mb-5">
     <app-json-text-area></app-json-text-area>
   </div>

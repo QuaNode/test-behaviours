@@ -1,20 +1,23 @@
-import { Component, inject, input, Input, signal } from '@angular/core';
-import { Request } from '../layout/layout.component';
-import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
+import { Component, inject, signal } from '@angular/core';
+import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
+
 @Component({
-    selector: 'app-side-menu',
-    templateUrl: './side-menu.component.html',
-    styleUrls: ['./side-menu.component.scss'],
-    standalone: false
+  selector: 'app-side-menu',
+  templateUrl: './side-menu.component.html',
+  styleUrls: ['./side-menu.component.scss'],
+  standalone: false,
 })
 export class SideMenuComponent {
-  private dataService = inject(DataService);
-  requests = input.required<Request[]>();
-  selectedRow = signal<number | null>(null);
+  private requestsService = inject(RequestsService);
 
-  setClickedRow(index: number) {
-    const requestData = this.requests()[index];
-    this.selectedRow.set(index);
-    this.dataService.setSharedData(requestData);
+  selectedRequestIndex = signal<number | null>(null);
+
+  requests = this.requestsService.theRequests;
+
+  selectRequest(index: number) {
+    const requests = this.requests() || [];
+    const requestData = requests[index];
+    this.selectedRequestIndex.set(index);
+    this.requestsService.setRequest(requestData);
   }
 }

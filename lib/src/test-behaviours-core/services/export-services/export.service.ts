@@ -1,62 +1,56 @@
-import { Injectable } from '@angular/core';
-import {
-  RequestFormat,
-  ItemFormat,
-  Collection,
-  InputCollection,
-} from '../../models/collection';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { RequestsService } from '../data-services/data.service';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
-  private getRequestInfo(reqInfo: InputCollection): RequestFormat {
-    return {
-      method: reqInfo.method ? reqInfo.method.toUpperCase() : 'GET',
-      ...(reqInfo.params && {
-        body: {
-          mode: 'raw',
-          raw: reqInfo.params,
-        },
-      }),
-      ...(reqInfo.host && {
-        url: {
-          raw: `https://${reqInfo.host}${reqInfo.path}`,
-          protocol: 'https',
-          host: reqInfo.host?.split('.'),
-          ...(reqInfo.path && { path: reqInfo.path.slice(1).split('/') }),
-        },
-      }),
-    };
+  private requestsService = inject(RequestsService);
+  private sanitizer = inject(DomSanitizer);
+
+  private blobUrl = signal<string | null>(null);
+  fileUrl = signal<SafeResourceUrl | null>(null);
+  downloadedData = computed(() => this.requestsService.theRequest());
+
+  isValidData = computed(() => {
+    return this.requestsService.isValidData();
+  });
+
+  exportAsJson() {
+    if (this.downloadedData() && this.isValidData()) {
+      try {
+        console.log('Exported');
+        console.log(this.downloadedData());
+        const str = JSON.stringify(this.downloadedData(), null, '\t');
+        const blob = new Blob([str], {
+          type: 'application/json;charset=utf-8',
+        });
+        const newBlobUrl = URL.createObjectURL(blob);
+        this.blobUrl.set(newBlobUrl);
+        this.fileUrl.set(
+          this.sanitizer.bypassSecurityTrustResourceUrl(newBlobUrl)
+        );
+      } catch (error) {
+        console.error('Error exporting data:', error);
+        this.fileUrl.set(null);
+        this.blobUrl.set(null);
+      }
+    } else {
+      console.log('No valid data to export');
+      this.fileUrl.set(null);
+      if (this.blobUrl()) {
+        URL.revokeObjectURL(this.blobUrl()!);
+        this.blobUrl.set(null);
+      }
+    }
   }
 
-  public getCollection(inCollection: InputCollection[]): Collection {
-    const collectionItems: ItemFormat[] = inCollection.map((item) => {
-      return {
-        name: item.name ? item.name : 'untitled request',
-        request: this.getRequestInfo(item),
-        response: !item.response
-          ? []
-          : [
-              {
-                _postman_previewlanguage: 'json',
-                ...(item.name && { name: item.name }),
-                originalRequest: this.getRequestInfo(item),
-                ...(item.responseStatus && { status: item.responseStatus }),
-                ...(item.responseCode && { code: item.responseCode }),
-                body: item.response,
-              },
-            ],
-      };
-    });
-
-    return {
-      info: {
-        name: 'test conversion function',
-        schema:
-          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-      },
-      item: collectionItems,
-    };
+  clearBlobUrl() {
+    if (this.blobUrl()) {
+      URL.revokeObjectURL(this.blobUrl()!);
+      this.blobUrl.set(null);
+      this.fileUrl.set(null);
+    }
   }
 }
