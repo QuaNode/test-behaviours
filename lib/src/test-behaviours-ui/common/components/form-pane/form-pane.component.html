@@ -1,22 +1,12 @@
 <div class="row">
   <div class="d-grid d-lg-flex m-auto gap-lg-3">
     <div class="col-md-2 m-md-auto">
-      <select class="form-select p-2 mb-3 mt-3 border-secondary-subtle">
-        <option selected>Get</option>
-        <option value="1">Post</option>
-        <option value="2">Put</option>
-        <option value="3">Patch</option>
-        <option value="4">Delete</option>
-        <option value="5">Copy</option>
-        <option value="6">Link</option>
+      <select class="form-select p-2 mb-3 mt-3 no-arrow" disabled [ngStyle]="getSelectStyle(requestMethod())">
+        <option selected class="">{{requestMethod()}}</option>
       </select>
     </div>
     <div class="col-md-8 m-md-auto">
-      <input
-        type="text"
-        class="form-control mb-3 mt-3 p-2"
-        placeholder="Enter request url"
-      />
+      <input type="text" class="form-control mb-3 mt-3 p-2" [value]="requestUrl()" disabled />
     </div>
     <div class="row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
@@ -24,26 +14,24 @@
           <button class="btn btn-primary px-4 py-2 w-100" type="button">
             Send
           </button>
-          <button
-            appDropDown
-            #myDropDown="appDropDown"
-            type="button"
-            class="btn btn-sm btn-primary dropdown-toggle"
-            type="button"
-            data-toggle="dropdown"
-          >
+          <button appDropDown #myDropDown="appDropDown" type="button" class="btn btn-sm btn-primary dropdown-toggle"
+            type="button" data-toggle="dropdown">
             <span class="sr-only"></span>
           </button>
-          <div
-            [ngClass]="{ show: myDropDown.isOpen }"
-            class="dropdown-menu mt-5 px-2"
-          >
+          <div [ngClass]="{ show: myDropDown.isOpen }" class="dropdown-menu mt-5 px-2">
             Send And Download
           </div>
         </div>
       </div>
     </div>
+
   </div>
+  <div *ngIf="sharedData()" class="d-flex flex-wrap align-items-center gap-3 mt-3 px-2 justify-content-center">
+  <span class="badge text-bg-light"><strong>Version:</strong> <span class="span1">{{ version() }}</span></span>
+  <span class="badge text-bg-light"><strong>Prefix:</strong>  <span class="span1">{{ prefix() }}</span></span>
+  <span class="badge text-bg-light"><strong>Events:</strong>  <span class="span1">{{ events() }}</span></span>
+</div>
+
   <div class="mt-5 mb-5">
     <app-json-text-area></app-json-text-area>
   </div>

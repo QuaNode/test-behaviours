@@ -21,19 +21,19 @@ export class JsonTextAreaComponent implements OnInit {
   }
 
   constructor() {
-    effect(() => {
-      const data = this.dataService.sharedData();
-
-      if (data && this.isValidData(data)) {
-        const jsonData = JSON.stringify(data, null, '\t');
-        this.multilineEditor.setValue(jsonData);
-        this.readonlyEditor.setValue(jsonData);
-      }
-    });
+      effect(() => {
+    const data = this.dataService.sharedData();
+    if (data && this.isValidData(data)) {
+      const paramsJson = JSON.stringify(data.parameters ?? '// No parameters', null, '\t');
+      const returnsJson = JSON.stringify(data.returns ??   '// No return values', null, '\t');
+      this.multilineEditor.setValue(paramsJson);   // الأسود
+      this.readonlyEditor.setValue(returnsJson);   // الأبيض
+    }
+  });
   }
 
   private isValidData(data: EditorTextFormat): boolean {
-    return !!(data.url || data.name || data.method);
+    return !!(data.path || data.version || data.method);
   }
 
   private initEditors() {
