@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 export interface BehavioursResponse {
   name: string;
   parameters?: any;

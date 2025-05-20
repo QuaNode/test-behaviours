@@ -23,6 +23,7 @@ export class JsonTextAreaComponent implements OnInit {
   }
 
   constructor() {
+
     effect(() => {
       const data = this.requestsService.theRequest();
       if (data && this.isValidData(data)) {

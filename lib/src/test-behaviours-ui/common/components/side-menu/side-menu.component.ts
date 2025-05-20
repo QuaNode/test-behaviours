@@ -1,5 +1,7 @@
+
 import { Component, inject, signal } from '@angular/core';
 import { RequestsService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
+
 
 @Component({
   selector: 'app-side-menu',
@@ -7,6 +9,7 @@ import { RequestsService } from '../../../../../src/test-behaviours-core/service
   styleUrls: ['./side-menu.component.scss'],
   standalone: false,
 })
+
 export class SideMenuComponent {
   private requestsService = inject(RequestsService);
 

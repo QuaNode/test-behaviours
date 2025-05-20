@@ -20,7 +20,9 @@
     "@angular/router": "^19.2.11",
     "ace-builds": "^1.23.4",
     "bootstrap": "^5.3.0",
+
     "ng-behaviours": "^11.0.4",
+
     "popper.js": "^1.16.1",
     "rxjs": "^6.6.7",
     "rxjs-compat": "^6.6.7",

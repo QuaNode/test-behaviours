@@ -25,7 +25,10 @@ export function getBehaviours(http: HttpClient) {
       useFactory: getBehaviours,
       deps: [HttpClient],
     },
+
   ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
+
+

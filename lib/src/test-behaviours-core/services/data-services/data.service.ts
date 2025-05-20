@@ -1,3 +1,4 @@
+
 import { Inject, Injectable, signal, effect } from '@angular/core';
 import { BehavioursResponse, Request } from '../../models/collection';
 import { Behaviours } from 'ng-behaviours';
@@ -9,6 +10,7 @@ export interface AppBehaviours extends Behaviours {
 @Injectable({
   providedIn: 'root',
 })
+
 export class RequestsService {
   private static requests = signal<BehavioursResponse[] | null>(null);
 
