@@ -7,31 +7,25 @@ import { HeaderComponent } from './header/header.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Behaviours } from 'ng-behaviours';
 
-import { AppBehavioursImpl } from '../../lib/src/test-behaviours-core/services/app-behaviours.service'; // عدّل المسار حسب مكان الملف
-
 export function getBehaviours(http: HttpClient) {
-  return new AppBehavioursImpl(http);
+  return new Behaviours(http, 'http://localhost:8383/api/v1');
 }
+
 @NgModule({
-  declarations: [
-    AppComponent,
-    HeaderComponent,
-  ],
+  declarations: [AppComponent, HeaderComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
     TestBehavioursUiModule,
-    HttpClientModule
+    HttpClientModule,
   ],
-    providers: [
+  providers: [
     {
       provide: Behaviours,
       useFactory: getBehaviours,
-      deps: [HttpClient]
-    }
+      deps: [HttpClient],
+    },
   ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
-
-

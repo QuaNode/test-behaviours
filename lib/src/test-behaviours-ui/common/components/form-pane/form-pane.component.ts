@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
+import { RequestsService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 import { environment } from '../../../../../src/environment/environment';
 
 @Component({
@@ -9,42 +9,38 @@ import { environment } from '../../../../../src/environment/environment';
   standalone: false,
 })
 export class FormPaneComponent {
-  private dataService = inject(DataService);
+  private requestsService = inject(RequestsService);
+
+  request = this.requestsService.theRequest;
 
   requestUrl = computed(() => {
-    const sharedData = this.dataService.sharedData();
-    return `${environment.apiUrl}` + `${sharedData?.path ?? ''}`;
+    return `${environment.apiUrl}` + `${this.request()?.path ?? ''}`;
   });
 
   requestMethod = computed(() => {
-    const sharedData = this.dataService.sharedData();
-    return sharedData?.method ?? '';
+    return this.request()?.method ?? '';
   });
 
-  sharedData = this.dataService.sharedData;
-  version = computed(() => this.sharedData()?.version ?? '');
-  prefix = computed(() => this.sharedData()?.prefix ?? '');
-  events = computed(() => this.sharedData()?.events ?? false);
-
-
+  version = computed(() => this.request()?.version ?? '');
+  prefix = computed(() => this.request()?.prefix ?? '');
+  events = computed(() => this.request()?.events ?? false);
 
   getSelectStyle(method: string) {
-  if (method === 'GET') {
-    return {
-      color: 'green',
-      fontWeight:'bold',
-    };
-  } else if (method === 'POST') {
-    return {
-      color: ' #f57600',
-      fontWeight:'bold',
-    };
-  } else {
-    return {
-      color: 'black',
-      fontWeight:'bold',
-    };
+    if (method === 'GET') {
+      return {
+        color: 'green',
+        fontWeight: 'bold',
+      };
+    } else if (method === 'POST') {
+      return {
+        color: ' #f57600',
+        fontWeight: 'bold',
+      };
+    } else {
+      return {
+        color: 'black',
+        fontWeight: 'bold',
+      };
+    }
   }
-}
-
 }

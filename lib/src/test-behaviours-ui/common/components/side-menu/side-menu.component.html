@@ -1,10 +1,11 @@
 <div class="side-content text-black-50">
   <h2>Requests</h2>
   <ul class="nav nav-pills flex-column mt-1">
-    @for (request of Sidemenutitels(); track request; let i = $index) {
+    @for (request of requests(); track request; let i = $index) {
     <li>
-      <button type="submit" class="nav-link text-black" (click)="setClickedRow(i)" [class.active]="i === selectedRow()">
-        {{ request }}
+      <button type="submit" class="nav-link text-black" (click)="selectRequest(i)"
+        [class.active]="i === selectedRequestIndex()">
+        {{ request.name }}
       </button>
     </li>
     }

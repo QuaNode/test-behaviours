@@ -1,29 +1,46 @@
-import { inject, Injectable, signal } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-import { EditorTextFormat } from '../../models/collection';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../../../src/environment/environment';
+import { Inject, Injectable, signal, effect } from '@angular/core';
+import { BehavioursResponse, Request } from '../../models/collection';
+import { Behaviours } from 'ng-behaviours';
 
-
+export interface AppBehaviours extends Behaviours {
+  behaviours(parameters: any): any;
+}
 
 @Injectable({
   providedIn: 'root',
 })
-export class DataService {
+export class RequestsService {
+  private static requests = signal<BehavioursResponse[] | null>(null);
 
-  private sharedDataSource = signal<EditorTextFormat>({
+  private static request = signal<Request>({
+    name: '',
     version: '',
     method: '',
     path: '',
     prefix: '',
     events: true,
-    parameters: {}, 
-    returns: {},
   });
 
-  sharedData = this.sharedDataSource.asReadonly();
+  constructor(@Inject(Behaviours) private behaviours: AppBehaviours) {
+    if (!RequestsService.requests())
+      effect(() => {
+        this.behaviours.ready(() => {
+          this.behaviours.behaviours({}).subscribe((res: any) => {
+            RequestsService.requests.set(
+              Object.keys(res || {}).map((name) => {
+                return { name, ...res[name] };
+              })
+            );
+          });
+        });
+      });
+  }
 
-  setSharedData(data: EditorTextFormat) {
-    this.sharedDataSource.set(data);
+  theRequests = RequestsService.requests.asReadonly();
+
+  theRequest = RequestsService.request.asReadonly();
+
+  setRequest(data: BehavioursResponse) {
+    RequestsService.request.set(data as Request);
   }
 }

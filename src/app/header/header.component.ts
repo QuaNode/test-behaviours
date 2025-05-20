@@ -1,20 +1,20 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { DataService } from 'lib/src/test-behaviours-core/services/data-services/data.service';
+import { RequestsService } from 'lib/src/test-behaviours-core/services/data-services/data.service';
 @Component({
-    selector: 'app-header',
-    templateUrl: './header.component.html',
-    styleUrls: ['./header.component.scss'],
-    standalone: false
+  selector: 'app-header',
+  templateUrl: './header.component.html',
+  styleUrls: ['./header.component.scss'],
+  standalone: false,
 })
 export class HeaderComponent {
   private sanitizer = inject(DomSanitizer);
-  private dataService = inject(DataService);
+  private dataService = inject(RequestsService);
   private blobUrl: string | null = null;
   fileUrl = signal<SafeResourceUrl | null>(null);
 
   downloadedData = computed(() => {
-    const data = this.dataService.sharedData();
+    const data = this.dataService.theRequests();
     return data;
   });
 
