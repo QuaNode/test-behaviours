@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
 
 @Component({
@@ -13,6 +13,10 @@ export class SideMenuComponent {
   selectedRequestIndex = signal<number | null>(null);
 
   requests = this.requestsService.theRequests;
+
+  methodClass = computed(() => {
+    return this.requestsService.getMethodClass();
+  });
 
   selectRequest(index: number) {
     const requests = this.requests() || [];

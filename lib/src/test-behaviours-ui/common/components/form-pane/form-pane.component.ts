@@ -12,6 +12,9 @@ import { environment } from '../../../../../src/environment/environment';
 })
 export class FormPaneComponent {
   private requestsService = inject(RequestsService);
+  methodClass = computed(() => {
+    return this.requestsService.getMethodClass();
+  });
 
   requestData = computed(() => {
     const request = this.requestsService.theRequest();
@@ -25,7 +28,4 @@ export class FormPaneComponent {
       isValid,
     };
   });
-
-
-
 }

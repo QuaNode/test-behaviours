@@ -1,8 +1,14 @@
-<div class="row">
+<div class="row mt-3">
   <div class="d-grid d-lg-flex m-auto gap-lg-3">
     <div class="col-md-2 m-md-auto">
-      <select class="form-select p-2 mb-3 mt-3 no-arrow" disabled>
-        <option selected class="">{{ requestData().method }}</option>
+      <select
+        class="form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold"
+        [class]="methodClass()"
+        disabled
+      >
+        <option selected>
+          {{ requestData().method }}
+        </option>
       </select>
     </div>
     <div class="col-md-8 m-md-auto">
@@ -10,26 +16,32 @@
         type="text"
         class="form-control mb-3 mt-3 p-2"
         [value]="requestData().url"
+        placeholder="Enter request url"
         disabled
       />
     </div>
+
     <div class="row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
         <div class="btn-group w-100">
-          <button class="btn btn-primary px-4 py-2 w-100" type="button">
+          <button
+            class="btn send-btn dropdown-toggle text-white"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
             Send
           </button>
-          <button appDropDown #myDropDown="appDropDown" type="button" class="btn btn-sm btn-primary dropdown-toggle"
-            type="button" data-toggle="dropdown">
-            <span class="sr-only"></span>
-          </button>
-          <div [ngClass]="{ show: myDropDown.isOpen }" class="dropdown-menu mt-5 px-2">
-            Send And Download
-          </div>
+          <ul class="dropdown-menu">
+            <li>
+              <button class="dropdown-item text-dark" type="button">
+                Send And Download
+              </button>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
-
   </div>
 
   @if (requestData().isValid) {

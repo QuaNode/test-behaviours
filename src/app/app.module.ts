@@ -14,6 +14,7 @@ export function getBehaviours(http: HttpClient) {
 
 @NgModule({
   declarations: [AppComponent, HeaderComponent],
+
   imports: [
     BrowserModule,
     AppRoutingModule,
@@ -26,9 +27,7 @@ export function getBehaviours(http: HttpClient) {
       useFactory: getBehaviours,
       deps: [HttpClient],
     },
-
   ],
   bootstrap: [AppComponent],
 })
 export class AppModule {}
-

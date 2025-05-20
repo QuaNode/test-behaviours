@@ -29,8 +29,8 @@ export class RequestsService {
     events: false,
   });
 
-  public readonly theRequests = computed(() => this.requests());
-  public readonly theRequest = computed(() => this.request());
+  readonly theRequests = computed(() => this.requests());
+  readonly theRequest = computed(() => this.request());
 
   constructor() {
     effect(() => {
@@ -69,5 +69,24 @@ export class RequestsService {
       this.request().returns ||
       this.request().name
     );
+  });
+
+  // Martina
+
+  getMethodClass = computed(() => {
+    switch (this.request().method.toLowerCase()) {
+      case 'get':
+        return 'text-success'; // أخضر
+      case 'post':
+        return 'text-primary'; // أزرق
+      case 'put':
+        return 'text-warning'; // أصفر
+      case 'patch':
+        return 'text-info'; // سماوي
+      case 'delete':
+        return 'text-danger'; // أحمر
+      default:
+        return 'text-secondary'; // رمادي
+    }
   });
 }

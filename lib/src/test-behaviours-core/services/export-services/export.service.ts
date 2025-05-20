@@ -20,8 +20,6 @@ export class ExportService {
   exportAsJson() {
     if (this.downloadedData() && this.isValidData()) {
       try {
-        console.log('Exported');
-        console.log(this.downloadedData());
         const str = JSON.stringify(this.downloadedData(), null, '\t');
         const blob = new Blob([str], {
           type: 'application/json;charset=utf-8',

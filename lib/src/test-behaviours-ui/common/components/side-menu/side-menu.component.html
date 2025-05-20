@@ -1,13 +1,24 @@
 <div class="side-content text-black-50">
-  <h2>Requests</h2>
-  <ul class="nav nav-pills flex-column mt-1">
-    @for (request of requests(); track request; let i = $index) {
+  <h2 class="fs-3 fw-bold text-black">Requests</h2>
+  <ul class="nav nav-pills flex-column mt-4">
+    @for (request of requests() ; track request; let i = $index) {
     <li>
-
-      <button type="submit" class="nav-link text-black" (click)="selectRequest(i)"
-        [class.active]="i === selectedRequestIndex()">
-        {{ request.name }}
+      <button
+        type="submit"
+        class="navlink text-start d-flex align-items-center justify-content-start gap-2 bg-transparent border-0 fw-bold p-2 rounded-2"
+        (click)="selectRequest(i)"
+        [class.active]="i === selectedRequestIndex()"
+      >
+        <span
+          class="fw-bold text-uppercase"
+          [class]="i === selectedRequestIndex() ? methodClass() : ''"
+          style="min-width: 50px"
+        >
+          {{ request.method }}
+        </span>
+        <span>{{ request.name }}</span>
       </button>
+      <hr class="text-black" />
     </li>
     }
   </ul>

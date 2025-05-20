@@ -5,7 +5,7 @@ import { FormPaneComponent } from './common/components/form-pane/form-pane.compo
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
 import { JsonTextAreaComponent } from './common/components/json-text-area/json-text-area.component';
-
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -15,8 +15,7 @@ import { JsonTextAreaComponent } from './common/components/json-text-area/json-t
     JsonTextAreaComponent,
     LayoutComponent,
   ],
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   exports: [LayoutComponent],
-
 })
 export class TestBehavioursUiModule {}

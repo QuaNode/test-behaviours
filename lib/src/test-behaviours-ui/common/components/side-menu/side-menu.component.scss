@@ -1,1 +1,13 @@
+.navlink:focus,
+.navlink:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 2px #292a2b; 
+  background-image:  linear-gradient(to top, #F3482D, #F3482D);
+  color:white;
+  
+}
 
+.navlink.active {
+   background-image: linear-gradient(to top, #F3482D, #F3482D);
+  color: white;
+}
