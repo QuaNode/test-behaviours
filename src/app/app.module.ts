@@ -6,9 +6,10 @@ import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Behaviours } from 'ng-behaviours';
+import { environment } from 'lib/src/environment/environment';
 
 export function getBehaviours(http: HttpClient) {
-  return new Behaviours(http, 'http://localhost:8383/api/v1');
+  return new Behaviours(http, `${environment.apiUrl}`);
 }
 
 @NgModule({
