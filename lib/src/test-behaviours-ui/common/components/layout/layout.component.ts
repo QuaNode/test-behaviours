@@ -1,9 +1,12 @@
-import { Component, Input, signal } from '@angular/core';
+import { Component, computed, inject, Input, signal } from '@angular/core';
+import { DataService } from '../../../../../src/test-behaviours-core/services/data-services/data.service';
 
 export interface Request {
-  name: string;
-  method: string;
-  url: string;
+    version: string,
+    method: string,
+    path: string,
+    prefix: string,
+    events:boolean
 }
 
 @Component({
@@ -13,51 +16,6 @@ export interface Request {
     standalone: false
 })
 export class LayoutComponent {
-  requests = signal<Request[]>([
-    {
-      name: 'lorem ipsum 1',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 1',
-    },
-    {
-      name: 'lorem ipsum 2',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 2',
-    },
-    {
-      name: 'lorem ipsum 3',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 3',
-    },
-    {
-      name: 'lorem ipsum 4',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 4',
-    },
-    {
-      name: 'lorem ipsum 5',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 5',
-    },
-    {
-      name: 'lorem ipsum 6',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 6',
-    },
-    {
-      name: 'lorem ipsum 7',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 7',
-    },
-    {
-      name: 'lorem ipsum 8',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 8',
-    },
-    {
-      name: 'lorem ipsum 9',
-      method: 'get',
-      url: 'https://github.com/lorem ipsum 9',
-    },
-  ]);
+ private dataService=inject(DataService)
+  requests = signal<Request[]>([]);
 }

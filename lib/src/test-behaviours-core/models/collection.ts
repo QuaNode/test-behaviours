@@ -1,3 +1,8 @@
+import { Behaviours } from "ng-behaviours";
+
+export interface AppBehaviours extends Behaviours {
+  behaviours(parameters: any): any;
+}
 export interface RequestFormat {
   method?: string;
   body?: {
@@ -52,7 +57,11 @@ export interface InputCollection {
 }
 
 export interface EditorTextFormat {
-  name: string;
-  method: string;
-  url: string;
+    version: string,
+    method: string,
+    path: string,
+    prefix: string,
+    events:boolean,
+    parameters?: any;
+    returns?: any;
 }

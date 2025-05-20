@@ -6,6 +6,7 @@ import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
 import { JsonTextAreaComponent } from './common/components/json-text-area/json-text-area.component';
 
+
 @NgModule({
   declarations: [
     SideMenuComponent,
@@ -16,5 +17,6 @@ import { JsonTextAreaComponent } from './common/components/json-text-area/json-t
   ],
   imports: [CommonModule],
   exports: [LayoutComponent],
+
 })
 export class TestBehavioursUiModule {}
