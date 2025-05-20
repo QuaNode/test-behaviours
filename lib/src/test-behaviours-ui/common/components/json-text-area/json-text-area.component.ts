@@ -1,7 +1,6 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
 import * as ace from 'ace-builds';
 import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
-import { BehavioursResponse } from '../../../../test-behaviours-core/models/collection';
 import { EditorService } from '../../../services/editor.service';
 
 @Component({

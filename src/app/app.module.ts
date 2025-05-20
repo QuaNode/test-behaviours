@@ -32,4 +32,3 @@ export function getBehaviours(http: HttpClient) {
 })
 export class AppModule {}
 
-

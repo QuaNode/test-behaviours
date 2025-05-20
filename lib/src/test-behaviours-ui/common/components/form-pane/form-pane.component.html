@@ -19,25 +19,17 @@
           <button class="btn btn-primary px-4 py-2 w-100" type="button">
             Send
           </button>
-          <button
-            appDropDown
-            #myDropDown="appDropDown"
-            type="button"
-            class="btn btn-sm btn-primary dropdown-toggle"
-            type="button"
-            data-toggle="dropdown"
-          >
+          <button appDropDown #myDropDown="appDropDown" type="button" class="btn btn-sm btn-primary dropdown-toggle"
+            type="button" data-toggle="dropdown">
             <span class="sr-only"></span>
           </button>
-          <div
-            [ngClass]="{ show: myDropDown.isOpen }"
-            class="dropdown-menu mt-5 px-2"
-          >
+          <div [ngClass]="{ show: myDropDown.isOpen }" class="dropdown-menu mt-5 px-2">
             Send And Download
           </div>
         </div>
       </div>
     </div>
+
   </div>
 
   @if (requestData().isValid) {
