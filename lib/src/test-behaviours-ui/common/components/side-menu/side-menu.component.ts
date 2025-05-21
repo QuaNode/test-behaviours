@@ -21,19 +21,22 @@ export class SideMenuComponent {
     };
   }
 
-  getMethodClass(method: string): string {
-    switch (method.toUpperCase()) {
-      case 'GET':
-        return 'text-success'; 
-      case 'POST':
-        return 'text-warning'; 
-      case 'PUT':
-        return 'text-primary'; 
-      case 'DELETE':
-        return 'text-danger'; 
-      default:
-        return 'text-secondary'; 
-    }
+getMethodClass(method: string): string {
+  switch (method.toUpperCase()) {
+    case 'GET':
+      return 'text-success';    
+    case 'POST':
+      return 'text-warning';    
+    case 'PUT':
+      return 'text-primary';    
+    case 'PATCH':
+      return 'text-info';      
+    case 'DELETE':
+      return 'text-danger';     
+    default:
+      return 'text-secondary'; 
   }
+}
+
 }
 

@@ -1,18 +1,18 @@
-.form-select.text-success {
-  color: green;
-}
-.form-select.text-primary {
-  color: #0d6efd;
-}
-.form-select.text-danger {
-  color: #dc3545;
-}
-.form-select.text-warning {
-  color: #ffc107;
-}
-.form-select.text-info {
-  color: #0dcaf0;
-}
+// .form-select.text-success {
+//   color: green;
+// }
+// .form-select.text-primary {
+//   color: #0d6efd;
+// }
+// .form-select.text-danger {
+//   color: #dc3545;
+// }
+// .form-select.text-warning {
+//   color: #ffc107;
+// }
+// .form-select.text-info {
+//   color: #0dcaf0;
+// }
 
 
 .send-btn{
@@ -34,3 +34,23 @@ background-image:linear-gradient(to top, #EB3449, #F3482D);
   outline: none; 
   box-shadow: 0 0 0 3px #f3482d; 
   border: 1px solid #f3482d; }
+
+
+.text-success {
+  color: green !important;
+}
+.text-warning {
+  color: orange !important;
+}
+.text-primary {
+  color: blue !important;
+}
+.text-info {
+  color: deepskyblue !important;
+}
+.text-danger {
+  color: red !important;
+}
+.text-secondary {
+  color: gray !important;
+}

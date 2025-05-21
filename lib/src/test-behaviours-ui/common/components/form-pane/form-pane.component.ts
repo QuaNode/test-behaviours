@@ -23,20 +23,22 @@ export class FormPaneComponent  {
 selectedMethod: string = 'GET';
 
 getMethodClass(method: string): string {
-  switch (method.toLowerCase()) {
-    case 'get':
-      return 'text-success'; // أخضر
-    case 'post':
-      return 'text-primary'; // أزرق
-    case 'put':
-      return 'text-warning'; // أصفر
-    case 'patch':
-      return 'text-info'; // سماوي
-    case 'delete':
-      return 'text-danger'; // أحمر
+  switch (method.toUpperCase()) {
+    case 'GET':
+      return 'text-success';    
+    case 'POST':
+      return 'text-warning';    
+    case 'PUT':
+      return 'text-primary';    
+    case 'PATCH':
+      return 'text-info';      
+    case 'DELETE':
+      return 'text-danger';     
     default:
-      return 'text-secondary'; // رمادي
+      return 'text-secondary'; 
   }
 }
+
+
 
 }
