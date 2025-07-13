@@ -38,6 +38,7 @@ export class RequestsService {
         this.behaviours.ready(() => {
           const subscription = this.behaviours.behaviours({}).subscribe({
             next: (res: any) => {
+              console.log(res);
               this.requests.set(
                 Object.keys(res || {}).map((name) => ({
                   name,

@@ -1,13 +1,10 @@
-#readonlyEditor{
-    width: 100%;
-    height: 300px;
-      border: rgb(138, 134, 134) solid;
-}
-#multilineEditor{
-    width: 100%;
-    height: 300px;
-    margin-bottom: 50px;
-      border: rgb(138, 134, 134) solid;
+#readonlyEditor {
+  width: 100%;
+  height: 300px;
+  border: rgb(138, 134, 134) solid;
+  margin-top: 10px;
 }
 
-
+.bi {
+  color: #00e182;
+}

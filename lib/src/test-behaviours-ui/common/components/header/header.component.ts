@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { ExportService } from 'lib/src/test-behaviours-core/services/export-services/export.service';
+import { ExportService } from '../../../../test-behaviours-core/services/export-services/export.service';
 
 @Component({
   selector: 'app-header',

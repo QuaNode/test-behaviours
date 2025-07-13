@@ -12,8 +12,9 @@ import { EditorService } from '../../../services/editor.service';
 export class JsonTextAreaComponent implements OnInit {
   private requestsService = inject(RequestsService);
   private editorService = inject(EditorService);
-
-  multilineEditor!: ace.Ace.Editor;
+returns: any = {};
+  returnKeys: string[] = [];
+  // multilineEditor!: ace.Ace.Editor;
   readonlyEditor!: ace.Ace.Editor;
 
   ngOnInit() {
@@ -22,28 +23,24 @@ export class JsonTextAreaComponent implements OnInit {
 
   constructor() {
     effect(() => {
-      const data = this.requestsService.theRequest();
-      if (data && this.requestsService.isValidData()) {
-        const paramsJson = JSON.stringify(
-          data.parameters ?? '// No parameters',
-          null,
-          '\t'
-        );
-        const returnsJson = JSON.stringify(
-          data.returns ?? '// No return values',
-          null,
-          '\t'
-        );
-        this.multilineEditor.setValue(paramsJson);
-        this.readonlyEditor.setValue(returnsJson);
+    const data = this.requestsService.theRequest();
+    if (data && this.requestsService.isValidData()) {
+      this.returns = data.returns ?? { message: '// No return values' };
+      this.returnKeys = Object.keys(this.returns);
+
+      // Only set the editor value if it is initialized
+      if (this.readonlyEditor) {
+        const returnsJson = JSON.stringify(this.returns, null, '\t');
+        this.readonlyEditor.setValue(returnsJson, -1); // -1 keeps cursor at start
       }
-    });
+    }
+  });
   }
 
   private initEditors() {
     this.editorService.configureAce();
-    this.multilineEditor =
-      this.editorService.initializeMultilineEditor('multilineEditor');
+    // this.multilineEditor =
+    //   this.editorService.initializeMultilineEditor('multilineEditor');
     this.readonlyEditor =
       this.editorService.initializeReadonlyEditor('readonlyEditor');
   }

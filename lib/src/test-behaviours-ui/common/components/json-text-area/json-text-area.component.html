@@ -1,8 +1,11 @@
-<div class="row mx-4">
-  <div class="col-12">
-    <div class="editor-container">
-      <div id="multilineEditor"></div>
-      <div id="readonlyEditor"></div>
-    </div>
+<div class="json-preview">
+  @for (key of returnKeys; track key) {
+  <div>
+    <i class="bi bi-key-fill me-1"></i>
+    <span class="fw-bold">{{ key }}</span
+    >:
+    <code>{{ returns[key] | json }}</code>
   </div>
+  }
 </div>
+<div id="readonlyEditor"></div>

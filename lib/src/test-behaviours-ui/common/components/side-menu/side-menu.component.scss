@@ -1,13 +1,75 @@
-.navlink:focus,
-.navlink:focus-within {
-  outline: none;
-  box-shadow: 0 0 0 2px #292a2b; 
-  background-image:  linear-gradient(to top, #F3482D, #F3482D);
-  color:white;
-  
+.side-menu {
+  color: #6c757d;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #000;
+  }
+
+  &__list {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  &__item {
+    list-style: none;
+  }
+
+  &__link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    font-weight: bold;
+    background: transparent;
+    border: 0;
+    border-radius: 0.5rem;
+    text-align: start;
+
+    &:focus,
+    &:focus-within {
+      outline: none;
+      background-image: linear-gradient(to top, #2e7dff, #2e7dff);
+      color: white;
+    }
+
+    &--active {
+      background-image: linear-gradient(to top, #2e7dff, #2e7dff);
+      color: white;
+      border: none;
+    }
+  }
+
+  &__method {
+    font-weight: normal;
+  }
+
+  &__name {
+    font-weight: normal;
+  }
+
+  &__divider {
+    color: #000;
+    margin: 0.5rem 0;
+  }
 }
 
-.navlink.active {
-   background-image: linear-gradient(to top, #F3482D, #F3482D);
-  color: white;
+// OOCSS: reusable color classes
+.method-get {
+  color: #00e182;
+}
+.method-post {
+  color: #fbc02d;
+}
+.method-put {
+  color: #42a5f5;
+}
+.method-patch {
+  color: #ba68c8;
+}
+.method-delete {
+  color: #ef5350;
 }

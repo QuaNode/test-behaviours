@@ -1,38 +1,123 @@
-.form-select {
-  background-image: none;
+.request-form {
+  &__method-select {
+    background-image: none;
+    font-weight: bold;
+    padding: 0.5rem;
+    border-color: var(--bs-secondary-bg-subtle);
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px #f3482d;
+      border: 1px solid #f3482d;
+    }
+  }
+
+  &__url-input {
+    padding: 0.5rem;
+
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px #f3482d;
+      border: 1px solid #f3482d;
+    }
+  }
+
+  &__send-button {
+    background-image: linear-gradient(to top, #2e7dff, #2e7dff);
+    color: #fff;
+
+    &:focus {
+      background-image: linear-gradient(to top, #2e7dff, #2e7dff);
+    }
+  }
 }
 
-.form-select.text-success {
-  color: green;
+/* OOCSS-style method coloring */
+.method-get {
+  color: #00e182;
 }
-.form-select.text-primary {
-  color: #0d6efd;
+.method-post {
+  color: #fbc02d;
 }
-.form-select.text-danger {
-  color: #dc3545;
+.method-put {
+  color: #42a5f5;
 }
-.form-select.text-warning {
-  color: #ffc107;
+.method-patch {
+  color: #ba68c8;
 }
-.form-select.text-info {
-  color: #0dcaf0;
-}
-
-.send-btn {
-  background-image: linear-gradient(to top, #eb3449, #f3482d);
-}
-.send-btn:focus {
-  background-image: linear-gradient(to top, #eb3449, #f3482d);
+.method-delete {
+  color: #ef5350;
 }
 
-.form-control:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px #f3482d;
-  border: 1px solid #f3482d;
+/* Shared badge styling */
+.badge {
+  background-color: #f1f3f5;
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #212529;
+  border: 1px solid #ced4da;
+  transition: all 0.25s ease-in-out;
+  position: relative;
+
+  &--version,
+  &--prefix,
+  &--events {
+    &:hover {
+      background-color: #e9ecef;
+      color: #000;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      cursor: pointer;
+    }
+  }
+
+  &__tooltip {
+    visibility: hidden;
+    background-color: #343a40;
+    color: #fff;
+    text-align: center;
+    padding: 6px 10px;
+    border-radius: 5px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    position: absolute;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: #343a40 transparent transparent transparent;
+    }
+  }
+
+  &:hover .badge__tooltip {
+    visibility: visible;
+    opacity: 1;
+  }
 }
 
-.form-select:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px #f3482d;
-  border: 1px solid #f3482d;
+.badge--events-enabled i {
+  color: #28a745;
+}
+.badge--events-disabled i {
+  color: #adb5bd;
+}
+
+i {
+  color: #00e182;
 }
