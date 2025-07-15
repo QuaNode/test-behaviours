@@ -3,6 +3,11 @@ export interface BehavioursResponse {
   parameters?: any;
   returns?: any;
   method?: string;
+  version?:any;
+  path?:any;
+  prefix?: any;
+  events?: boolean;
+
 }
 
 export interface Request extends BehavioursResponse {

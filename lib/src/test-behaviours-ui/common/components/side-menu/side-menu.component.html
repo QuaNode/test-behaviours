@@ -1,6 +1,57 @@
 <div class="side-menu text-black-50">
   <h2 class="side-menu__title fs-3 fw-bold text-black">Requests</h2>
 
+  <!-- <button class="btn btn-secondary mb-3" (click)="showForm = true">+ New Request</button>
+
+<div *ngIf="showForm" class="card p-3 mb-3">
+  <input class="form-control mb-2" placeholder="Name" [(ngModel)]="newRequest.name" />
+
+  <div class="dropdown mb-2">
+    <button
+      class="btn form-select d-flex justify-content-between align-items-center"
+      type="button"
+      data-bs-toggle="dropdown"
+    >
+      <span [ngClass]="getMethodClass(newRequest.method)">
+        {{ newRequest.method || 'Select method' }}
+      </span>
+      <i class="bi bi-chevron-down"></i>
+    </button>
+    <ul class="dropdown-menu w-100">
+      <li *ngFor="let method of methods">
+        <button
+          type="button"
+          class="dropdown-item fw-bold"
+          [ngClass]="getMethodClass(method)"
+          (click)="newRequest.method = method"
+        >
+          {{ method }}
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <input class="form-control mb-2" placeholder="/path" [(ngModel)]="newRequest.path" />
+  <input class="form-control mb-2" placeholder="Version (e.g. 1.0)" [(ngModel)]="newRequest.version" />
+  <input class="form-control mb-2" placeholder="/prefix (e.g. /api/v1)" [(ngModel)]="newRequest.prefix" />
+
+  <div class="form-check form-switch mb-2">
+    <input type="checkbox" class="form-check-input" id="eventsToggle" [(ngModel)]="newRequest.events" />
+    <label for="eventsToggle" class="form-check-label">Enable Events</label>
+  </div>
+
+  <label class="form-label fw-bold">Parameters (JSON)</label>
+  <textarea class="form-control mb-2" rows="3" [(ngModel)]="newRequest.parametersJson"></textarea>
+
+  <label class="form-label fw-bold">Returns (JSON)</label>
+  <textarea class="form-control mb-2" rows="3" [(ngModel)]="newRequest.returnsJson"></textarea>
+
+  <div class="d-flex gap-2 mt-2">
+    <button class="btn btn-success" (click)="submitNewRequest()">Save</button>
+    <button class="btn btn-outline-secondary" (click)="showForm = false">Cancel</button>
+  </div>
+</div> -->
+
   <ul class="side-menu__list nav nav-pills flex-column mt-4">
     @for (request of requests(); track request; let i = $index) { @if
     (request.name !== 'behaviours') {
@@ -35,3 +86,9 @@
     } }
   </ul>
 </div>
+
+<!-- <div *ngIf="testResult" class="mt-3">
+  <h6 class="fw-bold">Generated Request JSON:</h6>
+  <pre>{{ testResult | json }}</pre>
+</div>
+<button class="btn btn-warning" (click)="testGenerateJson()">Test Generate JSON</button> -->

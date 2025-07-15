@@ -38,7 +38,6 @@ export class RequestsService {
         this.behaviours.ready(() => {
           const subscription = this.behaviours.behaviours({}).subscribe({
             next: (res: any) => {
-              console.log(res);
               this.requests.set(
                 Object.keys(res || {}).map((name) => ({
                   name,
@@ -71,6 +70,24 @@ export class RequestsService {
       this.request().name
     );
   });
+
+
+  addCustomRequest(name: string, data: Partial<Request>) {
+  const current = this.requests() ?? [];
+  const newRequest: BehavioursResponse = {
+    name,
+    version: data.version ?? '1',
+    method: data.method ?? 'GET',
+    path: data.path ?? '',
+    prefix: data.prefix ?? '',
+    events: data.events ?? false,
+    parameters: data.parameters ?? {},
+    returns: data.returns ?? {}
+  };
+
+  this.requests.set([...current, newRequest]);
+}
+
 
   // Martina
 
