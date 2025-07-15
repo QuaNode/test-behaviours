@@ -10,16 +10,15 @@
     border-right: 1px solid #dee2e6;
     min-height: 100vh;
     padding-top: 3rem;
-    background-color: #f8f9fa;
+    background-color: linear-gradient(to bottom, #fef7ed, #feefee);
+    // #fef7ed, 
   }
 
   &__content {
     padding-top: 0.5rem;
   }
 
-  &__offcanvas {
-    // Mobile menu
-  }
+  
 
   &__offcanvas-header {
     display: flex;

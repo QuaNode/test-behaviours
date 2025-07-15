@@ -22,6 +22,7 @@
     "bootstrap": "^5.3.0",
     "bootstrap-icons": "^1.13.1",
     "ng-behaviours": "^11.0.4",
+    "ngx-json-viewer": "^3.2.1",
     "popper.js": "^1.16.1",
     "rxjs": "^6.6.7",
     "rxjs-compat": "^6.6.7",
