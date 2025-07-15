@@ -15,18 +15,17 @@ export class ParametersAndReturnsComponent implements OnInit {
   parametersList: string[] = [];
   typesList: string[] = [];
 
-  // ✅ Response viewer logic
+  // Response viewer logic
   response: any = null;
   responseTime: number = 120;
-responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
-
+  responseView: 'json' | 'tree' = 'tree';
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
       parameters: this.fb.array([]),
     });
 
-    // ✅ Fetch data from backend
+    // Fetch data from backend
     effect(() => {
       const data = this.requestsService.theRequest();
 
@@ -36,14 +35,21 @@ responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
         this.parametersList = Object.keys(data.parameters);
         this.typesList = Array.from(new Set(Object.values(data.parameters)));
 
-        Object.entries(data.parameters).forEach(([paramName, paramData]: [string, any]) => {
-          const type = typeof paramData === 'object' && paramData?.type ? paramData.type : 'String';
-          this.parameters.push(this.fb.group({
-            paramName: [paramName],
-            value: [''],
-            type: [type]
-          }));
-        });
+        Object.entries(data.parameters).forEach(
+          ([paramName, paramData]: [string, any]) => {
+            const type =
+              typeof paramData === 'object' && paramData?.type
+                ? paramData.type
+                : 'String';
+            this.parameters.push(
+              this.fb.group({
+                paramName: [paramName],
+                value: [''],
+                type: [type],
+              })
+            );
+          }
+        );
       }
     });
   }
@@ -51,7 +57,7 @@ responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
   ngOnInit() {
     this.addRow();
 
-    // ✅ Mocked response to be shown
+    // Mocked response to be shown
     this.response = {
       status: 'success',
       data: {
@@ -59,8 +65,8 @@ responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
         name: 'Martina',
         date: '2025-07-14',
         token: 'abc123xyz',
-        roles: ['admin', 'editor']
-      }
+        roles: ['admin', 'editor'],
+      },
     };
   }
 
@@ -72,7 +78,7 @@ responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
     return this.fb.group({
       paramName: [{ value: 'id', disabled: true }],
       value: [''],
-      type: [{ value: 'String', disabled: true }]
+      type: [{ value: 'String', disabled: true }],
     });
   }
 
@@ -98,6 +104,4 @@ responseView: 'json' | 'tree' = 'tree'; // للتحكم في نوع العرض
 
     return result;
   }
-
-  
 }

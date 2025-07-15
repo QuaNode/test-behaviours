@@ -1,106 +1,103 @@
- <div class="parameters-and-returns-wrapper mx-4"><!-- 🔘 Parameters Form (Bootstrap + BEM + OOCSS) -->
-<div class="parameters-form__title mb-3">
-  <h4>Query Parameters</h4>
-</div>
+<div class="parameters-and-returns-wrapper mx-4">
+  <div class="parameters-form__title mb-3">
+    <h4>Query Parameters</h4>
+  </div>
 
-<form [formGroup]="form" class="parameters-form mb-4">
-  <div formArrayName="parameters">
-    <div
-      *ngFor="let row of parameters.controls; let i = index"
-      [formGroupName]="i"
-      class="parameters-form__row d-flex align-items-center mb-2 gap-2">
+  <form [formGroup]="form" class="parameters-form mb-4">
+    <div formArrayName="parameters">
+      <div
+        *ngFor="let row of parameters.controls; let i = index"
+        [formGroupName]="i"
+        class="parameters-form__row d-flex align-items-center mb-2 gap-2"
+      >
+        <!-- Parameter Dropdown (readonly) -->
+        <select
+          formControlName="paramName"
+          class="form-select parameters-form__dropdown"
+          readonly
+        >
+          <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
+        </select>
 
-<!-- Parameter Dropdown (readonly) -->
-    <select formControlName="paramName" class="form-select parameters-form__dropdown" readonly>
-      <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
-    </select>
+        <!-- Input Field -->
+        <input
+          class="form-control parameters-form__input"
+          formControlName="value"
+          placeholder="Enter value"
+        />
 
+        <!-- Type Dropdown (readonly) -->
+        <select
+          formControlName="type"
+          class="form-select parameters-form__dropdown"
+          readonly
+        >
+          <option [value]="row.get('type')?.value">
+            {{ row.get('type')?.value }}
+          </option>
+        </select>
 
-<!-- Input Field -->
-    <input
-      class="form-control parameters-form__input"
-      formControlName="value"
-      placeholder="Enter value"/>
+        <!-- Add / Remove Buttons -->
+        <div class="parameters-form__actions d-flex gap-1">
+          <!-- Add Button (Postman Style) -->
+          <button
+            type="button"
+            class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
+            (click)="addRow()"
+            title="Add"
+          >
+            <i class="bi bi-plus"></i>
+          </button>
 
-<!-- Type Dropdown (readonly) -->
-    <select formControlName="type" class="form-select parameters-form__dropdown" readonly>
-      <option [value]="row.get('type')?.value">{{ row.get('type')?.value }}</option>
-  </select>
-
-<!-- Add / Remove Buttons -->
-      <div class="parameters-form__actions d-flex gap-1">
-        <!-- ✅ Add Button (Postman Style) -->
-<button
-  type="button"
-  class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
-  (click)="addRow()"
-  title="Add"
->
-  <i class="bi bi-plus"></i>
-</button>
-
-<!-- ✅ Remove Button (Postman Style) -->
-<button
-  type="button"
-  class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
-  (click)="removeRow(i)"
-  [disabled]="parameters.length === 1"
-  title="Remove"
->
-  <i class="bi bi-dash"></i>
-</button>
-
+          <!-- Remove Button (Postman Style) -->
+          <button
+            type="button"
+            class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
+            (click)="removeRow(i)"
+            [disabled]="parameters.length === 1"
+            title="Remove"
+          >
+            <i class="bi bi-dash"></i>
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-</form>
+  </form>
 
-<!-- 🔘 Generated JSON Preview -->
-
-
-<!-- <div class="json-preview-form mb-4">
-  
-  <h5>Generated JSON from Form:</h5>
-  <pre>{{ jsonPreview | json }}</pre>
-</div>
-
-
-<div class="json-preview mb-3">
-  @for (key of returnKeys; track key) {
-    <div>
-      <i class="bi bi-key-fill me-1"></i>
-      <span class="fw-bold">{{ key }}</span>: 
-      <code>{{ returns[key] | json }}</code>
+  <!-- Response Viewer -->
+  <div
+    class="response-viewer card p-3 mb-4 shadow-sm border rounded"
+    *ngIf="response"
+  >
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="mb-0">Response</h5>
+      <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
+        <select
+          class="form-select form-select-sm w-auto"
+          [(ngModel)]="responseView"
+        >
+          <option value="json">JSON</option>
+          <option value="tree">Tree</option>
+        </select>
+      </div>
     </div>
-  }
-</div>
 
-
-<div id="readonlyEditor"></div> -->
- 
-<!-- ✅ Response Viewer -->
-<div class="response-viewer card p-3 mb-4 shadow-sm border rounded" *ngIf="response">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h5 class="mb-0">Response</h5>
-    <div class="d-flex align-items-center gap-2">
-      <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
-      <select class="form-select form-select-sm w-auto" [(ngModel)]="responseView">
-        <option value="json">JSON</option>
-        <option value="tree">Tree</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- 👁 JSON View -->
-  <pre
-    *ngIf="responseView === 'json'"
-    class="json-view bg-light text-dark p-3 rounded overflow-auto">
+    <!--  JSON View -->
+    <pre
+      *ngIf="responseView === 'json'"
+      class="json-view bg-light text-dark p-3 rounded overflow-auto"
+    >
 {{ response | json }}
-  </pre>
+  </pre
+    >
 
-  <!-- 🌲 Tree View -->
-  <div *ngIf="responseView === 'tree'" class="tree-view bg-light p-3 rounded overflow-auto">
-    <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+    <!--Tree View -->
+    <div
+      *ngIf="responseView === 'tree'"
+      class="tree-view bg-light p-3 rounded overflow-auto"
+    >
+      <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+    </div>
   </div>
 </div>
-</div> 
