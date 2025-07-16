@@ -35,7 +35,6 @@ export class FormPaneComponent {
     };
   });
 
-<<<<<<< HEAD
 
   exportPostmanCollection() {
   const collection = this.requestsService.generatePostmanCollection();
@@ -51,7 +50,6 @@ export class FormPaneComponent {
   URL.revokeObjectURL(url);
 }
 
-=======
   // Ameen Integration
   isSendEnabled(): boolean {
     return this.integrationService.hasParameters();
@@ -70,5 +68,4 @@ export class FormPaneComponent {
         );
     }
   }
->>>>>>> origin/Ameen-Elnaggar
 }
