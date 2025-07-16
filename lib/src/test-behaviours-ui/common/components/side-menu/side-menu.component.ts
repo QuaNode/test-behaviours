@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 @Component({
   selector: 'app-side-menu',
@@ -28,7 +28,6 @@ export class SideMenuComponent {
   constructor() {
     // ✅ Auto-select first request only when requests are ready
     effect(() => {
-      console.log(this.requestsService.theRequests());
       const reqs = this.requests();
       if (!reqs || reqs.length === 0 || this.selectedRequestIndex() !== null)
         return;

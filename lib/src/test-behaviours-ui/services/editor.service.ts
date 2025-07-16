@@ -14,13 +14,6 @@ export class EditorService {
     return editor;
   }
 
-  initializeMultilineEditor(elementId: string): ace.Ace.Editor {
-    const editor = this.createEditor(elementId);
-    editor.setTheme('ace/theme/monokai');
-    editor.getSession().setMode('ace/mode/json');
-    return editor;
-  }
-
   initializeReadonlyEditor(elementId: string): ace.Ace.Editor {
     const editor = this.createEditor(elementId);
     editor.setReadOnly(true);

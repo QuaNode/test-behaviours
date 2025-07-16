@@ -32,13 +32,13 @@ export class RequestsService {
   readonly theRequests = computed(() => this.requests());
   readonly theRequest = computed(() => this.request());
 
+  // Get The Main Requests
   constructor() {
     effect(() => {
       if (!this.requests()) {
         this.behaviours.ready(() => {
           const subscription = this.behaviours.behaviours({}).subscribe({
             next: (res: any) => {
-              console.log(res);
               this.requests.set(
                 Object.keys(res || {}).map((name) => ({
                   name,
@@ -90,4 +90,12 @@ export class RequestsService {
         return 'text-secondary'; // رمادي
     }
   });
+
+  // Ameen Integration
+
+  // isSendEnabled(): boolean {
+  //   return this.parameters.controls.some(
+  //     (control) => control.get('value')?.value
+  //   );
+  // }
 }
