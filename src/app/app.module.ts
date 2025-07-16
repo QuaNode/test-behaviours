@@ -20,7 +20,7 @@ export function getBehaviours(http: HttpClient) {
     AppRoutingModule,
     TestBehavioursUiModule,
     HttpClientModule,
-    FormsModule
+    FormsModule,
   ],
   providers: [
     {

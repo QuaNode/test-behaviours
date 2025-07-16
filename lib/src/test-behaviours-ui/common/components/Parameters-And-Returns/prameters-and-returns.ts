@@ -1,6 +1,16 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
-import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
+import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
+import { debounceTime } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -8,15 +18,18 @@ import { RequestsService } from '../../../../test-behaviours-core/services/data-
   styleUrls: ['./prameters-and-returns.scss'],
   standalone: false,
 })
-export class ParametersAndReturnsComponent implements OnInit {
+export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
+  private integrationService = inject(IntegrationService);
+
+  private lastParams: any = null;
+  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
   typesList: string[] = [];
 
-  // Response viewer logic
-  response: any = null;
+  response = signal<any>('');
   responseTime: number = 120;
   responseView: 'json' | 'tree' = 'tree';
 
@@ -25,13 +38,11 @@ export class ParametersAndReturnsComponent implements OnInit {
       parameters: this.fb.array([]),
     });
 
-    // Fetch data from backend
     effect(() => {
       const data = this.requestsService.theRequest();
 
       if (data?.parameters) {
         this.parameters.clear();
-
         this.parametersList = Object.keys(data.parameters);
         this.typesList = Array.from(new Set(Object.values(data.parameters)));
 
@@ -50,24 +61,21 @@ export class ParametersAndReturnsComponent implements OnInit {
             );
           }
         );
+        const initialParams = this.jsonPreview;
+        this.lastParams = initialParams;
+        this.integrationService.updateParameters(initialParams);
       }
     });
+
+    // Ameen Integration
+    effect(() => {
+      this.response = this.integrationService.responseSignal();
+    });
+    this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
-
-    // Mocked response to be shown
-    this.response = {
-      status: 'success',
-      data: {
-        id: 1,
-        name: 'Martina',
-        date: '2025-07-14',
-        token: 'abc123xyz',
-        roles: ['admin', 'editor'],
-      },
-    };
   }
 
   get parameters(): FormArray {
@@ -103,5 +111,24 @@ export class ParametersAndReturnsComponent implements OnInit {
     });
 
     return result;
+  }
+
+  // Ameen Integration
+  private setupFormChanges(): void {
+    this.valueChangesSubscription = this.parameters.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe(() => {
+        const currentParams = this.jsonPreview;
+        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
+          this.integrationService.updateParameters(currentParams);
+          this.lastParams = currentParams;
+        }
+      });
+  }
+
+  ngOnDestroy() {
+    if (this.valueChangesSubscription) {
+      this.valueChangesSubscription.unsubscribe();
+    }
   }
 }

@@ -32,6 +32,7 @@ export class RequestsService {
   readonly theRequests = computed(() => this.requests());
   readonly theRequest = computed(() => this.request());
 
+  // Get The Main Requests
   constructor() {
     effect(() => {
       if (!this.requests()) {
@@ -90,6 +91,7 @@ export class RequestsService {
     }
   });
 
+<<<<<<< HEAD:lib/src/test-behaviours-core/services/data-services/data.service.ts
   generatePostmanCollection() {
     const current = this.requests() ?? [];
 
@@ -147,4 +149,13 @@ export class RequestsService {
       item: items,
     };
   }
+=======
+  // Ameen Integration
+
+  // isSendEnabled(): boolean {
+  //   return this.parameters.controls.some(
+  //     (control) => control.get('value')?.value
+  //   );
+  // }
+>>>>>>> origin/Ameen-Elnaggar:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
 }
