@@ -71,24 +71,6 @@ export class RequestsService {
     );
   });
 
-
-  addCustomRequest(name: string, data: Partial<Request>) {
-  const current = this.requests() ?? [];
-  const newRequest: BehavioursResponse = {
-    name,
-    version: data.version ?? '1',
-    method: data.method ?? 'GET',
-    path: data.path ?? '',
-    prefix: data.prefix ?? '',
-    events: data.events ?? false,
-    parameters: data.parameters ?? {},
-    returns: data.returns ?? {}
-  };
-
-  this.requests.set([...current, newRequest]);
-}
-
-
   // Martina
 
   getMethodClass = computed(() => {
@@ -107,4 +89,62 @@ export class RequestsService {
         return 'text-secondary'; // رمادي
     }
   });
+
+  generatePostmanCollection() {
+    const current = this.requests() ?? [];
+
+    const items = current.map((def) => {
+      const method = def.method || 'GET';
+      const prefix = def.prefix || '';
+      const path = def.path || '';
+      const url = `${prefix}${path}`;
+
+      const headers = [];
+      const bodyParams: Record<string, any> = {};
+
+      for (const [key, param] of Object.entries(def.parameters ?? {}) as [
+        string,
+        { key: string; type: string }
+      ][]) {
+        if (param.type === 'header') {
+          headers.push({ key: param.key, value: '', type: 'text' });
+        }
+        if (param.type === 'body') {
+          bodyParams[param.key] = '';
+        }
+      }
+
+      const request: any = {
+        method: method.toUpperCase(),
+        header: headers,
+        url: {
+          raw: `{{baseUrl}}${url}`,
+          host: ['{{baseUrl}}'],
+          path: url.replace(/^\//, '').split('/'),
+        },
+      };
+
+      if (Object.keys(bodyParams).length) {
+        request.body = {
+          mode: 'raw',
+          raw: JSON.stringify(bodyParams, null, 2),
+          options: { raw: { language: 'json' } },
+        };
+      }
+
+      return {
+        name: def.name,
+        request,
+      };
+    });
+
+    return {
+      info: {
+        name: 'Converted API Collection',
+        schema:
+          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+      },
+      item: items,
+    };
+  }
 }
