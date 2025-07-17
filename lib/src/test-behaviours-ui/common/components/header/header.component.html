@@ -11,6 +11,7 @@
       data-bs-target="#sideMenu"
       aria-controls="sideMenu"
       aria-label="Open Sidebar Navigation"
+      
     >
       ☰
     </button>
@@ -29,6 +30,7 @@
         class="btn navbar__export-button text-white fw-medium button-base"
         (click)="export()"
         aria-label="Export Data as JSON"
+        (click)="exportPostmanCollection()"
       >
         Export
       </button>

@@ -94,7 +94,6 @@ export class RequestsService {
   generatePostmanCollection() {
   const current = this.requests() ?? [];
 
-  // ✅ Exclude 'behaviours' from export
   const filtered = current.filter((def) => def.name !== 'behaviours');
 
   const items = filtered.map((def) => {

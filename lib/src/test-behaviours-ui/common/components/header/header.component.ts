@@ -1,5 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { ExportService } from '../../../../test-behaviours-core/services/export-services/export.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 @Component({
   selector: 'app-header',
@@ -9,6 +10,7 @@ import { ExportService } from '../../../../test-behaviours-core/services/export-
 })
 export class HeaderComponent {
   private exportsService = inject(ExportService);
+  private requestsService = inject(RequestsService);
 
   fileUrl = this.exportsService.fileUrl;
 
@@ -18,5 +20,19 @@ export class HeaderComponent {
 
   ngOnDestroy() {
     this.exportsService.clearBlobUrl();
+  }
+
+  exportPostmanCollection() {
+    const collection = this.requestsService.generatePostmanCollection();
+    const blob = new Blob([JSON.stringify(collection, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'Behaviours';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 }
