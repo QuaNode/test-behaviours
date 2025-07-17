@@ -92,62 +92,66 @@ export class RequestsService {
   });
 
   generatePostmanCollection() {
-    const current = this.requests() ?? [];
+  const current = this.requests() ?? [];
 
-    const items = current.map((def) => {
-      const method = def.method || 'GET';
-      const prefix = def.prefix || '';
-      const path = def.path || '';
-      const url = `${prefix}${path}`;
+  // ✅ Exclude 'behaviours' from export
+  const filtered = current.filter((def) => def.name !== 'behaviours');
 
-      const headers = [];
-      const bodyParams: Record<string, any> = {};
+  const items = filtered.map((def) => {
+    const method = def.method || 'GET';
+    const prefix = def.prefix || '';
+    const path = def.path || '';
+    const url = `${prefix}${path}`;
 
-      for (const [key, param] of Object.entries(def.parameters ?? {}) as [
-        string,
-        { key: string; type: string }
-      ][]) {
-        if (param.type === 'header') {
-          headers.push({ key: param.key, value: '', type: 'text' });
-        }
-        if (param.type === 'body') {
-          bodyParams[param.key] = '';
-        }
+    const headers = [];
+    const bodyParams: Record<string, any> = {};
+
+    for (const [key, param] of Object.entries(def.parameters ?? {}) as [
+      string,
+      { key: string; type: string }
+    ][]) {
+      if (param.type === 'header') {
+        headers.push({ key: param.key, value: '', type: 'text' });
       }
-
-      const request: any = {
-        method: method.toUpperCase(),
-        header: headers,
-        url: {
-          raw: `{{baseUrl}}${url}`,
-          host: ['{{baseUrl}}'],
-          path: url.replace(/^\//, '').split('/'),
-        },
-      };
-
-      if (Object.keys(bodyParams).length) {
-        request.body = {
-          mode: 'raw',
-          raw: JSON.stringify(bodyParams, null, 2),
-          options: { raw: { language: 'json' } },
-        };
+      if (param.type === 'body') {
+        bodyParams[param.key] = '';
       }
+    }
 
-      return {
-        name: def.name,
-        request,
+    const request: any = {
+      method: method.toUpperCase(),
+      header: headers,
+      url: {
+        raw: `{{baseUrl}}${url}`,
+        host: ['{{baseUrl}}'],
+        path: url.replace(/^\//, '').split('/'),
+      },
+    };
+
+    if (Object.keys(bodyParams).length) {
+      request.body = {
+        mode: 'raw',
+        raw: JSON.stringify(bodyParams, null, 2),
+        options: { raw: { language: 'json' } },
       };
-    });
+    }
 
     return {
-      info: {
-        name: 'Converted API Collection',
-        schema:
-          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-      },
-      item: items,
+      name: def.name,
+      request,
     };
-  }
+  });
+
+  return {
+    info: {
+      name: 'Converted API Collection',
+      schema:
+        'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+    },
+    item: items,
+  };
+}
+
   // Ameen Integration
 
   // isSendEnabled(): boolean {
