@@ -6,25 +6,25 @@
     "test": "test"
   },
   "peerDependencies": {
-    "@angular/common": ">=2.0.0",
-    "@angular/core": ">=2.0.0",
-    "@angular/forms": ">=2.0.0",
-    "@angular/router": ">=2.0.0",
-    "rxjs": ">=5.0.0"
+    "@angular/common": ">=16.1.0",
+    "@angular/core": ">=16.1.0",
+    "@angular/forms": ">=16.1.0",
+    "@angular/router": ">=16.1.0",
+    "rxjs": ">=7.8.0"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/QuaNode/test-behaviours.git"
-},
-"keywords": [
-    "test","behaviour","api"
-],
-"author": "",
-"license": "MIT",
-"bugs": {
+  },
+  "keywords": [
+    "test",
+    "behaviour",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
     "url": "https://github.com/QuaNode/test-behaviours/issues"
-},
-"homepage": "https://github.com/QuaNode/test-behaviours#readme"
-
-
+  },
+  "homepage": "https://github.com/QuaNode/test-behaviours#readme"
 }

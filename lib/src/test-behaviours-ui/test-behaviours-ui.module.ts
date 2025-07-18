@@ -4,18 +4,32 @@ import { SideMenuComponent } from './common/components/side-menu/side-menu.compo
 import { FormPaneComponent } from './common/components/form-pane/form-pane.component';
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
-import { JsonTextAreaComponent } from './common/components/json-text-area/json-text-area.component';
-import { FormsModule } from '@angular/forms';
+import { ParametersAndReturnsComponent } from './common/components/Parameters-And-Returns/prameters-and-returns';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { HeaderComponent } from './common/components/header/header.component';
+import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.module';
+import { VersionFormatPipe } from './common/pipe/format-version.pipe';
+import { StringifyPipe } from './common/pipe/stringify.pipe';
+import { NgxJsonViewerModule } from 'ngx-json-viewer';
 
 @NgModule({
   declarations: [
     SideMenuComponent,
     FormPaneComponent,
     DropDownDirective,
-    JsonTextAreaComponent,
+    ParametersAndReturnsComponent,
     LayoutComponent,
+    HeaderComponent,
+    VersionFormatPipe,
+    StringifyPipe,
   ],
-  imports: [CommonModule, FormsModule],
-  exports: [LayoutComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    TestBehavioursUiRoutingModule,
+    ReactiveFormsModule,
+    NgxJsonViewerModule,
+  ],
+  exports: [LayoutComponent, HeaderComponent, StringifyPipe],
 })
 export class TestBehavioursUiModule {}

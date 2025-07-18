@@ -1,9 +1,15 @@
-<div class="row mt-3">
-  <div class="d-grid d-lg-flex m-auto gap-lg-3">
-    <div class="col-md-2 m-md-auto">
+<div class="request-form row mt-3">
+  <div class="request-form__layout d-grid d-lg-flex m-auto gap-lg-3">
+    <div class="request-form__method col-md-2 m-md-auto">
       <select
-        class="form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold"
-        [class]="methodClass()"
+        class="request-form__method-select form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold"
+        [ngClass]="{
+          'method-get': requestData().method === 'GET',
+          'method-post': requestData().method === 'POST',
+          'method-put': requestData().method === 'PUT',
+          'method-patch': requestData().method === 'PATCH',
+          'method-delete': requestData().method === 'DELETE'
+        }"
         disabled
       >
         <option selected>
@@ -11,21 +17,23 @@
         </option>
       </select>
     </div>
-    <div class="col-md-8 m-md-auto">
+
+    <div class="request-form__url col-md-8 m-md-auto">
       <input
         type="text"
-        class="form-control mb-3 mt-3 p-2"
+        class="request-form__url-input form-control mb-3 mt-3 p-2"
         [value]="requestData().url"
         placeholder="Enter request url"
         disabled
       />
     </div>
 
-    <div class="row gap-sm-4 gap-md-0 text-center">
+    <div class="request-form__actions row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
-        <div class="btn-group w-100">
+        <div class="request-form__send-group btn-group w-100">
           <button
-            class="btn send-btn dropdown-toggle text-white"
+            class="request-form__send-button btn dropdown-toggle text-white"
+            [disabled]="!isSendEnabled()"
             type="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
@@ -34,7 +42,11 @@
           </button>
           <ul class="dropdown-menu">
             <li>
-              <button class="dropdown-item text-dark" type="button">
+              <button
+                class="dropdown-item text-dark"
+                type="button"
+                (click)="onSend()"
+              >
                 Send And Download
               </button>
             </li>
@@ -46,24 +58,46 @@
 
   @if (requestData().isValid) {
   <div
-    class="d-flex flex-wrap align-items-center gap-3 mt-3 px-2 justify-content-center"
+    class="request-form__badges d-flex flex-wrap align-items-center gap-3 mt-4 px-2 justify-content-center"
   >
-    <span class="badge text-bg-light"
-      ><strong>Version:</strong>
-      <span class="span1">{{ requestData().version }}</span></span
+    @if (requestData().version) {
+    <span class="badge badge--version shadow-sm">
+      <i class="bi bi-code-slash"></i>
+      {{ requestData().version | versionFormat }}
+      <span class="badge__tooltip">Version</span>
+    </span>
+    } @if (requestData().prefix) {
+    <span class="badge badge--prefix shadow-sm">
+      <i class="bi bi-link-45deg me-2"></i>
+      {{ requestData().prefix }}
+      <span class="badge__tooltip">Path prefix</span>
+    </span>
+    } @if (requestData().events !== null && requestData().events !== undefined)
+    {
+    <span
+      class="badge badge--events shadow-sm"
+      [ngClass]="{
+        'badge--events-enabled': requestData().events,
+        'badge--events-disabled': !requestData().events
+      }"
     >
-    <span class="badge text-bg-light"
-      ><strong>Prefix:</strong>
-      <span class="span1">{{ requestData().prefix }}</span></span
-    >
-    <span class="badge text-bg-light"
-      ><strong>Events:</strong>
-      <span class="span1">{{ requestData().events }}</span></span
-    >
+      <i
+        class="bi bi-broadcast-pin"
+        [ngClass]="{
+          'text-success': requestData().events,
+          'text-secondary': !requestData().events
+        }"
+      ></i>
+      <strong>Events</strong>
+      <span class="badge__tooltip">
+        {{ requestData().events ? "Events Enabled" : "Events Disabled" }}
+      </span>
+    </span>
+    }
   </div>
   }
 
-  <div class="mt-5 mb-5">
-    <app-json-text-area></app-json-text-area>
+  <div class="request-form__json mt-5 mb-5">
+    <app-parameters-and-returns></app-parameters-and-returns>
   </div>
 </div>

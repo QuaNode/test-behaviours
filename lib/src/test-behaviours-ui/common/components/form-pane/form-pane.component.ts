@@ -1,8 +1,10 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 
-import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 import { environment } from '../../../../../src/environment/environment';
+import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
+import { Behaviours } from 'ng-behaviours';
 
 @Component({
   selector: 'app-form-pane',
@@ -12,6 +14,9 @@ import { environment } from '../../../../../src/environment/environment';
 })
 export class FormPaneComponent {
   private requestsService = inject(RequestsService);
+  private integrationService = inject(IntegrationService);
+  private behaviours = inject(Behaviours);
+
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
   });
@@ -26,6 +31,26 @@ export class FormPaneComponent {
       prefix: request?.prefix ?? '',
       events: request?.events ?? false,
       isValid,
+      name: request.name,
     };
   });
+
+  // Ameen Integration
+  isSendEnabled(): boolean {
+    return this.integrationService.hasParameters();
+  }
+
+  onSend() {
+    const params = this.integrationService.parameters;
+    if (params) {
+      this.behaviours
+        .getBehaviour(this.requestData().name)(params)
+        .subscribe(
+          (response: any) => {
+            return this.integrationService.updateResponse(response);
+          },
+          (error: any) => console.error('Error:', error)
+        );
+    }
+  }
 }
