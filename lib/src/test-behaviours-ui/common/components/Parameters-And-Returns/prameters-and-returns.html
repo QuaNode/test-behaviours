@@ -6,7 +6,7 @@
 
   <!-- Parameters Form -->
   <form [formGroup]="form" class="parameters-form mb-4">
-    <div formArrayName="parameters">
+    <ng-container formArrayName="parameters">
       <div
         *ngFor="let row of parameters.controls; let i = index"
         [formGroupName]="i"
@@ -22,26 +22,30 @@
         </select>
 
         <!-- Input Field -->
-        <input
-          class="form-control parameters-form__input mb-2 gap-2"
-          formControlName="value"
-          placeholder="Enter value"
-        />
+        <!-- Input Field + Error + Hint Messages -->
+        <div class="flex-grow-1 d-flex flex-column">
+          <!-- Input Field -->
+          <input
+            class="form-control parameters-form__input mb-1"
+            formControlName="value"
+            placeholder="Enter value"
+          />
 
-        <!-- Error Message -->
-        <div
-          class="text-danger mt-1 small"
-          *ngIf="row.get('value')?.hasError('invalidJson')"
-        >
-          Please enter a valid JSON object.
-        </div>
+          <!-- Error Message -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('value')?.hasError('invalidJson')"
+          >
+            Please enter a valid JSON object.
+          </div>
 
-        <!-- Hint Message Under Input -->
-        <div
-          class="text-danger   mt-1 small"
-          *ngIf="row.get('type')?.value === 'Object'"
-        >
-          Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
+          <!-- Hint Message Under Input -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('type')?.value === 'Object'"
+          >
+            Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
+          </div>
         </div>
 
         <!-- Type Dropdown -->
@@ -84,7 +88,7 @@
           </button>
         </div>
       </div>
-    </div>
+    </ng-container>
   </form>
 
   <!-- Response Viewer -->
@@ -98,7 +102,17 @@
       </h5>
 
       <div class="d-flex align-items-center gap-2">
+        <button
+          *ngIf="responseView === 'json'"
+          class="btn btn-link btn-sm"
+          (click)="copyJsonToClipboard()"
+          title="Copy to clipboard"
+        >
+          <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
+          <span class="visually-hidden">Copy JSON</span>
+        </button>
         <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
+
         <select
           class="form-select form-select-sm w-auto"
           [(ngModel)]="responseView"
@@ -140,6 +154,13 @@
           [expanded]="true"
         ></ngx-json-viewer>
       </div>
+    </div>
+    <div
+      *ngIf="responseView === 'json' && copied"
+      class="alert alert-success mt-2 p-1 py-2"
+      role="alert"
+    >
+      Copied!
     </div>
   </div>
 </div>

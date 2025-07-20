@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormPaneComponent } from './form-pane.component';
+import { FormPaneComponent } from './behaviour-details.component';
 
 describe('FormPaneComponent', () => {
   let component: FormPaneComponent;

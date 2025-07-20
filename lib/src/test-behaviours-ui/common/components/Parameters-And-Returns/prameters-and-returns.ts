@@ -1,16 +1,7 @@
-import {
-  Component,
-  effect,
-  inject,
-  OnInit,
-  OnDestroy,
-  signal,
-} from '@angular/core';
+
+import { Component, effect, inject, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-import { debounceTime } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
-import {FormBuilder,FormGroup,FormArray} from '@angular/forms';
 
 type ParameterDefinition = {
   type: string;
@@ -23,25 +14,20 @@ type ParameterDefinition = {
   styleUrls: ['./prameters-and-returns.scss'],
   standalone: false,
 })
-export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
+export class ParametersAndReturnsComponent implements OnInit {
   private requestsService = inject(RequestsService);
-  private integrationService = inject(IntegrationService);
-
-  private lastParams: any = null;
-  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
-  typesList: string[] = ['String', 'Number', 'Date', 'Object']; 
-
-  // response = signal<any>('');
-  
+  typesList: string[] = ['String', 'Number', 'Date', 'Object'];
   response: any = null;
   returns: any = {};
   returnKeys: string[] = [];
   responseTime: number = 120;
-  responseView: 'returns' | 'json' | 'tree' = 'returns'; 
+  responseView: 'returns' | 'json' | 'tree' = 'returns';
   valueTouched: boolean = false;
+  currentView: 'json' | 'table' = 'json';
+  copied = false;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -55,27 +41,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       if (data?.parameters) {
         console.log('Filtered Parameters:', data.parameters);
         this.parameters.clear();
-        this.parametersList = Object.keys(data.parameters);
-        this.typesList = Array.from(new Set(Object.values(data.parameters)));
-
-        Object.entries(data.parameters).forEach(
-          ([paramName, paramData]: [string, any]) => {
-            const type =
-              typeof paramData === 'object' && paramData?.type
-                ? paramData.type
-                : 'String';
-            this.parameters.push(
-              this.fb.group({
-                paramName: [paramName],
-                value: [''],
-                type: [type],
-              })
-            );
-          }
-        );
-        const initialParams = this.jsonPreview;
-        this.lastParams = initialParams;
-        this.integrationService.updateParameters(initialParams);
 
         const filteredParams = Object.entries(data.parameters).filter(
           ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
@@ -95,12 +60,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         });
       }
     });
-
-    // Ameen Integration
-    effect(() => {
-      this.response = this.integrationService.responseSignal();
-    });
-    this.setupFormChanges();
   }
 
   ngOnInit() {
@@ -201,23 +160,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // Ameen Integration
-  private setupFormChanges(): void {
-    this.valueChangesSubscription = this.parameters.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        const currentParams = this.jsonPreview;
-        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
-          this.integrationService.updateParameters(currentParams);
-          this.lastParams = currentParams;
-        }
-      });
-  }
-
-  ngOnDestroy() {
-    if (this.valueChangesSubscription) {
-      this.valueChangesSubscription.unsubscribe();
-    }}
   isPrimitive(value: any): boolean {
     return typeof value !== 'object' || value === null;
   }
@@ -242,5 +184,16 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     } catch {
       return false;
     }
+  }
+
+  // copy JSON to clipboard
+  copyJsonToClipboard() {
+    const jsonString = JSON.stringify(this.response, null, 2);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000);
+    });
   }
 }

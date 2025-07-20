@@ -33,7 +33,6 @@
         <div class="request-form__send-group btn-group w-100">
           <button
             class="request-form__send-button btn dropdown-toggle text-white"
-            [disabled]="!isSendEnabled()"
             type="button"
             data-bs-toggle="dropdown"
             aria-expanded="false"
@@ -42,11 +41,7 @@
           </button>
           <ul class="dropdown-menu">
             <li>
-              <button
-                class="dropdown-item text-dark"
-                type="button"
-                (click)="onSend()"
-              >
+              <button class="dropdown-item text-dark" type="button">
                 Send And Download
               </button>
             </li>

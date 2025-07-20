@@ -1,7 +1,6 @@
 import { NgModule,ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
-import { FormPaneComponent } from './common/components/form-pane/form-pane.component';
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
 import { ParametersAndReturnsComponent } from './common/components/Parameters-And-Returns/prameters-and-returns';
@@ -12,12 +11,12 @@ import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { TEST_BEHAVIOURS_UI_CONFIG, TestBehavioursUiConfig } from './config/test-behaviours-ui-config';
-
+import { BehaviourDetailsComponent } from './common/components/behaviour-details/behaviour-details.component';
 
 @NgModule({
   declarations: [
     SideMenuComponent,
-    FormPaneComponent,
+    BehaviourDetailsComponent,
     DropDownDirective,
     ParametersAndReturnsComponent,
     LayoutComponent,
