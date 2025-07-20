@@ -4,7 +4,6 @@ import { RequestsService } from '../../../../test-behaviours-core/services/reque
 
 import { environment } from '../../../../../src/environment/environment';
 import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-import { Behaviours } from 'ng-behaviours';
 
 @Component({
   selector: 'app-form-pane',
@@ -15,7 +14,6 @@ import { Behaviours } from 'ng-behaviours';
 export class FormPaneComponent {
   private requestsService = inject(RequestsService);
   private integrationService = inject(IntegrationService);
-  private behaviours = inject(Behaviours);
 
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
@@ -41,16 +39,6 @@ export class FormPaneComponent {
   }
 
   onSend() {
-    const params = this.integrationService.parameters;
-    if (params) {
-      this.behaviours
-        .getBehaviour(this.requestData().name)(params)
-        .subscribe(
-          (response: any) => {
-            return this.integrationService.updateResponse(response);
-          },
-          (error: any) => console.error('Error:', error)
-        );
-    }
+    this.integrationService.sendAndDownload(this.requestData());
   }
 }
