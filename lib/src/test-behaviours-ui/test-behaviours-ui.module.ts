@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
-import { FormPaneComponent } from './common/components/form-pane/form-pane.component';
+import { BehaviourDetailsComponent  } from './common/components/behaviour-details/behaviour-details.component';
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
 import { ParametersAndReturnsComponent } from './common/components/Parameters-And-Returns/prameters-and-returns';
@@ -15,7 +15,7 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
 @NgModule({
   declarations: [
     SideMenuComponent,
-    FormPaneComponent,
+    BehaviourDetailsComponent ,
     DropDownDirective,
     ParametersAndReturnsComponent ,
     LayoutComponent,

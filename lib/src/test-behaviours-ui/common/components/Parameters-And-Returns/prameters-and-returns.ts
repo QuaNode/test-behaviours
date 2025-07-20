@@ -1,5 +1,5 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
-import {FormBuilder,FormGroup,FormArray} from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
 
 type ParameterDefinition = {
@@ -18,15 +18,15 @@ export class ParametersAndReturnsComponent implements OnInit {
 
   form: FormGroup;
   parametersList: string[] = [];
-  typesList: string[] = ['String', 'Number', 'Date', 'Object']; 
-
-  
+  typesList: string[] = ['String', 'Number', 'Date', 'Object'];
   response: any = null;
   returns: any = {};
   returnKeys: string[] = [];
   responseTime: number = 120;
-  responseView: 'returns' | 'json' | 'tree' = 'returns'; 
+  responseView: 'returns' | 'json' | 'tree' = 'returns';
   valueTouched: boolean = false;
+  currentView: 'json' | 'table' = 'json';
+  copied = false;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -183,5 +183,16 @@ export class ParametersAndReturnsComponent implements OnInit {
     } catch {
       return false;
     }
+  }
+
+  // copy JSON to clipboard
+  copyJsonToClipboard() {
+    const jsonString = JSON.stringify(this.response, null, 2);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000);
+    });
   }
 }

@@ -2,15 +2,15 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { RequestsService } from '../../../../test-behaviours-core/services/data-services/data.service';
 
-import { environment } from '../../../../../src/environment/environment';
+import { environment } from '../../../../environment/environment';
 
 @Component({
-  selector: 'app-form-pane',
-  templateUrl: './form-pane.component.html',
-  styleUrls: ['./form-pane.component.scss'],
+  selector: 'app-behaviour-details',
+  templateUrl: './behaviour-details.component.html',
+  styleUrls: ['./behaviour-details.component.scss'],
   standalone: false,
 })
-export class FormPaneComponent {
+export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
