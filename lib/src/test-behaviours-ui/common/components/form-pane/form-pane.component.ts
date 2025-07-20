@@ -26,7 +26,6 @@ export class FormPaneComponent implements OnInit {
   private router = inject(Router);
   private requestsService = inject(RequestsService);
   private integrationService = inject(IntegrationService);
-  private behaviours = inject(Behaviours);
 
   ngOnInit(): void {
     const route = this.config?.defaultRoute;
@@ -79,17 +78,7 @@ export class FormPaneComponent implements OnInit {
   }
 
   onSend() {
-    const params = this.integrationService.parameters;
-    if (params) {
-      this.behaviours
-        .getBehaviour(this.requestData().name)(params)
-        .subscribe(
-          (response: any) => {
-            return this.integrationService.updateResponse(response);
-          },
-          (error: any) => console.error('Error:', error)
-        );
+    this.integrationService.sendAndDownload(this.requestData());
     }
-  }
 
 }
