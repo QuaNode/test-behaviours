@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule,ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
 import { FormPaneComponent } from './common/components/form-pane/form-pane.component';
@@ -11,6 +11,8 @@ import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.modu
 import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
+import { TEST_BEHAVIOURS_UI_CONFIG, TestBehavioursUiConfig } from './config/test-behaviours-ui-config';
+
 
 @NgModule({
   declarations: [
@@ -32,4 +34,13 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
   ],
   exports: [LayoutComponent, HeaderComponent, StringifyPipe],
 })
-export class TestBehavioursUiModule {}
+export class TestBehavioursUiModule {
+  static config(config: TestBehavioursUiConfig): ModuleWithProviders<TestBehavioursUiModule> {
+    return {
+      ngModule: TestBehavioursUiModule,
+      providers: [
+        { provide: TEST_BEHAVIOURS_UI_CONFIG, useValue: config }
+      ]
+    };
+  }
+}

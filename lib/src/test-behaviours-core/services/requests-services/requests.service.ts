@@ -96,24 +96,51 @@ export class RequestsService {
 
   const filtered = current.filter((def) => def.name !== 'behaviours');
 
+  // Sample default values per parameter key
+  const sampleValues: Record<string, string> = {
+    email: 'user@example.com',
+    password: 'secret123',
+    firstName: 'Mahmoud',
+    lastName: 'Rabea',
+    mobile: '0123456789',
+    token: 'test-token',
+    'X-Access-Token': 'test-token',
+    userId: '123',
+    active: 'true'
+  };
+
   const items = filtered.map((def) => {
     const method = def.method || 'GET';
+    let path = def.path || '';
     const prefix = def.prefix || '';
-    const path = def.path || '';
     const url = `${prefix}${path}`;
 
-    const headers = [];
+    const headers: any[] = [];
     const bodyParams: Record<string, any> = {};
+    const queryParams: any[] = [];
+    const pathParams: string[] = [];
 
+    // Handle parameters
     for (const [key, param] of Object.entries(def.parameters ?? {}) as [
       string,
       { key: string; type: string }
     ][]) {
-      if (param.type === 'header') {
-        headers.push({ key: param.key, value: '', type: 'text' });
-      }
-      if (param.type === 'body') {
-        bodyParams[param.key] = '';
+      const sampleValue = sampleValues[param.key] ?? `{{${param.key}}}`;
+
+      switch (param.type) {
+        case 'header':
+          headers.push({ key: param.key, value: sampleValue, type: 'text' });
+          break;
+        case 'body':
+          bodyParams[param.key] = sampleValue;
+          break;
+        case 'query':
+          queryParams.push({ key: param.key, value: sampleValue });
+          break;
+        case 'path':
+          // Replace path param like :userId with sample value
+          path = path.replace(`:${param.key}`, sampleValue);
+          break;
       }
     }
 
@@ -121,35 +148,37 @@ export class RequestsService {
       method: method.toUpperCase(),
       header: headers,
       url: {
-        raw: `{{baseUrl}}${url}`,
-        host: ['{{baseUrl}}'],
-        path: url.replace(/^\//, '').split('/'),
-      },
+        raw: `http://localhost:8282${path}${queryParams.length ? '?' + queryParams.map(p => `${p.key}=${p.value}`).join('&') : ''}`,
+        host: ['localhost'],
+        port: '8282',
+        path: path.replace(/^\//, '').split('/'),
+        query: queryParams.length ? queryParams : undefined
+      }
     };
 
-    if (Object.keys(bodyParams).length) {
+    if (Object.keys(bodyParams).length && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
       request.body = {
         mode: 'raw',
         raw: JSON.stringify(bodyParams, null, 2),
-        options: { raw: { language: 'json' } },
+        options: { raw: { language: 'json' } }
       };
     }
 
     return {
       name: def.name,
-      request,
+      request
     };
   });
 
   return {
     info: {
       name: 'Converted API Collection',
-      schema:
-        'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+      schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json'
     },
-    item: items,
+    item: items
   };
 }
+
 
   // Ameen Integration
 

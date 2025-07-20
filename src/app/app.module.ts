@@ -18,7 +18,10 @@ export function getBehaviours(http: HttpClient) {
   imports: [
     BrowserModule,
     AppRoutingModule,
-    TestBehavioursUiModule,
+    TestBehavioursUiModule.config({
+      defaultRoute: '/custom-route',
+      showHeader: true
+    }),
     HttpClientModule,
     FormsModule,
   ],
