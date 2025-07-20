@@ -21,17 +21,19 @@ import { Subscription } from 'rxjs';
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
   private integrationService = inject(IntegrationService);
-
   private lastParams: any = null;
   private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
-  typesList: string[] = [];
-
-  response = signal<any>('');
+  typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
+  response = this.integrationService.responseSignal();
   responseTime: number = 120;
-  responseView: 'json' | 'tree' = 'tree';
+
+  responseView: 'json' | 'tree' | 'returns' = 'returns';
+  returns: any = {};
+  returnKeys: string[] = [];
+  copied = false;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -43,39 +45,61 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
       if (data?.parameters) {
         this.parameters.clear();
-        this.parametersList = Object.keys(data.parameters);
-        this.typesList = Array.from(new Set(Object.values(data.parameters)));
 
-        Object.entries(data.parameters).forEach(
-          ([paramName, paramData]: [string, any]) => {
-            const type =
-              typeof paramData === 'object' && paramData?.type
-                ? paramData.type
-                : 'String';
-            this.parameters.push(
-              this.fb.group({
-                paramName: [paramName],
-                value: [''],
-                type: [type],
-              })
-            );
-          }
+        const filteredParams = Object.entries(data.parameters).filter(
+          ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
         );
-        const initialParams = this.jsonPreview;
-        this.lastParams = initialParams;
-        this.integrationService.updateParameters(initialParams);
+
+        this.parametersList = filteredParams.map(([paramName]) => paramName);
+        filteredParams.forEach(([paramName, paramData]: [string, any]) => {
+          const type = paramData?.type || 'String';
+
+          this.parameters.push(
+            this.fb.group({
+              paramName: [paramName],
+              value: [''],
+              type: [''],
+            })
+          );
+          const initialParams = this.jsonPreview;
+          this.lastParams = initialParams;
+          this.integrationService.updateParameters(initialParams);
+        });
       }
     });
 
     // Ameen Integration
     effect(() => {
       this.response = this.integrationService.responseSignal();
+      this.returns = this.response;
+      this.returnKeys = Object.keys(this.returns);
     });
     this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      group.get('value')?.valueChanges.subscribe((val) => {
+        const type = group.get('type')?.value;
+        console.log(type);
+        if (type === 'Object') {
+          try {
+            JSON.parse(val);
+            group.get('value')?.setErrors(null);
+          } catch (e) {
+            group.get('value')?.setErrors({ invalidJson: true });
+          }
+        } else {
+          group.get('value')?.setErrors(null);
+        }
+      });
+    });
+    if (this.response) {
+      this.returns = this.response;
+      this.returnKeys = Object.keys(this.returns);
+    }
   }
 
   get parameters(): FormArray {
@@ -102,11 +126,34 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   get jsonPreview(): any {
     const result: any = {};
-    const rawParams = this.parameters.getRawValue();
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      const paramName = group.get('paramName')?.value;
+      const value = group.get('value')?.value;
+      const type = group.get('type')?.value;
 
-    rawParams.forEach((row: any) => {
-      if (row.paramName) {
-        result[row.paramName] = row.value;
+      if (paramName && value !== undefined) {
+        switch (type) {
+          case 'Number':
+            result[paramName] = Number(value);
+            break;
+          case 'Boolean':
+            result[paramName] = value === 'true';
+            break;
+          case 'Date':
+            result[paramName] = new Date(value).toISOString();
+            break;
+          case 'Object':
+            try {
+              result[paramName] = JSON.parse(value);
+            } catch (e) {
+              console.error(`Invalid JSON for parameter ${paramName}`);
+              result[paramName] = value;
+            }
+            break;
+          default:
+            result[paramName] = value;
+        }
       }
     });
 
@@ -124,6 +171,20 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           this.lastParams = currentParams;
         }
       });
+  }
+
+  isPrimitive(value: any): boolean {
+    return typeof value !== 'object' || value === null;
+  }
+
+  copyJsonToClipboard() {
+    const jsonString = JSON.stringify(this.response, null, 2);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000);
+    });
   }
 
   ngOnDestroy() {

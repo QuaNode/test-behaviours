@@ -20,25 +20,47 @@
         </select>
 
         <!-- Input Field -->
-        <input
-          class="form-control parameters-form__input"
-          formControlName="value"
-          placeholder="Enter value"
-        />
+        <div class="flex-grow-1 d-flex flex-column">
+          <!-- Input Field -->
+          <input
+            class="form-control parameters-form__input mb-1"
+            formControlName="value"
+            placeholder="Enter value"
+          />
+
+          <!-- Error Message -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('value')?.hasError('invalidJson')"
+          >
+            Please enter a valid JSON object.
+          </div>
+
+          <!-- Hint Message Under Input -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('type')?.value === 'Object'"
+          >
+            Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
+          </div>
+        </div>
 
         <!-- Type Dropdown (readonly) -->
         <select
           formControlName="type"
           class="form-select parameters-form__dropdown"
-          readonly
         >
-          <option [value]="row.get('type')?.value">
-            {{ row.get('type')?.value }}
+          <option value="" disabled selected>Select type</option>
+          <option *ngFor="let type of typesList()" [value]="type">
+            {{ type }}
           </option>
         </select>
 
         <!-- Add / Remove Buttons -->
-        <div class="parameters-form__actions d-flex gap-1">
+        <div
+          class="parameters-form__actions d-flex gap-1"
+          *ngIf="parameters.length > 1"
+        >
           <!-- Add Button (Postman Style) -->
           <button
             type="button"
@@ -70,13 +92,25 @@
     *ngIf="response"
   >
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Response</h5>
+      <h5 class="mb-0">
+        {{ responseView === 'returns' ? 'Returns' : 'Response'}}
+      </h5>
       <div class="d-flex align-items-center gap-2">
+        <button
+          *ngIf="responseView === 'json'"
+          class="btn btn-link btn-sm"
+          (click)="copyJsonToClipboard()"
+          title="Copy to clipboard"
+        >
+          <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
+          <span class="visually-hidden">Copy JSON</span>
+        </button>
         <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
         <select
           class="form-select form-select-sm w-auto"
           [(ngModel)]="responseView"
         >
+          <option value="returns">Returns</option>
           <option value="json">JSON</option>
           <option value="tree">Tree</option>
         </select>
@@ -98,6 +132,30 @@
       class="tree-view bg-light p-3 rounded overflow-auto"
     >
       <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+    </div>
+
+    <!-- Return View -->
+    <div
+      *ngIf="responseView === 'returns'"
+      class="returns-view bg-light p-3 rounded overflow-auto"
+    >
+      <div *ngFor="let key of returnKeys" class="d-flex align-items-start mb-2">
+        <strong class="me-2">{{ key }}:</strong>
+        <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
+        <ngx-json-viewer
+          *ngIf="!isPrimitive(returns[key])"
+          [json]="returns[key]"
+          [expanded]="true"
+        ></ngx-json-viewer>
+      </div>
+    </div>
+
+    <div
+      *ngIf="responseView === 'json' && copied"
+      class="alert alert-success mt-2 p-1 py-2"
+      role="alert"
+    >
+      Copied!
     </div>
   </div>
 </div>

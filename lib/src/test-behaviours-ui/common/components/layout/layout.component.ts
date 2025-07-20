@@ -1,6 +1,4 @@
-
 import { Component } from '@angular/core';
-
 
 @Component({
   selector: 'app-layout',
@@ -8,6 +6,4 @@ import { Component } from '@angular/core';
   styleUrls: ['./layout.component.scss'],
   standalone: false,
 })
-
 export class LayoutComponent {}
-

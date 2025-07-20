@@ -10,13 +10,13 @@ export class IntegrationService {
   private parametersSignal = signal<any>(null);
   responseSignal = signal<any>({
     status: 'success',
-    data: {
+    user: {
       id: 1,
       name: 'Martina',
-      date: '2025-07-14',
       token: 'abc123xyz',
       roles: ['admin', 'editor'],
     },
+    timestamp: new Date().toISOString(),
   });
 
   updateParameters(params: any) {
@@ -47,6 +47,7 @@ export class IntegrationService {
 
   sendAndDownload(requestData: any) {
     const params = this.parameters;
+    console.log(params);
     if (params) {
       this.behaviours
         .getBehaviour(requestData.name)(params)
