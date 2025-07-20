@@ -18,7 +18,11 @@ export function getBehaviours(http: HttpClient) {
   imports: [
     BrowserModule,
     AppRoutingModule,
-    TestBehavioursUiModule,
+    TestBehavioursUiModule.config({
+      path: '/Just-path',
+      baseURL: 'https://api.example.com',
+      prefix: 'v1'
+    }),
     HttpClientModule,
     FormsModule,
   ],

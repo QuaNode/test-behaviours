@@ -3,6 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 import { environment } from '../../../../environment/environment';
+import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
 
 @Component({
   selector: 'app-behaviour-details',
@@ -12,6 +13,8 @@ import { environment } from '../../../../environment/environment';
 })
 export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);
+  private integrationService = inject(IntegrationService);
+
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
   });
@@ -26,6 +29,16 @@ export class BehaviourDetailsComponent {
       prefix: request?.prefix ?? '',
       events: request?.events ?? false,
       isValid,
+      name: request.name,
     };
   });
+
+  // Ameen Integration
+  isSendEnabled(): boolean {
+    return this.integrationService.hasParameters();
+  }
+
+  onSend() {
+    this.integrationService.sendAndDownload(this.requestData());
+  }
 }
