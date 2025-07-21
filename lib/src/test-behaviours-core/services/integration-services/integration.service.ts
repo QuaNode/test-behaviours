@@ -57,7 +57,9 @@ export class IntegrationService {
             this.updateResponse(response);
             this.downloadJSON(response, `${requestData.name}_response.json`);
           },
-          (error: any) => console.error('Error:', error)
+          (error: Error) => {
+            console.log(error)
+          }
         );
     }
   }
