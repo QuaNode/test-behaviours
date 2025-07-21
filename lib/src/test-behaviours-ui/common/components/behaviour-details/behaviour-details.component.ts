@@ -15,6 +15,8 @@ export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);
   private integrationService = inject(IntegrationService);
 
+  loading = signal<boolean>(false);
+
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
   });
@@ -33,12 +35,17 @@ export class BehaviourDetailsComponent {
     };
   });
 
-  // Ameen Integration
-  isSendEnabled(): boolean {
-    return this.integrationService.hasParameters();
+  constructor() {
+    effect(() => {
+      this.loading.update((prev) => this.integrationService.loadingSignal());
+    });
   }
 
   onSend() {
+    this.integrationService.sendOnly(this.requestData());
+  }
+
+  onSendAndDownload() {
     this.integrationService.sendAndDownload(this.requestData());
   }
 }

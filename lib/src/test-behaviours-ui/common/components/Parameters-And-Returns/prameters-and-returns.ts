@@ -28,12 +28,14 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   parametersList: string[] = [];
   typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
   response = this.integrationService.responseSignal();
-  responseTime: number = 120;
 
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
+
+  error = signal<any>(null);
+  responseTime = signal<number | null>(null);
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -73,6 +75,10 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.response = this.integrationService.responseSignal();
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
+      this.error.update((prev) => this.integrationService.errorSignal());
+      this.responseTime.update((prev) =>
+        this.integrationService.responseTimeSignal()
+      );
     });
     this.setupFormChanges();
   }
@@ -185,6 +191,22 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         this.copied = false;
       }, 2000);
     });
+  }
+
+  getErrorClass(): string {
+    const code = this.error()?.code;
+    switch (code) {
+      case 400:
+        return 'bg-danger';
+      case 404:
+        return 'bg-warning';
+      case 401:
+        return 'bg-info';
+      case 200:
+        return 'bg-success';
+      default:
+        return 'bg-secondary';
+    }
   }
 
   ngOnDestroy() {

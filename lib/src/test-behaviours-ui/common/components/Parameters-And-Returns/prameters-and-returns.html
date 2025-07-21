@@ -95,7 +95,16 @@
       <h5 class="mb-0">
         {{ responseView === 'returns' ? 'Returns' : 'Response'}}
       </h5>
+
       <div class="d-flex align-items-center gap-2">
+        <span
+          *ngIf="error()"
+          [ngClass]="getErrorClass()"
+          class="d-inline-block text-white fw-bold px-3 py-1 rounded"
+        >
+          {{ error().code }}
+        </span>
+
         <button
           *ngIf="responseView === 'json'"
           class="btn btn-link btn-sm"
@@ -105,7 +114,9 @@
           <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
-        <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
+        <span class="badge bg-secondary" *ngIf="responseTime()!==null"
+          >Delay: {{ responseTime() }} ms</span
+        >
         <select
           class="form-select form-select-sm w-auto"
           [(ngModel)]="responseView"

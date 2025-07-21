@@ -19,6 +19,10 @@ export class IntegrationService {
     timestamp: new Date().toISOString(),
   });
 
+  loadingSignal = signal<boolean>(false);
+  errorSignal = signal<any>(null);
+  responseTimeSignal = signal<number | null>(null);
+
   updateParameters(params: any) {
     this.parametersSignal.set(params);
   }
@@ -45,23 +49,55 @@ export class IntegrationService {
     URL.revokeObjectURL(url);
   }
 
-  sendAndDownload(requestData: any) {
+  private send(requestData: any, onSuccess?: (res: any) => void) {
     const params = this.parameters;
-    console.log(params);
-    if (params) {
-      this.behaviours
-        .getBehaviour(requestData.name)(params)
-        .subscribe(
-          (response: any) => {
-            console.log(response);
-            this.updateResponse(response);
-            this.downloadJSON(response, `${requestData.name}_response.json`);
-          },
-          (error: Error) => {
-            console.log(error)
+    if (!params) return;
+
+    const startTime = performance.now();
+
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    this.behaviours
+      .getBehaviour(requestData.name)(params)
+      .subscribe(
+        (response: any) => {
+          const endTime = performance.now();
+          const delay = Math.round(endTime - startTime);
+
+          this.responseTimeSignal.set(delay);
+
+          this.updateResponse(response);
+          this.loadingSignal.set(false);
+          if (onSuccess) {
+            onSuccess(response);
           }
-        );
-    }
+        },
+        (error: any) => {
+          const endTime = performance.now();
+          const delay = Math.round(endTime - startTime);
+          this.responseTimeSignal.set(delay);
+          console.log(error);
+          console.log(error.code);
+          const formattedError = {
+            status: 'error',
+            message: error.message,
+          };
+          this.updateResponse(formattedError);
+          this.errorSignal.set(error);
+          this.loadingSignal.set(false);
+        }
+      );
+  }
+
+  sendOnly(requestData: any) {
+    this.send(requestData);
+  }
+
+  sendAndDownload(requestData: any) {
+    this.send(requestData, (response) =>
+      this.downloadJSON(response, `${requestData.name}_response.json`)
+    );
   }
 
   get parameters() {
