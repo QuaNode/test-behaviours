@@ -18,11 +18,10 @@ export class IntegrationService {
     },
     timestamp: new Date().toISOString(),
   });
-loadingSignal = signal<boolean>(false);
+  loadingSignal = signal<boolean>(false);
   errorSignal = signal<any>(null);
   responseTimeSignal = signal<number | null>(null);
 
-  
   updateParameters(params: any) {
     this.parametersSignal.set(params);
   }
@@ -34,6 +33,7 @@ loadingSignal = signal<boolean>(false);
 
   updateResponse(response: any) {
     this.responseSignal.set(response);
+    // console.log('Response Updated:', response);
   }
 
   downloadJSON(data: any, fileName: string = 'response.json') {
@@ -51,6 +51,7 @@ loadingSignal = signal<boolean>(false);
 
   private send(requestData: any, onSuccess?: (res: any) => void) {
     const params = this.parameters;
+    console.log('Sending Request with Parameters:', params);
     if (!params) return;
 
     const startTime = performance.now();
@@ -71,7 +72,8 @@ loadingSignal = signal<boolean>(false);
           this.loadingSignal.set(false);
           if (onSuccess) {
             onSuccess(response);
-          }},
+          }
+        },
         (error: any) => {
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
@@ -104,15 +106,32 @@ loadingSignal = signal<boolean>(false);
   }
 
   generatePostmanCollection(requests: BehavioursResponse[]): any {
-    const sampleValues = this.parametersSignal() ?? {};
+    const inputParams = this.parameters ?? {};
+    const response = this.responseSignal() ?? {};
 
-    const filtered = requests.filter((def) => def.name !== 'behaviours');
+    const tokenFromResponse = response.token;
+    // console.log('Token from response:', tokenFromResponse);
 
-    const items = filtered.map((def) => {
+    const responseParams = {
+      ...(response.user ?? {}),
+      token: response.token,
+      timestamp: response.timestamp,
+    };
+
+    const values = {
+      ...inputParams,
+      ...responseParams,
+    };
+
+    console.log('Values (merged input + response):', values);
+
+    const filteredDefs = requests.filter((def) => def.name !== 'behaviours');
+
+    const behaviourDefs = filteredDefs.map((def) => {
       const method = def.method || 'GET';
       let path = def.path || '';
       const prefix = def.prefix || '';
-      const url = `${prefix}${path}`;
+      const fullPath = `${prefix}${path}`;
 
       const headers: any[] = [];
       const bodyParams: Record<string, any> = {};
@@ -122,20 +141,25 @@ loadingSignal = signal<boolean>(false);
         string,
         { key: string; type: string }
       ][]) {
-        const sampleValue = sampleValues[param.key] ?? `{{${param.key}}}`;
+        const paramValue = values[param.key] ?? `{{${param.key}}}`;
 
         switch (param.type) {
           case 'header':
-            headers.push({ key: param.key, value: sampleValue, type: 'text' });
+            const headerValue =
+              param.key === 'X-Access-Token'
+                ? tokenFromResponse ?? '{{X-Access-Token}}' 
+                : paramValue;
+
+            headers.push({ key: param.key, value: headerValue, type: 'text' });
             break;
           case 'body':
-            bodyParams[param.key] = sampleValue;
+            bodyParams[param.key] = paramValue;
             break;
           case 'query':
-            queryParams.push({ key: param.key, value: sampleValue });
+            queryParams.push({ key: param.key, value: paramValue });
             break;
           case 'path':
-            path = path.replace(`:${param.key}`, sampleValue);
+            path = path.replace(`:${param.key}`, paramValue);
             break;
         }
       }
@@ -144,14 +168,14 @@ loadingSignal = signal<boolean>(false);
         method: method.toUpperCase(),
         header: headers,
         url: {
-          raw: `http://localhost:8282${path}${
+          raw: `http://localhost:8282${prefix}${path}${
             queryParams.length
               ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
               : ''
           }`,
           host: ['localhost'],
           port: '8282',
-          path: path.replace(/^\//, '').split('/'),
+          path: `${prefix}${path}`.replace(/^\//, '').split('/'),
           query: queryParams.length ? queryParams : undefined,
         },
       };
@@ -179,7 +203,7 @@ loadingSignal = signal<boolean>(false);
         schema:
           'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
       },
-      item: items,
+      item: behaviourDefs,
     };
   }
 }
