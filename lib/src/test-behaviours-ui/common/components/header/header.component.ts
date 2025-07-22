@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { ExportService } from '../../../../test-behaviours-core/services/export-services/export.service';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
+import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
 
 @Component({
   selector: 'app-header',
@@ -11,6 +12,7 @@ import { RequestsService } from '../../../../test-behaviours-core/services/reque
 export class HeaderComponent {
   private exportsService = inject(ExportService);
   private requestsService = inject(RequestsService);
+  private integrationService = inject(IntegrationService);
 
   fileUrl = this.exportsService.fileUrl;
 
@@ -23,7 +25,8 @@ export class HeaderComponent {
   }
 
   exportPostmanCollection() {
-    const collection = this.requestsService.generatePostmanCollection();
+    const requests = this.requestsService.theRequests() ?? [];
+    const collection = this.integrationService.generatePostmanCollection(requests);
     const blob = new Blob([JSON.stringify(collection, null, 2)], {
       type: 'application/json',
     });

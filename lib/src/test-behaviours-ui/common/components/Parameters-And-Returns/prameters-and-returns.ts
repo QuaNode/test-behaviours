@@ -1,11 +1,16 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  OnInit,
+  OnDestroy,
+  signal,
+} from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-
-type ParameterDefinition = {
-  type: string;
-  middleware?: boolean;
-};
+import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
+import { debounceTime } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -13,32 +18,34 @@ type ParameterDefinition = {
   styleUrls: ['./prameters-and-returns.scss'],
   standalone: false,
 })
-export class ParametersAndReturnsComponent implements OnInit {
+export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
+  private integrationService = inject(IntegrationService);
+  private lastParams: any = null;
+  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
-  typesList: string[] = ['String', 'Number', 'Date', 'Object'];
-  response: any = null;
+  typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
+  response = this.integrationService.responseSignal();
+
+  responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
-  responseTime: number = 120;
-  responseView: 'returns' | 'json' | 'tree' = 'returns';
-  valueTouched: boolean = false;
-  currentView: 'json' | 'table' = 'json';
   copied = false;
+
+  error = signal<any>(null);
+  responseTime = signal<number | null>(null);
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
       parameters: this.fb.array([]),
     });
 
-    //  Reactive effect for backend data
     effect(() => {
       const data = this.requestsService.theRequest();
 
       if (data?.parameters) {
-        console.log('Filtered Parameters:', data.parameters);
         this.parameters.clear();
 
         const filteredParams = Object.entries(data.parameters).filter(
@@ -56,33 +63,33 @@ export class ParametersAndReturnsComponent implements OnInit {
               type: [''],
             })
           );
+          const initialParams = this.jsonPreview;
+          this.lastParams = initialParams;
+          this.integrationService.updateParameters(initialParams);
         });
       }
     });
+
+    // Ameen Integration
+    effect(() => {
+      this.response = this.integrationService.responseSignal();
+      this.returns = this.response;
+      this.returnKeys = Object.keys(this.returns);
+      this.error.update((prev) => this.integrationService.errorSignal());
+      this.responseTime.update((prev) =>
+        this.integrationService.responseTimeSignal()
+      );
+    });
+    this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
-
-    //  Dummy response (replace with API response later)
-    this.response = {
-      status: 'success',
-      returns: {
-        user: {
-          id: 1,
-          name: 'Martina',
-          token: 'abc123xyz',
-          roles: ['admin', 'editor'],
-        },
-        timestamp: new Date().toISOString(),
-      },
-    };
-
     this.parameters.controls.forEach((control) => {
       const group = control as FormGroup;
       group.get('value')?.valueChanges.subscribe((val) => {
         const type = group.get('type')?.value;
-
+        console.log(type);
         if (type === 'Object') {
           try {
             JSON.parse(val);
@@ -95,8 +102,8 @@ export class ParametersAndReturnsComponent implements OnInit {
         }
       });
     });
-    if (this.response?.returns) {
-      this.returns = this.response.returns;
+    if (this.response) {
+      this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
     }
   }
@@ -107,9 +114,9 @@ export class ParametersAndReturnsComponent implements OnInit {
 
   createRow(): FormGroup {
     return this.fb.group({
-      paramName: [{ value: '', disabled: false }],
+      paramName: [{ value: 'id', disabled: true }],
       value: [''],
-      type: [{ value: '', disabled: false }],
+      type: [{ value: 'String', disabled: true }],
     });
   }
 
@@ -146,7 +153,7 @@ export class ParametersAndReturnsComponent implements OnInit {
             try {
               result[paramName] = JSON.parse(value);
             } catch (e) {
-              console.error(`Invalid JSON for parameter ${paramName}:`, e);
+              console.error(`Invalid JSON for parameter ${paramName}`);
               result[paramName] = value;
             }
             break;
@@ -159,33 +166,23 @@ export class ParametersAndReturnsComponent implements OnInit {
     return result;
   }
 
+  // Ameen Integration
+  private setupFormChanges(): void {
+    this.valueChangesSubscription = this.parameters.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe(() => {
+        const currentParams = this.jsonPreview;
+        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
+          this.integrationService.updateParameters(currentParams);
+          this.lastParams = currentParams;
+        }
+      });
+  }
+
   isPrimitive(value: any): boolean {
     return typeof value !== 'object' || value === null;
   }
 
-  isValidJson(index: number): boolean {
-    const value = this.parameters.at(index).get('value')?.value;
-    const type = this.parameters.at(index).get('type')?.value;
-    console.log(
-      `Validating index ${index} with value:`,
-      value,
-      'and type:',
-      type
-    );
-
-    if (type !== 'Object') return true;
-
-    try {
-      const parsed = JSON.parse(value);
-      return (
-        typeof parsed === 'object' && parsed !== null && !Array.isArray(parsed)
-      );
-    } catch {
-      return false;
-    }
-  }
-
-  // copy JSON to clipboard
   copyJsonToClipboard() {
     const jsonString = JSON.stringify(this.response, null, 2);
     navigator.clipboard.writeText(jsonString).then(() => {
@@ -194,5 +191,27 @@ export class ParametersAndReturnsComponent implements OnInit {
         this.copied = false;
       }, 2000);
     });
+  }
+
+  getErrorClass(): string {
+    const code = this.error()?.code;
+    switch (code) {
+      case 400:
+        return 'bg-danger';
+      case 404:
+        return 'bg-warning';
+      case 401:
+        return 'bg-info';
+      case 200:
+        return 'bg-success';
+      default:
+        return 'bg-secondary';
+    }
+  }
+
+  ngOnDestroy() {
+    if (this.valueChangesSubscription) {
+      this.valueChangesSubscription.unsubscribe();
+    }
   }
 }

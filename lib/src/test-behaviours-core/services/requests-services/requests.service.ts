@@ -93,7 +93,7 @@ export class RequestsService {
 
   generatePostmanCollection() {
   const current = this.requests() ?? [];
-
+console.log('All Requests:', current);
   const filtered = current.filter((def) => def.name !== 'behaviours');
 
   // Sample default values per parameter key
