@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -18,13 +18,13 @@ import { IntegrationService } from '../../../../test-behaviours-core/services/in
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
-  private integrationService = inject(IntegrationService);
+  private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
 
   form: FormGroup;
   parametersList: string[] = [];
   typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
-  response = this.integrationService.responseSignal();
+  response = this.behaviourService.responseSignal();
 
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
@@ -65,18 +65,18 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         });
         const initialParams = this.jsonPreview;
         this.lastParams = initialParams;
-        this.integrationService.updateParameters(initialParams);
+        this.behaviourService.updateParameters(initialParams);
       }
     });
 
     // Ameen Integration
     effect(() => {
-      this.response = this.integrationService.responseSignal();
+      this.response = this.behaviourService.responseSignal();
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
-      this.error.update((prev) => this.integrationService.errorSignal());
+      this.error.update((prev) => this.behaviourService.errorSignal());
       this.responseTime.update((prev) =>
-        this.integrationService.responseTimeSignal()
+        this.behaviourService.responseTimeSignal()
       );
     });
   }
@@ -171,7 +171,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           currentParams[paramName]
         );
       }
-      this.integrationService.updateParameters(currentParams);
+      this.behaviourService.updateParameters(currentParams);
       this.lastParams = currentParams;
       this.activeInputIndex = null;
     }
@@ -199,11 +199,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const code = this.error()?.code;
     switch (code) {
       case 400:
+      case 401:
+      case 500:
         return 'bg-danger';
       case 404:
         return 'bg-warning';
-      case 401:
-        return 'bg-info';
       case 200:
         return 'bg-success';
       default:

@@ -6,7 +6,7 @@ import { RequestsService } from '../requests-services/requests.service';
 @Injectable({
   providedIn: 'root',
 })
-export class IntegrationService {
+export class BehaviorService {
   private behaviours = inject(Behaviours);
   private parametersSignal = signal<any>(null);
   private requestsService = inject(RequestsService);
@@ -60,6 +60,9 @@ export class IntegrationService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
+    console.log(requestData.name);
+    console.log(params);
+
     this.behaviours
       .getBehaviour(requestData.name)(params)
       .subscribe(
@@ -73,6 +76,7 @@ export class IntegrationService {
             requestData.name
           );
 
+          console.log(response);
           this.updateResponse(response);
           this.loadingSignal.set(false);
           if (onSuccess) {
@@ -80,12 +84,12 @@ export class IntegrationService {
           }
         },
         (error: any) => {
+          console.log(error);
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
           this.responseTimeSignal.set(delay);
 
           const formattedError = {
-            status: 'error',
             message: error.message,
           };
           this.updateResponse(formattedError);
