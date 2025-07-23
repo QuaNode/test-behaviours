@@ -64,9 +64,17 @@ export class IntegrationService {
           const delay = Math.round(endTime - startTime);
 
           this.responseTimeSignal.set(delay);
+<<<<<<< Updated upstream
           this.requestsService.updateRequestParametersWithDraft(
             requestData.name
           );
+=======
+
+          this.requestsService.updateRequestParametersWithDraft(
+            requestData.name
+          );
+
+>>>>>>> Stashed changes
           this.updateResponse(response);
           this.loadingSignal.set(false);
           if (onSuccess) {

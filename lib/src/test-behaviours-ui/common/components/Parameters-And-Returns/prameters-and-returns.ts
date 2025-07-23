@@ -9,7 +9,10 @@ import {
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
+<<<<<<< Updated upstream
 import { Subscription } from 'rxjs';
+=======
+>>>>>>> Stashed changes
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -34,7 +37,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
+<<<<<<< Updated upstream
   activeInputIndex: number | null = null; // لتتبع الـ input النشط
+=======
+  activeInputIndex: number | null = null;
+>>>>>>> Stashed changes
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -60,7 +67,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           this.parameters.push(
             this.fb.group({
               paramName: [paramName],
+<<<<<<< Updated upstream
               value: [savedValue || ''], // تأكد من استخدام قيمة فارغة إذا لم تكن موجودة
+=======
+              value: [savedValue || ''],
+>>>>>>> Stashed changes
               type: [type],
             })
           );
@@ -162,7 +173,10 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return result;
   }
 
+<<<<<<< Updated upstream
   // تحديث القيم عند فقدان التركيز (blur) أو التبديل
+=======
+>>>>>>> Stashed changes
   onBlur(index: number): void {
     if (this.activeInputIndex === index) {
       const currentApiName = this.requestsService.theRequest().name;
@@ -176,11 +190,18 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       }
       this.integrationService.updateParameters(currentParams);
       this.lastParams = currentParams;
+<<<<<<< Updated upstream
       this.activeInputIndex = null; // إلغاء التركيز النشط
     }
   }
 
   // تعيين الـ input النشط عند التركيز
+=======
+      this.activeInputIndex = null;
+    }
+  }
+
+>>>>>>> Stashed changes
   onFocus(index: number): void {
     this.activeInputIndex = index;
   }

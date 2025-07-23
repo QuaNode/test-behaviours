@@ -39,7 +39,11 @@ export class RequestsService {
   });
 
   draftData = signal<any>({}); // تخزين المسودات
+<<<<<<< Updated upstream
   currentParams = signal<any>({}); // القيم الحالية للمعلمات
+=======
+  currentParams = signal<any>({});
+>>>>>>> Stashed changes
 
   readonly theRequests = computed(() => this.requests());
   readonly theRequest = computed(() => this.request());
@@ -70,7 +74,10 @@ export class RequestsService {
   });
 
   constructor() {
+<<<<<<< Updated upstream
     // مسح localStorage عند بدء التشغيل
+=======
+>>>>>>> Stashed changes
     localStorage.clear();
 
     const savedDraftData = localStorage.getItem('draftData');
@@ -103,11 +110,15 @@ export class RequestsService {
       }
     });
 
+<<<<<<< Updated upstream
     // مراقبة التغييرات في draftData وتخزينها في localStorage
+=======
+>>>>>>> Stashed changes
     effect(() => {
       const currentDraftData = this.draftData();
       localStorage.setItem('draftData', JSON.stringify(currentDraftData));
     });
+<<<<<<< Updated upstream
   }
   onFormChange(updatedFields: Record<string, any>) {
     const apiName = this.request().name;
@@ -136,13 +147,18 @@ export class RequestsService {
     this.draftData.set(updatedDrafts);
     console.log(this.draftData());
     this.currentParams.set(updatedFields); // تحديث القيم الحالية برضو
+=======
+>>>>>>> Stashed changes
   }
 
   setRequest(data: BehavioursResponse) {
     this.request.set(data as Request);
   }
 
+<<<<<<< Updated upstream
   // دالة لتحديث parameters بقيم draftData
+=======
+>>>>>>> Stashed changes
   updateRequestParametersWithDraft(apiName: string): void {
     const currentRequest = this.request();
     if (currentRequest.parameters) {
@@ -163,11 +179,18 @@ export class RequestsService {
         parameters: updatedParameters,
       }));
 
+<<<<<<< Updated upstream
       console.log(this.request());
     }
   }
 
   // دالة لتحديث قيمة معينة في draftData
+=======
+      console.log(this.theRequest());
+    }
+  }
+
+>>>>>>> Stashed changes
   updateDraftParam(apiName: string, paramName: string, value: any): void {
     const currentDrafts = this.draftData() || {};
     const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
@@ -188,7 +211,10 @@ export class RequestsService {
     this.draftData.set(updatedDrafts);
   }
 
+<<<<<<< Updated upstream
   // دالة للحصول على قيمة معينة من draftData
+=======
+>>>>>>> Stashed changes
   getDraftParam(apiName: string, paramName: string): any {
     const draft = this.draftData()[apiName];
     return draft?.parameters?.[paramName] || '';
