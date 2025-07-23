@@ -38,7 +38,7 @@ export class RequestsService {
     events: false,
   });
 
-  draftData = signal<DraftData>({}); // تخزين المسودات
+  draftData = signal<any>({}); // تخزين المسودات
   currentParams = signal<any>({}); // القيم الحالية للمعلمات
 
   readonly theRequests = computed(() => this.requests());
@@ -55,22 +55,29 @@ export class RequestsService {
   getMethodClass = computed(() => {
     switch (this.request().method.toLowerCase()) {
       case 'get':
-        return 'text-success'; // أخضر
+        return 'text-success';
       case 'post':
-        return 'text-primary'; // أزرق
+        return 'text-primary';
       case 'put':
-        return 'text-warning'; // أصفر
+        return 'text-warning';
       case 'patch':
-        return 'text-info'; // سماوي
+        return 'text-info';
       case 'delete':
-        return 'text-danger'; // أحمر
+        return 'text-danger';
       default:
-        return 'text-secondary'; // رمادي
+        return 'text-secondary';
     }
   });
 
-  // Get The Main Requests
   constructor() {
+    // مسح localStorage عند بدء التشغيل
+    localStorage.clear();
+
+    const savedDraftData = localStorage.getItem('draftData');
+    if (savedDraftData) {
+      this.draftData.set(JSON.parse(savedDraftData));
+    }
+
     effect(() => {
       if (!this.requests()) {
         this.behaviours.ready(() => {
@@ -94,6 +101,12 @@ export class RequestsService {
           });
         });
       }
+    });
+
+    // مراقبة التغييرات في draftData وتخزينها في localStorage
+    effect(() => {
+      const currentDraftData = this.draftData();
+      localStorage.setItem('draftData', JSON.stringify(currentDraftData));
     });
   }
   onFormChange(updatedFields: Record<string, any>) {
@@ -128,4 +141,57 @@ export class RequestsService {
   setRequest(data: BehavioursResponse) {
     this.request.set(data as Request);
   }
+
+  // دالة لتحديث parameters بقيم draftData
+  updateRequestParametersWithDraft(apiName: string): void {
+    const currentRequest = this.request();
+    if (currentRequest.parameters) {
+      const updatedParameters = { ...currentRequest.parameters };
+      const draft = this.draftData()[apiName]?.parameters || {};
+
+      for (const paramName in updatedParameters) {
+        if (draft[paramName] !== undefined) {
+          updatedParameters[paramName] = {
+            ...updatedParameters[paramName],
+            value: draft[paramName],
+          };
+        }
+      }
+
+      this.request.update((req) => ({
+        ...req,
+        parameters: updatedParameters,
+      }));
+
+      console.log(this.request());
+    }
+  }
+
+  // دالة لتحديث قيمة معينة في draftData
+  updateDraftParam(apiName: string, paramName: string, value: any): void {
+    const currentDrafts = this.draftData() || {};
+    const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
+
+    const updatedParameters = {
+      ...draft.parameters,
+      [paramName]: value,
+    };
+
+    const updatedDrafts = {
+      ...currentDrafts,
+      [apiName]: {
+        name: apiName,
+        parameters: updatedParameters,
+      },
+    };
+
+    this.draftData.set(updatedDrafts);
+  }
+
+  // دالة للحصول على قيمة معينة من draftData
+  getDraftParam(apiName: string, paramName: string): any {
+    const draft = this.draftData()[apiName];
+    return draft?.parameters?.[paramName] || '';
+  }
+  x = 3;
 }

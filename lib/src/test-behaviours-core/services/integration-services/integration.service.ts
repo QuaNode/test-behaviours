@@ -1,6 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { signal } from '@angular/core';
 import { Behaviours } from 'ng-behaviours';
+import { RequestsService } from '../requests-services/requests.service';
 
 @Injectable({
   providedIn: 'root',
@@ -8,7 +9,8 @@ import { Behaviours } from 'ng-behaviours';
 // Behaviour service
 export class IntegrationService {
   private behaviours = inject(Behaviours);
-  parametersSignal = signal<any>(null);
+  private parametersSignal = signal<any>(null);
+  private requestsService = inject(RequestsService);
   responseSignal = signal<any>({
     status: 'success',
     user: {
@@ -62,7 +64,9 @@ export class IntegrationService {
           const delay = Math.round(endTime - startTime);
 
           this.responseTimeSignal.set(delay);
-
+          this.requestsService.updateRequestParametersWithDraft(
+            requestData.name
+          );
           this.updateResponse(response);
           this.loadingSignal.set(false);
           if (onSuccess) {
@@ -73,8 +77,7 @@ export class IntegrationService {
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
           this.responseTimeSignal.set(delay);
-          console.log(error);
-          console.log(error.code);
+
           const formattedError = {
             status: 'error',
             message: error.message,

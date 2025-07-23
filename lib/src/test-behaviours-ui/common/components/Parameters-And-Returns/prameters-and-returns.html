@@ -19,13 +19,14 @@
           <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
         </select>
 
-        <!-- Input Field -->
+        <!-- Input Field مع أحداث focus وblur -->
         <div class="flex-grow-1 d-flex flex-column">
-          <!-- Input Field -->
           <input
             class="form-control parameters-form__input mb-1"
             formControlName="value"
             placeholder="Enter value"
+            (focus)="onFocus(i)"
+            (blur)="onBlur(i)"
           />
 
           <!-- Error Message -->
@@ -45,7 +46,7 @@
           </div>
         </div>
 
-        <!-- Type Dropdown (readonly) -->
+        <!-- Type Dropdown -->
         <select
           formControlName="type"
           class="form-select parameters-form__dropdown"
@@ -93,7 +94,7 @@
   >
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">
-        {{ responseView === 'returns' ? 'Returns' : 'Response'}}
+        {{ responseView === 'returns' ? 'Returns' : 'Response' }}
       </h5>
 
       <div class="d-flex align-items-center gap-2">
@@ -114,7 +115,7 @@
           <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
-        <span class="badge bg-secondary" *ngIf="responseTime()!==null"
+        <span class="badge bg-secondary" *ngIf="responseTime() !== null"
           >Delay: {{ responseTime() }} ms</span
         >
         <select
@@ -128,16 +129,15 @@
       </div>
     </div>
 
-    <!--  JSON View -->
+    <!-- JSON View -->
     <pre
       *ngIf="responseView === 'json'"
       class="json-view bg-light text-dark p-3 rounded overflow-auto"
     >
 {{ response | json }}
-  </pre
-    >
+    </pre>
 
-    <!--Tree View -->
+    <!-- Tree View -->
     <div
       *ngIf="responseView === 'tree'"
       class="tree-view bg-light p-3 rounded overflow-auto"

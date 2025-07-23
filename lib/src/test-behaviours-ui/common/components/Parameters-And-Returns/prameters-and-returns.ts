@@ -9,7 +9,6 @@ import {
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-import { debounceTime } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,7 +21,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
   private integrationService = inject(IntegrationService);
   private lastParams: any = null;
-  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
@@ -36,37 +34,40 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
+  activeInputIndex: number | null = null; // لتتبع الـ input النشط
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
       parameters: this.fb.array([]),
     });
 
+    // Effect لتهيئة الـ parameters عند تحميل البيانات الأولية
     effect(() => {
       const data = this.requestsService.theRequest();
-
       if (data?.parameters) {
         this.parameters.clear();
-
         const filteredParams = Object.entries(data.parameters).filter(
           ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
         );
-
         this.parametersList = filteredParams.map(([paramName]) => paramName);
+        const currentApiName = data.name;
         filteredParams.forEach(([paramName, paramData]: [string, any]) => {
           const type = paramData?.type || 'String';
-
+          const savedValue = this.requestsService.getDraftParam(
+            currentApiName,
+            paramName
+          );
           this.parameters.push(
             this.fb.group({
               paramName: [paramName],
-              value: [''],
-              type: [''],
+              value: [savedValue || ''], // تأكد من استخدام قيمة فارغة إذا لم تكن موجودة
+              type: [type],
             })
           );
-          const initialParams = this.jsonPreview;
-          this.lastParams = initialParams;
-          this.integrationService.updateParameters(initialParams);
         });
+        const initialParams = this.jsonPreview;
+        this.lastParams = initialParams;
+        this.integrationService.updateParameters(initialParams);
       }
     });
 
@@ -80,31 +81,26 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         this.integrationService.responseTimeSignal()
       );
     });
-    this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
-    this.parameters.controls.forEach((control) => {
-      const group = control as FormGroup;
-      group.get('value')?.valueChanges.subscribe((val) => {
-        const type = group.get('type')?.value;
-        console.log(type);
-        if (type === 'Object') {
-          try {
-            JSON.parse(val);
-            group.get('value')?.setErrors(null);
-          } catch (e) {
-            group.get('value')?.setErrors({ invalidJson: true });
-          }
-        } else {
-          group.get('value')?.setErrors(null);
-        }
-      });
-    });
     if (this.response) {
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
+    }
+  }
+
+  ngOnDestroy() {
+    // حفظ القيم عند تدمير المكون (اختياري)
+    const currentApiName = this.requestsService.theRequest().name;
+    const currentParams = this.jsonPreview;
+    for (const paramName in currentParams) {
+      this.requestsService.updateDraftParam(
+        currentApiName,
+        paramName,
+        currentParams[paramName]
+      );
     }
   }
 
@@ -166,18 +162,27 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // Ameen Integration
-  private setupFormChanges(): void {
-    this.valueChangesSubscription = this.parameters.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        const currentParams = this.jsonPreview;
-        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
-          this.requestsService.onFormChange(currentParams); // 👈 استدعاء الدالة
-          this.integrationService.updateParameters(currentParams);
-          this.lastParams = currentParams;
-        }
-      });
+  // تحديث القيم عند فقدان التركيز (blur) أو التبديل
+  onBlur(index: number): void {
+    if (this.activeInputIndex === index) {
+      const currentApiName = this.requestsService.theRequest().name;
+      const currentParams = this.jsonPreview;
+      for (const paramName in currentParams) {
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          currentParams[paramName]
+        );
+      }
+      this.integrationService.updateParameters(currentParams);
+      this.lastParams = currentParams;
+      this.activeInputIndex = null; // إلغاء التركيز النشط
+    }
+  }
+
+  // تعيين الـ input النشط عند التركيز
+  onFocus(index: number): void {
+    this.activeInputIndex = index;
   }
 
   isPrimitive(value: any): boolean {
@@ -207,12 +212,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         return 'bg-success';
       default:
         return 'bg-secondary';
-    }
-  }
-
-  ngOnDestroy() {
-    if (this.valueChangesSubscription) {
-      this.valueChangesSubscription.unsubscribe();
     }
   }
 }
