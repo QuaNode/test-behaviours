@@ -1,6 +1,6 @@
 <div class="parameters-and-returns-wrapper mx-4">
   <div class="parameters-form__title mb-3">
-    <h4>Query Parameters</h4>
+    <h4>Parameters</h4>
   </div>
 
   <form [formGroup]="form" class="parameters-form mb-4">
@@ -8,7 +8,7 @@
       <div
         *ngFor="let row of parameters.controls; let i = index"
         [formGroupName]="i"
-        class="parameters-form__row d-flex align-items-center mb-2 gap-2"
+        class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2"
       >
         <!-- Parameter Dropdown (readonly) -->
         <select
@@ -51,17 +51,13 @@
           formControlName="type"
           class="form-select parameters-form__dropdown"
         >
-          <option value="" disabled selected>Select type</option>
           <option *ngFor="let type of typesList()" [value]="type">
             {{ type }}
           </option>
         </select>
 
         <!-- Add / Remove Buttons -->
-        <div
-          class="parameters-form__actions d-flex gap-1"
-          *ngIf="parameters.length > 1"
-        >
+        <div class="parameters-form__actions d-flex gap-1">
           <!-- Add Button (Postman Style) -->
           <button
             type="button"
@@ -69,7 +65,7 @@
             (click)="addRow()"
             title="Add"
           >
-            <i class="bi bi-plus"></i>
+            <i class="bi bi-plus text-primary"></i>
           </button>
 
           <!-- Remove Button (Postman Style) -->
@@ -77,10 +73,10 @@
             type="button"
             class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
             (click)="removeRow(i)"
-            [disabled]="parameters.length === 1"
+            *ngIf="parameters.length > 1"
             title="Remove"
           >
-            <i class="bi bi-dash"></i>
+            <i class="bi bi-dash text-danger"></i>
           </button>
         </div>
       </div>
@@ -130,36 +126,79 @@
     </div>
 
     <!-- JSON View -->
-    <pre
-      *ngIf="responseView === 'json'"
-      class="json-view bg-light text-dark p-3 rounded overflow-auto"
-    >
+    <ng-container *ngIf="responseView === 'json'">
+      <pre
+        *ngIf="response && objectKeys(response).length > 0; else emptyJson"
+        class="json-view bg-light text-dark p-3 rounded overflow-auto view__json"
+      >
 {{ response | json }}
-    </pre>
+  </pre
+      >
+
+      <ng-template #emptyJson>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
 
     <!-- Tree View -->
-    <div
-      *ngIf="responseView === 'tree'"
-      class="tree-view bg-light p-3 rounded overflow-auto"
-    >
-      <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
-    </div>
+    <ng-container *ngIf="responseView === 'tree'">
+      <div
+        *ngIf="response && objectKeys(response).length > 0; else emptyTree"
+        class="tree-view bg-light p-3 rounded overflow-auto View__Tree"
+      >
+        <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+      </div>
+
+      <ng-template #emptyTree>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
 
     <!-- Return View -->
-    <div
-      *ngIf="responseView === 'returns'"
-      class="returns-view bg-light p-3 rounded overflow-auto"
-    >
-      <div *ngFor="let key of returnKeys" class="d-flex align-items-start mb-2">
-        <strong class="me-2">{{ key }}:</strong>
-        <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
-        <ngx-json-viewer
-          *ngIf="!isPrimitive(returns[key])"
-          [json]="returns[key]"
-          [expanded]="true"
-        ></ngx-json-viewer>
+    <ng-container *ngIf="responseView === 'returns'">
+      <div
+        *ngIf="returnKeys && returnKeys.length > 0; else emptyReturns"
+        class="returns-view bg-light p-3 rounded overflow-auto"
+      >
+        <div
+          *ngFor="let key of returnKeys"
+          class="d-flex align-items-start mb-2"
+        >
+          <strong class="me-2">{{ key }}:</strong>
+          <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
+          <ngx-json-viewer
+            *ngIf="!isPrimitive(returns[key])"
+            [json]="returns[key]"
+            [expanded]="true"
+          ></ngx-json-viewer>
+        </div>
       </div>
-    </div>
+
+      <ng-template #emptyReturns>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
 
     <div
       *ngIf="responseView === 'json' && copied"

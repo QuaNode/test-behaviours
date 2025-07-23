@@ -10,16 +10,7 @@ export class BehaviorService {
   private behaviours = inject(Behaviours);
   private parametersSignal = signal<any>(null);
   private requestsService = inject(RequestsService);
-  responseSignal = signal<any>({
-    status: 'success',
-    user: {
-      id: 1,
-      name: 'Martina',
-      token: 'abc123xyz',
-      roles: ['admin', 'editor'],
-    },
-    timestamp: new Date().toISOString(),
-  });
+  responseSignal = signal<any>({});
 
   loadingSignal = signal<boolean>(false);
   errorSignal = signal<any>(null);
@@ -60,9 +51,6 @@ export class BehaviorService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    console.log(requestData.name);
-    console.log(params);
-
     this.behaviours
       .getBehaviour(requestData.name)(params)
       .subscribe(
@@ -76,7 +64,6 @@ export class BehaviorService {
             requestData.name
           );
 
-          console.log(response);
           this.updateResponse(response);
           this.loadingSignal.set(false);
           if (onSuccess) {
@@ -84,7 +71,6 @@ export class BehaviorService {
           }
         },
         (error: any) => {
-          console.log(error);
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
           this.responseTimeSignal.set(delay);

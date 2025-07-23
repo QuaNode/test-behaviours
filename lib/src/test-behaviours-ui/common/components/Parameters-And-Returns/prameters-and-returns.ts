@@ -59,7 +59,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
             this.fb.group({
               paramName: [paramName],
               value: [savedValue || ''],
-              type: [type],
+              type: ['String'],
             })
           );
         });
@@ -108,9 +108,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   createRow(): FormGroup {
     return this.fb.group({
-      paramName: [{ value: 'id', disabled: true }],
+      paramName: [{ value: '', disabled: false }],
       value: [''],
-      type: [{ value: 'String', disabled: true }],
+      type: [{ value: 'String', disabled: false }],
     });
   }
 
@@ -209,5 +209,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       default:
         return 'bg-secondary';
     }
+  }
+
+  objectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 }

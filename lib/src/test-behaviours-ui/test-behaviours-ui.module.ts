@@ -11,6 +11,7 @@ import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.modu
 import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
+import { FooterComponent } from './common/components/footer/footer.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
     TestBehavioursUiRoutingModule,
     ReactiveFormsModule,
     NgxJsonViewerModule,
+    FooterComponent,
   ],
   exports: [LayoutComponent, HeaderComponent, StringifyPipe],
 })

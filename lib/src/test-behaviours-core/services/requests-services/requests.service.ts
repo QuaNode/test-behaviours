@@ -118,12 +118,11 @@ export class RequestsService {
         }
       }
 
+      // original data
       this.request.update((req) => ({
         ...req,
         parameters: updatedParameters,
       }));
-
-      console.log(this.theRequest());
     }
   }
 
