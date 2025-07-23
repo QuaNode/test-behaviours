@@ -103,6 +103,11 @@ export class RequestsService {
     this.request.set(data as Request);
   }
 
+  setParameterValuesForRequest(
+    requestName: string,
+    values: Record<string, any>
+  ) {}
+
   updateRequestParametersWithDraft(apiName: string): void {
     const currentRequest = this.request();
     if (currentRequest.parameters) {

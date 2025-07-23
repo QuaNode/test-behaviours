@@ -66,6 +66,13 @@ export class BehaviorService {
 
           this.updateResponse(response);
           this.loadingSignal.set(false);
+
+          // mahmoud
+          this.requestsService.setParameterValuesForRequest(
+            requestData.name,
+            params
+          );
+
           if (onSuccess) {
             onSuccess(response);
           }
@@ -97,5 +104,94 @@ export class BehaviorService {
 
   get parameters() {
     return this.parametersSignal();
+  }
+
+  generatePostmanCollection(): any {
+    const requests = this.requestsService.theRequests();
+
+    const behaviourDefs = (requests ?? [])
+      .filter((def) => def.name !== 'behaviours')
+      .map((def: any) => {
+        const method = def.method || 'GET';
+        let path = def.path || '';
+        const prefix = def.prefix || '';
+
+        const headers: any[] = [];
+        const bodyParams: Record<string, any> = {};
+        const queryParams: any[] = [];
+
+        for (const [key, param] of Object.entries(def.parameters ?? {})) {
+          const paramKey = (param as any).key ?? key;
+          const paramType = (param as any).type;
+          const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+          switch (paramType) {
+            case 'header':
+              headers.push({
+                key: paramKey,
+                value:
+                  (param as any).value !== undefined &&
+                  (param as any).value !== ''
+                    ? (param as any).value
+                    : `{{${paramKey}}}`,
+                type: 'text',
+              });
+              break;
+
+            case 'body':
+              bodyParams[paramKey] = paramValue;
+              break;
+            case 'query':
+              queryParams.push({ key: paramKey, value: paramValue });
+              break;
+            case 'path':
+              path = path.replace(`:${paramKey}`, paramValue);
+              break;
+            default:
+              break;
+          }
+        }
+
+        const request: any = {
+          method: method.toUpperCase(),
+          header: headers,
+          url: {
+            raw: `http://localhost:8282${prefix}${path}${
+              queryParams.length
+                ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
+                : ''
+            }`,
+            host: ['localhost'],
+            port: '8282',
+            path: `${prefix}${path}`.replace(/^\//, '').split('/'),
+            query: queryParams.length ? queryParams : undefined,
+          },
+        };
+
+        if (
+          Object.keys(bodyParams).length &&
+          ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
+        ) {
+          request.body = {
+            mode: 'raw',
+            raw: JSON.stringify(bodyParams, null, 2),
+            options: { raw: { language: 'json' } },
+          };
+        }
+
+        return {
+          name: def.name,
+          request,
+        };
+      });
+
+    return {
+      info: {
+        name: 'Behaviours',
+        schema:
+          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+      },
+      item: behaviourDefs,
+    };
   }
 }
