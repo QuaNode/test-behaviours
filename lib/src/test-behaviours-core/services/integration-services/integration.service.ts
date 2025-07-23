@@ -6,7 +6,6 @@ import { RequestsService } from '../requests-services/requests.service';
 @Injectable({
   providedIn: 'root',
 })
-// Behaviour service
 export class IntegrationService {
   private behaviours = inject(Behaviours);
   private parametersSignal = signal<any>(null);
@@ -28,6 +27,11 @@ export class IntegrationService {
 
   updateParameters(params: any) {
     this.parametersSignal.set(params);
+  }
+
+  hasParameters(): boolean {
+    const params = this.parametersSignal();
+    return params && Object.keys(params).length > 0;
   }
 
   updateResponse(response: any) {
@@ -64,17 +68,11 @@ export class IntegrationService {
           const delay = Math.round(endTime - startTime);
 
           this.responseTimeSignal.set(delay);
-<<<<<<< Updated upstream
-          this.requestsService.updateRequestParametersWithDraft(
-            requestData.name
-          );
-=======
 
           this.requestsService.updateRequestParametersWithDraft(
             requestData.name
           );
 
->>>>>>> Stashed changes
           this.updateResponse(response);
           this.loadingSignal.set(false);
           if (onSuccess) {
@@ -103,7 +101,7 @@ export class IntegrationService {
 
   sendAndDownload(requestData: any) {
     this.send(requestData, (response) =>
-      this.downloadJSON(response, `${requestData.name}_response.json`)
+      this.downloadJSON(`response, ${requestData.name}_response.json`)
     );
   }
 
