@@ -18,7 +18,6 @@ export interface AppBehaviours extends Behaviours {
 })
 export class RequestsService {
   private behaviours = inject(Behaviours) as AppBehaviours;
-  private parametersSignal = signal<any>(null);
   private destroyRef = inject(DestroyRef);
   private requests = signal<BehavioursResponse[] | null>(null);
   private request = signal<Request>({
@@ -66,24 +65,30 @@ export class RequestsService {
     // console.log('Request Set:', this.request());
   }
 
-  setParameterValues(values: Record<string, any>) {
-  this.request.update((prev) => {
-    const updatedParams: any = {};
 
-    for (const key in prev.parameters) {
-      updatedParams[key] = {
-        ...prev.parameters[key],
-        value: values[key] ?? '',
+setParameterValuesForRequest(requestName: string, values: Record<string, any>) {
+  this.requests.update((prev) => {
+    if (!prev) return null;
+
+    return prev.map((def) => {
+      if (def.name !== requestName) return def;
+
+      const updatedParams: any = {};
+      for (const key in def.parameters) {
+        updatedParams[key] = {
+          ...def.parameters[key],
+          value: values[key] ?? '',
+        };
+      }
+
+      return {
+        ...def,
+        parameters: updatedParams,
       };
-    }
-
-    return {
-      ...prev,
-      parameters: updatedParams,
-    };
+    });
   });
 
-  console.log('Request Parameters Updated from IntegrationService:', this.request());
+  // console.log(`Parameters for "${requestName}" updated in requests[]`, this.requests());
 }
 
 
