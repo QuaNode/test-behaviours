@@ -173,6 +173,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         const currentParams = this.jsonPreview;
         if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
+          this.requestsService.onFormChange(currentParams); // 👈 استدعاء الدالة
           this.integrationService.updateParameters(currentParams);
           this.lastParams = currentParams;
         }

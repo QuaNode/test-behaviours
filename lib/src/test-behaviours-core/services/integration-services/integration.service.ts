@@ -5,9 +5,10 @@ import { Behaviours } from 'ng-behaviours';
 @Injectable({
   providedIn: 'root',
 })
+// Behaviour service
 export class IntegrationService {
   private behaviours = inject(Behaviours);
-  private parametersSignal = signal<any>(null);
+  parametersSignal = signal<any>(null);
   responseSignal = signal<any>({
     status: 'success',
     user: {
@@ -25,11 +26,6 @@ export class IntegrationService {
 
   updateParameters(params: any) {
     this.parametersSignal.set(params);
-  }
-
-  hasParameters(): boolean {
-    const params = this.parametersSignal();
-    return params && Object.keys(params).length > 0;
   }
 
   updateResponse(response: any) {
