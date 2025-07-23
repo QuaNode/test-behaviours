@@ -66,6 +66,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           const initialParams = this.jsonPreview;
           this.lastParams = initialParams;
           this.integrationService.updateParameters(initialParams);
+          
         });
       }
     });
@@ -175,8 +176,12 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
           this.integrationService.updateParameters(currentParams);
           this.lastParams = currentParams;
+          
         }
       });
+
+      // this.requestsService.updateParameters(this.lastParams);
+      // console.log('Parameters Updated:', this.lastParams);
   }
 
   isPrimitive(value: any): boolean {

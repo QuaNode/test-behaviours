@@ -26,7 +26,8 @@ export class HeaderComponent {
 
   exportPostmanCollection() {
     const requests = this.requestsService.theRequests() ?? [];
-    const collection = this.integrationService.generatePostmanCollection(requests);
+    const parameters = this.requestsService.theRequest()?.parameters
+    const collection = this.integrationService.generatePostmanCollection(requests, parameters);
     const blob = new Blob([JSON.stringify(collection, null, 2)], {
       type: 'application/json',
     });

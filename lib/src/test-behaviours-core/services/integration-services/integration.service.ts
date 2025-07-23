@@ -2,10 +2,12 @@ import { inject, Injectable } from '@angular/core';
 import { signal } from '@angular/core';
 import { Behaviours } from 'ng-behaviours';
 import { BehavioursResponse } from '../../models/collection';
+import { RequestsService } from '../requests-services/requests.service';
 @Injectable({
   providedIn: 'root',
 })
 export class IntegrationService {
+  constructor(private requestsService: RequestsService) {}
   private behaviours = inject(Behaviours);
   private parametersSignal = signal<any>(null);
   responseSignal = signal<any>({
@@ -50,46 +52,51 @@ export class IntegrationService {
   }
 
   private send(requestData: any, onSuccess?: (res: any) => void) {
-    const params = this.parameters;
-    console.log('Sending Request with Parameters:', params);
-    if (!params) return;
+  const params = this.parameters;
+  console.log('Sending Request with Parameters:', params);
+  if (!params) return;
 
-    const startTime = performance.now();
+  const startTime = performance.now();
 
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
+  this.loadingSignal.set(true);
+  this.errorSignal.set(null);
 
-    this.behaviours
-      .getBehaviour(requestData.name)(params)
-      .subscribe(
-        (response: any) => {
-          const endTime = performance.now();
-          const delay = Math.round(endTime - startTime);
+  this.behaviours
+    .getBehaviour(requestData.name)(params)
+    .subscribe(
+      (response: any) => {
+        const endTime = performance.now();
+        const delay = Math.round(endTime - startTime);
 
-          this.responseTimeSignal.set(delay);
+        this.responseTimeSignal.set(delay);
+        this.updateResponse(response);
+        this.loadingSignal.set(false);
 
-          this.updateResponse(response);
-          this.loadingSignal.set(false);
-          if (onSuccess) {
-            onSuccess(response);
-          }
-        },
-        (error: any) => {
-          const endTime = performance.now();
-          const delay = Math.round(endTime - startTime);
-          this.responseTimeSignal.set(delay);
-          console.log(error);
-          console.log(error.code);
-          const formattedError = {
-            status: 'error',
-            message: error.message,
-          };
-          this.updateResponse(formattedError);
-          this.errorSignal.set(error);
-          this.loadingSignal.set(false);
+        // ✅ Inject RequestsService and store the used params into it
+        // const requestsService = inject(RequestsService);
+        this.requestsService.setParameterValues(params);
+
+        if (onSuccess) {
+          onSuccess(response);
         }
-      );
-  }
+      },
+      (error: any) => {
+        const endTime = performance.now();
+        const delay = Math.round(endTime - startTime);
+        this.responseTimeSignal.set(delay);
+
+        const formattedError = {
+          status: 'error',
+          message: error.message,
+        };
+
+        this.updateResponse(formattedError);
+        this.errorSignal.set(error);
+        this.loadingSignal.set(false);
+      }
+    );
+}
+
 
   sendOnly(requestData: any) {
     this.send(requestData);
@@ -105,105 +112,112 @@ export class IntegrationService {
     return this.parametersSignal();
   }
 
-  generatePostmanCollection(requests: BehavioursResponse[]): any {
-    const inputParams = this.parameters ?? {};
-    const response = this.responseSignal() ?? {};
+  // In IntegrationService
+generatePostmanCollection(requests: BehavioursResponse[], parameters: any): any {
+  const inputParams = parameters ?? {};
+  const response = this.responseSignal() ?? {};
 
-    const tokenFromResponse = response.token;
-    // console.log('Token from response:', tokenFromResponse);
+  
 
-    const responseParams = {
-      ...(response.user ?? {}),
-      token: response.token,
-      timestamp: response.timestamp,
+  const tokenFromResponse = response.token;
+
+  const responseParams = {
+    ...(response.user ?? {}),
+    token: response.token,
+    timestamp: response.timestamp,
+  };
+
+  const values = {
+  ...Object.fromEntries(
+    Object.entries(inputParams).map(([key, param]: [string, any]) => [
+      key,
+      param?.value ?? `{{${key}}}`,
+    ])
+  ),
+  ...responseParams,
+};
+
+
+  const filteredDefs = requests.filter((def) => def.name !== 'behaviours');
+
+  const behaviourDefs = filteredDefs.map((def) => {
+    const method = def.method || 'GET';
+    let path = def.path || '';
+    const prefix = def.prefix || '';
+    const fullPath = `${prefix}${path}`;
+
+    const headers: any[] = [];
+    const bodyParams: Record<string, any> = {};
+    const queryParams: any[] = [];
+
+    for (const [key, param] of Object.entries(def.parameters ?? {}) as [
+      string,
+      { key: string; type: string }
+    ][]) {
+      const paramValue = values[param.key] ?? `{{${param.key}}}`;
+
+      switch (param.type) {
+        case 'header':
+          const headerValue =
+            param.key === 'X-Access-Token'
+              ? tokenFromResponse ?? '{{X-Access-Token}}'
+              : paramValue;
+
+          headers.push({ key: param.key, value: headerValue, type: 'text' });
+          break;
+        case 'body':
+          bodyParams[param.key] = paramValue;
+          break;
+        case 'query':
+          queryParams.push({ key: param.key, value: paramValue });
+          break;
+        case 'path':
+          path = path.replace(`:${param.key}`, paramValue);
+          break;
+      }
+    }
+
+    const request: any = {
+      method: method.toUpperCase(),
+      header: headers,
+      url: {
+        raw: `http://localhost:8282${prefix}${path}${
+          queryParams.length
+            ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
+            : ''
+        }`,
+        host: ['localhost'],
+        port: '8282',
+        path: `${prefix}${path}`.replace(/^\//, '').split('/'),
+        query: queryParams.length ? queryParams : undefined,
+      },
     };
 
-    const values = {
-      ...inputParams,
-      ...responseParams,
-    };
-
-    console.log('Values (merged input + response):', values);
-
-    const filteredDefs = requests.filter((def) => def.name !== 'behaviours');
-
-    const behaviourDefs = filteredDefs.map((def) => {
-      const method = def.method || 'GET';
-      let path = def.path || '';
-      const prefix = def.prefix || '';
-      const fullPath = `${prefix}${path}`;
-
-      const headers: any[] = [];
-      const bodyParams: Record<string, any> = {};
-      const queryParams: any[] = [];
-
-      for (const [key, param] of Object.entries(def.parameters ?? {}) as [
-        string,
-        { key: string; type: string }
-      ][]) {
-        const paramValue = values[param.key] ?? `{{${param.key}}}`;
-
-        switch (param.type) {
-          case 'header':
-            const headerValue =
-              param.key === 'X-Access-Token'
-                ? tokenFromResponse ?? '{{X-Access-Token}}' 
-                : paramValue;
-
-            headers.push({ key: param.key, value: headerValue, type: 'text' });
-            break;
-          case 'body':
-            bodyParams[param.key] = paramValue;
-            break;
-          case 'query':
-            queryParams.push({ key: param.key, value: paramValue });
-            break;
-          case 'path':
-            path = path.replace(`:${param.key}`, paramValue);
-            break;
-        }
-      }
-
-      const request: any = {
-        method: method.toUpperCase(),
-        header: headers,
-        url: {
-          raw: `http://localhost:8282${prefix}${path}${
-            queryParams.length
-              ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
-              : ''
-          }`,
-          host: ['localhost'],
-          port: '8282',
-          path: `${prefix}${path}`.replace(/^\//, '').split('/'),
-          query: queryParams.length ? queryParams : undefined,
-        },
+    if (
+      Object.keys(bodyParams).length &&
+      ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
+    ) {
+      request.body = {
+        mode: 'raw',
+        raw: JSON.stringify(bodyParams, null, 2),
+        options: { raw: { language: 'json' } },
       };
-
-      if (
-        Object.keys(bodyParams).length &&
-        ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
-      ) {
-        request.body = {
-          mode: 'raw',
-          raw: JSON.stringify(bodyParams, null, 2),
-          options: { raw: { language: 'json' } },
-        };
-      }
-
-      return {
-        name: def.name,
-        request,
-      };
-    });
+    }
 
     return {
-      info: {
-        name: 'Behaviours',
-        schema:
-          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
-      },
-      item: behaviourDefs,
+      name: def.name,
+      request,
     };
-  }
+  });
+
+  return {
+    info: {
+      name: 'Behaviours',
+      schema:
+        'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+    },
+    item: behaviourDefs,
+  };
+}
+
 }
