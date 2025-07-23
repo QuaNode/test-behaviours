@@ -193,5 +193,4 @@ export class RequestsService {
     const draft = this.draftData()[apiName];
     return draft?.parameters?.[paramName] || '';
   }
-  x = 3;
 }
