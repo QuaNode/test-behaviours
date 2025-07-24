@@ -103,12 +103,21 @@
         </span>
 
         <button
-          *ngIf="responseView === 'json'"
-          class="btn btn-link btn-sm"
+          class="btn btn-sm d-inline-flex align-items-center border-0 bg-transparent text-decoration-none p-0"
           (click)="copyJsonToClipboard()"
           title="Copy to clipboard"
+          *ngIf="responseTime() !== null"
         >
-          <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
+          <i
+            *ngIf="!copied"
+            class="fa-regular fa-copy me-1"
+            style="font-size: 1.2rem"
+          ></i>
+          <i
+            *ngIf="copied"
+            class="fa-solid fa-check text-success me-1"
+            style="font-size: 1.22rem"
+          ></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
         <span class="badge bg-secondary" *ngIf="responseTime() !== null"
@@ -205,7 +214,7 @@
       class="alert alert-success mt-2 p-1 py-2"
       role="alert"
     >
-      Copied!
+      Response is copied
     </div>
   </div>
 </div>

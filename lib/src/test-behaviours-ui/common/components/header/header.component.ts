@@ -1,6 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnDestroy  } from '@angular/core';
 import { ExportService } from '../../../../test-behaviours-core/services/export-services/export.service';
-import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
 
 @Component({
   selector: 'app-header',
@@ -8,32 +7,15 @@ import { BehaviorService } from '../../../../test-behaviours-core/services/behav
   styleUrls: ['./header.component.scss'],
   standalone: false,
 })
-export class HeaderComponent {
-  private exportsService = inject(ExportService);
-  private behaviourService = inject(BehaviorService);
-
-  fileUrl = this.exportsService.fileUrl;
+export class HeaderComponent implements OnDestroy {
+  private exportService = inject(ExportService);
 
   export() {
-    this.exportsService.exportAsJson();
-    this.exportPostmanCollection();
+    this.exportService.exportAsJson();
+    this.exportService.exportPostmanCollection();
   }
 
   ngOnDestroy() {
-    this.exportsService.clearBlobUrl();
-  }
-
-  exportPostmanCollection() {
-    const collection = this.behaviourService.generatePostmanCollection();
-    const blob = new Blob([JSON.stringify(collection, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'Behaviours';
-    a.click();
-    URL.revokeObjectURL(url);
+    this.exportService.clearBlobUrl();
   }
 }

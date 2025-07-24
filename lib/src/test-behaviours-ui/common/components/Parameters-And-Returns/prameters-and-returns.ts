@@ -189,10 +189,8 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const jsonString = JSON.stringify(this.response, null, 2);
     navigator.clipboard.writeText(jsonString).then(() => {
       this.copied = true;
-      setTimeout(() => {
-        this.copied = false;
-      }, 2000);
-    });
+    setTimeout(() => this.copied = false, 1500); // Reset after 1.5 seconds
+  });
   }
 
   getErrorClass(): string {
