@@ -3,8 +3,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 import { environment } from '../../../../environment/environment';
-import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
 @Component({
   selector: 'app-behaviour-details',
   templateUrl: './behaviour-details.component.html',
@@ -13,9 +12,10 @@ import { IntegrationService } from '../../../../test-behaviours-core/services/in
 })
 export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);
-  private integrationService = inject(IntegrationService);
+  private behaviourService = inject(BehaviorService);
 
   loading = signal<boolean>(false);
+
 
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
@@ -37,15 +37,15 @@ export class BehaviourDetailsComponent {
 
   constructor() {
     effect(() => {
-      this.loading.update((prev) => this.integrationService.loadingSignal());
+      this.loading.update((prev) => this.behaviourService.loadingSignal());
     });
   }
 
   onSend() {
-    this.integrationService.sendOnly(this.requestData());
+    this.behaviourService.sendOnly(this.requestData());
   }
 
   onSendAndDownload() {
-    this.integrationService.sendAndDownload(this.requestData());
+    this.behaviourService.sendAndDownload(this.requestData());
   }
 }

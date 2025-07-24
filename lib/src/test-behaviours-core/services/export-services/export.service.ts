@@ -1,54 +1,132 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { RequestsService } from '../requests-services/requests.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-
+import { SafeResourceUrl } from '@angular/platform-browser';
+import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/test-behaviours-ui-config';
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
   private requestsService = inject(RequestsService);
-  private sanitizer = inject(DomSanitizer);
 
-  private blobUrl = signal<string | null>(null);
+  private config = inject(TEST_BEHAVIOURS_UI_CONFIG)
+
   fileUrl = signal<SafeResourceUrl | null>(null);
+
   downloadedData = computed(() => this.requestsService.theRequest());
+  isValidData = computed(() => this.requestsService.isValidData());
 
-  isValidData = computed(() => {
-    return this.requestsService.isValidData();
-  });
+  exportPostmanCollection(): void {
+    const collection = this.generatePostmanCollection();
+    const blob = new Blob([JSON.stringify(collection, null, 2)], {
+      type: 'application/json',
+    });
+    const url = URL.createObjectURL(blob);
 
-  exportAsJson() {
-    if (this.downloadedData() && this.isValidData()) {
-      try {
-        const str = JSON.stringify(this.downloadedData(), null, '\t');
-        const blob = new Blob([str], {
-          type: 'application/json;charset=utf-8',
-        });
-        const newBlobUrl = URL.createObjectURL(blob);
-        this.blobUrl.set(newBlobUrl);
-        this.fileUrl.set(
-          this.sanitizer.bypassSecurityTrustResourceUrl(newBlobUrl)
-        );
-      } catch (error) {
-        console.error('Error exporting data:', error);
-        this.fileUrl.set(null);
-        this.blobUrl.set(null);
-      }
-    } else {
-      console.log('No valid data to export');
-      this.fileUrl.set(null);
-      if (this.blobUrl()) {
-        URL.revokeObjectURL(this.blobUrl()!);
-        this.blobUrl.set(null);
-      }
-    }
+    this.triggerDownload(url, 'Behaviours.json');
   }
 
-  clearBlobUrl() {
-    if (this.blobUrl()) {
-      URL.revokeObjectURL(this.blobUrl()!);
-      this.blobUrl.set(null);
-      this.fileUrl.set(null);
-    }
+  triggerDownload(blobUrl: string, filename: string): void {
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(blobUrl);
+  }
+
+
+  generatePostmanCollection(): any {
+    const requests = this.requestsService.theRequests();
+
+    const behaviourDefs = (requests ?? [])
+      .filter((def) => def.name !== 'behaviours')
+      .map((def: any) => {
+        const method = def.method || 'GET';
+        let path = def.path || '';
+
+        //module configurations
+        const baseURL = this.config.baseURL || 'http://localhost:8282';
+        const prefix = this.config.prefix || '/api/v1';
+
+
+
+        const headers: any[] = [];
+        const bodyParams: Record<string, any> = {};
+        const queryParams: any[] = [];
+
+        for (const [key, param] of Object.entries(def.parameters ?? {})) {
+          const paramKey = (param as any).key ?? key;
+          const paramType = (param as any).type;
+          const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+          switch (paramType) {
+            case 'header':
+              headers.push({ key: paramKey, value: paramValue, type: 'text' });
+              break;
+
+            case 'body':
+              const pathParts = paramKey.split('.');
+              let nestedRef = bodyParams;
+
+              for (let i = 0; i < pathParts.length; i++) {
+                const part = pathParts[i];
+                if (i === pathParts.length - 1) {
+                  nestedRef[part] = paramValue;
+                } else {
+                  if (!nestedRef[part]) nestedRef[part] = {};
+                  nestedRef = nestedRef[part];
+                }
+              }
+              break;
+
+            case 'query':
+              queryParams.push({ key: paramKey, value: paramValue });
+              break;
+
+            case 'path':
+              path = path.replace(`:${paramKey}`, paramValue);
+              break;
+          }
+        }
+
+        const request: any = {
+          method: method.toUpperCase(),
+          header: headers,
+          url: {
+            raw: `${baseURL}${prefix}${path}${queryParams.length
+              ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
+              : ''
+              }`,
+            host: ['localhost'],
+            port: '8282',
+            path: `${prefix}${path}`.replace(/^\//, '').split('/'),
+            query: queryParams.length ? queryParams : undefined,
+          },
+        };
+
+        if (
+          Object.keys(bodyParams).length &&
+          ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
+        ) {
+          request.body = {
+            mode: 'raw',
+            raw: JSON.stringify(bodyParams, null, 2),
+            options: { raw: { language: 'json' } },
+          };
+        }
+
+        return {
+          name: def.name,
+          request,
+        };
+      });
+
+    return {
+      info: {
+        name: 'Behaviours',
+        schema:
+          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+      },
+      item: behaviourDefs,
+    };
   }
 }

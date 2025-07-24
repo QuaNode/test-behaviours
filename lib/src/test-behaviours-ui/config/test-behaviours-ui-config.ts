@@ -2,7 +2,7 @@
 import { InjectionToken } from '@angular/core';
 
 export interface TestBehavioursUiConfig {
-  path: string;
+  defaultRoute: string;
   baseURL?: string;
   prefix: string;
 }

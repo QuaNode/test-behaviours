@@ -8,9 +8,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-import { debounceTime } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -20,14 +18,13 @@ import { Subscription } from 'rxjs';
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
-  private integrationService = inject(IntegrationService);
+  private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
-  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
   typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
-  response = this.integrationService.responseSignal();
+  response = this.behaviourService.responseSignal();
 
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
@@ -36,6 +33,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
+  activeInputIndex: number | null = null;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -44,67 +42,63 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
     effect(() => {
       const data = this.requestsService.theRequest();
-
       if (data?.parameters) {
         this.parameters.clear();
-
         const filteredParams = Object.entries(data.parameters).filter(
           ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
         );
-
         this.parametersList = filteredParams.map(([paramName]) => paramName);
+        const currentApiName = data.name;
         filteredParams.forEach(([paramName, paramData]: [string, any]) => {
           const type = paramData?.type || 'String';
-
+          const savedValue = this.requestsService.getDraftParam(
+            currentApiName,
+            paramName
+          );
           this.parameters.push(
             this.fb.group({
               paramName: [paramName],
-              value: [''],
-              type: [''],
+              value: [savedValue || ''],
+              type: ['String'],
             })
           );
-          const initialParams = this.jsonPreview;
-          this.lastParams = initialParams;
-          this.integrationService.updateParameters(initialParams);
         });
+        const initialParams = this.jsonPreview;
+        this.lastParams = initialParams;
+        this.behaviourService.updateParameters(initialParams);
       }
     });
 
     // Ameen Integration
     effect(() => {
-      this.response = this.integrationService.responseSignal();
+      this.response = this.behaviourService.responseSignal();
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
-      this.error.update((prev) => this.integrationService.errorSignal());
+      this.error.update((prev) => this.behaviourService.errorSignal());
       this.responseTime.update((prev) =>
-        this.integrationService.responseTimeSignal()
+        this.behaviourService.responseTimeSignal()
       );
     });
-    this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
-    this.parameters.controls.forEach((control) => {
-      const group = control as FormGroup;
-      group.get('value')?.valueChanges.subscribe((val) => {
-        const type = group.get('type')?.value;
-        console.log(type);
-        if (type === 'Object') {
-          try {
-            JSON.parse(val);
-            group.get('value')?.setErrors(null);
-          } catch (e) {
-            group.get('value')?.setErrors({ invalidJson: true });
-          }
-        } else {
-          group.get('value')?.setErrors(null);
-        }
-      });
-    });
     if (this.response) {
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
+    }
+  }
+
+  ngOnDestroy() {
+    // حفظ القيم عند تدمير المكون (اختياري)
+    const currentApiName = this.requestsService.theRequest().name;
+    const currentParams = this.jsonPreview;
+    for (const paramName in currentParams) {
+      this.requestsService.updateDraftParam(
+        currentApiName,
+        paramName,
+        currentParams[paramName]
+      );
     }
   }
 
@@ -114,9 +108,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   createRow(): FormGroup {
     return this.fb.group({
-      paramName: [{ value: 'id', disabled: true }],
+      paramName: [{ value: '', disabled: false }],
       value: [''],
-      type: [{ value: 'String', disabled: true }],
+      type: [{ value: 'String', disabled: false }],
     });
   }
 
@@ -166,17 +160,25 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  // Ameen Integration
-  private setupFormChanges(): void {
-    this.valueChangesSubscription = this.parameters.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        const currentParams = this.jsonPreview;
-        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
-          this.integrationService.updateParameters(currentParams);
-          this.lastParams = currentParams;
-        }
-      });
+  onBlur(index: number): void {
+    if (this.activeInputIndex === index) {
+      const currentApiName = this.requestsService.theRequest().name;
+      const currentParams = this.jsonPreview;
+      for (const paramName in currentParams) {
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          currentParams[paramName]
+        );
+      }
+      this.behaviourService.updateParameters(currentParams);
+      this.lastParams = currentParams;
+      this.activeInputIndex = null;
+    }
+  }
+
+  onFocus(index: number): void {
+    this.activeInputIndex = index;
   }
 
   isPrimitive(value: any): boolean {
@@ -187,9 +189,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const jsonString = JSON.stringify(this.response, null, 2);
     navigator.clipboard.writeText(jsonString).then(() => {
       this.copied = true;
-      setTimeout(() => {
-        this.copied = false;
-      }, 2000);
+      setTimeout(() => this.copied = false, 1500); // Reset after 1.5 seconds
     });
   }
 
@@ -197,11 +197,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const code = this.error()?.code;
     switch (code) {
       case 400:
+      case 401:
+      case 500:
         return 'bg-danger';
       case 404:
         return 'bg-warning';
-      case 401:
-        return 'bg-info';
       case 200:
         return 'bg-success';
       default:
@@ -209,9 +209,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    if (this.valueChangesSubscription) {
-      this.valueChangesSubscription.unsubscribe();
-    }
+  objectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 }

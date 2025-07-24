@@ -19,9 +19,9 @@ export function getBehaviours(http: HttpClient) {
     BrowserModule,
     AppRoutingModule,
     TestBehavioursUiModule.config({
-      path: '/Just-path',
-      baseURL: 'https://api.example.com',
-      prefix: 'v1'
+      defaultRoute: 'behaviours',
+      baseURL: 'http://localhost:8282',
+      prefix: '/api/v1'
     }),
     HttpClientModule,
     FormsModule,
@@ -35,4 +35,4 @@ export function getBehaviours(http: HttpClient) {
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
