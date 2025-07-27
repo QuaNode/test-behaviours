@@ -29,14 +29,12 @@
 
   &__button {
     &--add {
-      // styles for + button (optional)
       background-color: #28a745;
       color: #fff;
       font-weight: bold;
     }
 
     &--remove {
-      // styles for - button (optional)
       background-color: #dc3545;
       color: #fff;
       font-weight: bold;
@@ -80,5 +78,9 @@
 }
 
 .View {
-  max-height: 300px
+  max-height: 300px;
+}
+
+.response-viewer {
+  overflow: auto;
 }

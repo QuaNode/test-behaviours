@@ -30,6 +30,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
+  showHintIndex: number | null = null;
 
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
@@ -69,7 +70,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       }
     });
 
-    // Ameen Integration
     effect(() => {
       this.response = this.behaviourService.responseSignal();
       this.returns = this.response;
@@ -90,7 +90,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // حفظ القيم عند تدمير المكون (اختياري)
     const currentApiName = this.requestsService.theRequest().name;
     const currentParams = this.jsonPreview;
     for (const paramName in currentParams) {
@@ -110,7 +109,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return this.fb.group({
       paramName: [{ value: '', disabled: false }],
       value: [''],
-      type: [{ value: 'String', disabled: false }],
+      type: ['String'],
     });
   }
 
@@ -189,7 +188,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const jsonString = JSON.stringify(this.response, null, 2);
     navigator.clipboard.writeText(jsonString).then(() => {
       this.copied = true;
-      setTimeout(() => this.copied = false, 1500); // Reset after 1.5 seconds
+      setTimeout(() => (this.copied = false), 1500); // Reset after 1.5 seconds
     });
   }
 
@@ -211,5 +210,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   objectKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
+  }
+
+  toggleHint(index: number): void {
+    this.showHintIndex = this.showHintIndex === index ? null : index;
   }
 }
