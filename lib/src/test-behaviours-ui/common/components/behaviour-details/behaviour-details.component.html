@@ -1,6 +1,6 @@
 <div class="request-form row mt-3">
   <div class="request-form__layout d-grid d-lg-flex m-auto gap-lg-3">
-    <div class="request-form__method col-md-2 m-md-auto">
+    <div class="request-form__method col-md-2 ms-md-4">
       <select
         class="request-form__method-select form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold"
         [ngClass]="{
@@ -18,7 +18,7 @@
       </select>
     </div>
 
-    <div class="request-form__url col-md-8 m-md-auto">
+    <div class="request-form__url col-md-8 col-lg-8">
       <input
         type="text"
         class="request-form__url-input form-control mb-3 mt-3 p-2"
@@ -31,23 +31,44 @@
     <div class="request-form__actions row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
         <div class="request-form__send-group btn-group w-100">
+          <!-- الزرار الرئيسي "Send" -->
           <button
-            class="request-form__send-button btn dropdown-toggle text-white"
-            [disabled]="!isSendEnabled()"
             type="button"
+            class="btn btn-primary w-75 text-white d-flex justify-content-center align-items-center gap-2"
+            (click)="onSend()"
+            [disabled]="loading()"
+          >
+            <ng-container *ngIf="!loading(); else spinner"> Send </ng-container>
+            <ng-template #spinner>
+              <div
+                class="spinner-border spinner-border-sm text-white"
+                role="status"
+              >
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </ng-template>
+          </button>
+
+          <!-- زرار السهم لتحت -->
+          <button
+            type="button"
+            class="btn btn-primary dropdown-toggle dropdown-toggle-split w-25"
             data-bs-toggle="dropdown"
             aria-expanded="false"
+            [disabled]="loading()"
           >
-            Send
+            <span class="visually-hidden">Toggle Dropdown</span>
           </button>
+
+          <!-- قائمة الخيارات -->
           <ul class="dropdown-menu">
             <li>
               <button
                 class="dropdown-item text-dark"
                 type="button"
-                (click)="onSend()"
+                (click)="onSendAndDownload()"
               >
-                Send And Download
+                Send and Download
               </button>
             </li>
           </ul>

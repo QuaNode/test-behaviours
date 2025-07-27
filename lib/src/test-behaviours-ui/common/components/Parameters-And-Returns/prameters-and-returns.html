@@ -1,6 +1,6 @@
 <div class="parameters-and-returns-wrapper mx-4">
   <div class="parameters-form__title mb-3">
-    <h4>Query Parameters</h4>
+    <h4>Parameters</h4>
   </div>
 
   <form [formGroup]="form" class="parameters-form mb-4">
@@ -8,7 +8,7 @@
       <div
         *ngFor="let row of parameters.controls; let i = index"
         [formGroupName]="i"
-        class="parameters-form__row d-flex align-items-center mb-2 gap-2"
+        class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2"
       >
         <!-- Parameter Dropdown (readonly) -->
         <select
@@ -19,21 +19,40 @@
           <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
         </select>
 
-        <!-- Input Field -->
-        <input
-          class="form-control parameters-form__input"
-          formControlName="value"
-          placeholder="Enter value"
-        />
+        <!-- Input Field مع أحداث focus وblur -->
+        <div class="flex-grow-1 d-flex flex-column">
+          <input
+            class="form-control parameters-form__input mb-1"
+            formControlName="value"
+            placeholder="Enter value"
+            (focus)="onFocus(i)"
+            (blur)="onBlur(i)"
+          />
 
-        <!-- Type Dropdown (readonly) -->
+          <!-- Error Message -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('value')?.hasError('invalidJson')"
+          >
+            Please enter a valid JSON object.
+          </div>
+
+          <!-- Hint Message Under Input -->
+          <div
+            class="text-danger mt-1 small"
+            *ngIf="row.get('type')?.value === 'Object'"
+          >
+            Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
+          </div>
+        </div>
+
+        <!-- Type Dropdown -->
         <select
           formControlName="type"
           class="form-select parameters-form__dropdown"
-          readonly
         >
-          <option [value]="row.get('type')?.value">
-            {{ row.get('type')?.value }}
+          <option *ngFor="let type of typesList()" [value]="type">
+            {{ type }}
           </option>
         </select>
 
@@ -46,7 +65,7 @@
             (click)="addRow()"
             title="Add"
           >
-            <i class="bi bi-plus"></i>
+            <i class="bi bi-plus text-primary"></i>
           </button>
 
           <!-- Remove Button (Postman Style) -->
@@ -54,10 +73,10 @@
             type="button"
             class="btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
             (click)="removeRow(i)"
-            [disabled]="parameters.length === 1"
+            *ngIf="parameters.length > 1"
             title="Remove"
           >
-            <i class="bi bi-dash"></i>
+            <i class="bi bi-dash text-danger"></i>
           </button>
         </div>
       </div>
@@ -70,34 +89,123 @@
     *ngIf="response"
   >
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="mb-0">Response</h5>
+      <h5 class="mb-0">
+        {{ responseView === 'returns' ? 'Returns' : 'Response' }}
+      </h5>
+
       <div class="d-flex align-items-center gap-2">
-        <span class="badge bg-secondary">Delay: {{ responseTime }} ms</span>
+        <span
+          *ngIf="error()"
+          [ngClass]="getErrorClass()"
+          class="text-white px-3 rounded fs-6"
+        >
+          {{ error().code }}
+        </span>
+
+        <button
+          *ngIf="responseView === 'json'"
+          class="btn btn-link btn-sm"
+          (click)="copyJsonToClipboard()"
+          title="Copy to clipboard"
+        >
+          <i class="fa-solid fa-copy text-secondary fs-5 me-0"></i>
+          <span class="visually-hidden">Copy JSON</span>
+        </button>
+        <span class="badge bg-secondary" *ngIf="responseTime() !== null"
+          >Delay: {{ responseTime() }} ms</span
+        >
         <select
           class="form-select form-select-sm w-auto"
           [(ngModel)]="responseView"
         >
+          <option value="returns">Returns</option>
           <option value="json">JSON</option>
           <option value="tree">Tree</option>
         </select>
       </div>
     </div>
 
-    <!--  JSON View -->
-    <pre
-      *ngIf="responseView === 'json'"
-      class="json-view bg-light text-dark p-3 rounded overflow-auto"
-    >
+    <!-- JSON View -->
+    <ng-container *ngIf="responseView === 'json'">
+      <pre
+        *ngIf="response && objectKeys(response).length > 0; else emptyJson"
+        class="json-view bg-light text-dark p-3 rounded overflow-auto view__json"
+      >
 {{ response | json }}
   </pre
-    >
+      >
 
-    <!--Tree View -->
+      <ng-template #emptyJson>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <!-- Tree View -->
+    <ng-container *ngIf="responseView === 'tree'">
+      <div
+        *ngIf="response && objectKeys(response).length > 0; else emptyTree"
+        class="tree-view bg-light p-3 rounded overflow-auto View__Tree"
+      >
+        <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+      </div>
+
+      <ng-template #emptyTree>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
+    <!-- Return View -->
+    <ng-container *ngIf="responseView === 'returns'">
+      <div
+        *ngIf="returnKeys && returnKeys.length > 0; else emptyReturns"
+        class="returns-view bg-light p-3 rounded overflow-auto"
+      >
+        <div
+          *ngFor="let key of returnKeys"
+          class="d-flex align-items-start mb-2"
+        >
+          <strong class="me-2">{{ key }}:</strong>
+          <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
+          <ngx-json-viewer
+            *ngIf="!isPrimitive(returns[key])"
+            [json]="returns[key]"
+            [expanded]="true"
+          ></ngx-json-viewer>
+        </div>
+      </div>
+
+      <ng-template #emptyReturns>
+        <div class="text-muted text-center py-5">
+          <img
+            src="assets/images/icons8-empty-box-64.png"
+            alt="Empty Box Icon"
+            class="mb-4"
+          />
+          <p>Please send a request to see the result.</p>
+        </div>
+      </ng-template>
+    </ng-container>
+
     <div
-      *ngIf="responseView === 'tree'"
-      class="tree-view bg-light p-3 rounded overflow-auto"
+      *ngIf="responseView === 'json' && copied"
+      class="alert alert-success mt-2 p-1 py-2"
+      role="alert"
     >
-      <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+      Copied!
     </div>
   </div>
 </div>

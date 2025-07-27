@@ -29,11 +29,45 @@ export class RequestsService {
     events: false,
   });
 
+  draftData = signal<any>({}); // تخزين المسودات
+  currentParams = signal<any>({});
+
   readonly theRequests = computed(() => this.requests());
   readonly theRequest = computed(() => this.request());
 
-  // Get The Main Requests
+  isValidData = computed(() => {
+    return !!(
+      this.request().parameters ||
+      this.request().returns ||
+      this.request().name
+    );
+  });
+
+  getMethodClass = computed(() => {
+    switch (this.request().method.toLowerCase()) {
+      case 'get':
+        return 'text-success';
+      case 'post':
+        return 'text-primary';
+      case 'put':
+        return 'text-warning';
+      case 'patch':
+        return 'text-info';
+      case 'delete':
+        return 'text-danger';
+      default:
+        return 'text-secondary';
+    }
+  });
+
   constructor() {
+    localStorage.clear();
+
+    const savedDraftData = localStorage.getItem('draftData');
+    if (savedDraftData) {
+      this.draftData.set(JSON.parse(savedDraftData));
+    }
+
     effect(() => {
       if (!this.requests()) {
         this.behaviours.ready(() => {
@@ -58,44 +92,93 @@ export class RequestsService {
         });
       }
     });
+
+    effect(() => {
+      const currentDraftData = this.draftData();
+      localStorage.setItem('draftData', JSON.stringify(currentDraftData));
+    });
   }
 
   setRequest(data: BehavioursResponse) {
     this.request.set(data as Request);
   }
 
-  isValidData = computed(() => {
-    return !!(
-      this.request().parameters ||
-      this.request().returns ||
-      this.request().name
-    );
-  });
+  setParameterValuesForRequest(
+    requestName: string,
+    values: Record<string, any>
+  ) {
+    this.requests.update((prev) => {
+      if (!prev) return null;
 
-  // Martina
+      return prev.map((def) => {
+        if (def.name !== requestName) return def;
 
-  getMethodClass = computed(() => {
-    switch (this.request().method.toLowerCase()) {
-      case 'get':
-        return 'text-success'; // أخضر
-      case 'post':
-        return 'text-primary'; // أزرق
-      case 'put':
-        return 'text-warning'; // أصفر
-      case 'patch':
-        return 'text-info'; // سماوي
-      case 'delete':
-        return 'text-danger'; // أحمر
-      default:
-        return 'text-secondary'; // رمادي
+        const updatedParams: any = {};
+        for (const key in def.parameters) {
+          updatedParams[key] = {
+            ...def.parameters[key],
+            value: values[key] ?? '',
+          };
+        }
+
+        return {
+          ...def,
+          parameters: updatedParams,
+        };
+      });
+    });
+
+    // console.log(
+    //   `Parameters for "${requestName}" updated in requests[]`,
+    //   this.requests()
+    // );
+  }
+
+  updateRequestParametersWithDraft(apiName: string): void {
+    const currentRequest = this.request();
+    if (currentRequest.parameters) {
+      const updatedParameters = { ...currentRequest.parameters };
+      const draft = this.draftData()[apiName]?.parameters || {};
+
+      for (const paramName in updatedParameters) {
+        if (draft[paramName] !== undefined) {
+          updatedParameters[paramName] = {
+            ...updatedParameters[paramName],
+            value: draft[paramName],
+          };
+        }
+      }
+
+      // original data
+      this.request.update((req) => ({
+        ...req,
+        parameters: updatedParameters,
+      }));
     }
-  });
+  }
 
-  // Ameen Integration
+  updateDraftParam(apiName: string, paramName: string, value: any): void {
+    const currentDrafts = this.draftData() || {};
+    const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
 
-  // isSendEnabled(): boolean {
-  //   return this.parameters.controls.some(
-  //     (control) => control.get('value')?.value
-  //   );
-  // }
+    const updatedParameters = {
+      ...draft.parameters,
+      [paramName]: value,
+    };
+
+    const updatedDrafts = {
+      ...currentDrafts,
+      [apiName]: {
+        name: apiName,
+        parameters: updatedParameters,
+      },
+    };
+
+    this.draftData.set(updatedDrafts);
+  }
+
+  getDraftParam(apiName: string, paramName: string): any {
+    const draft = this.draftData()[apiName];
+    return draft?.parameters?.[paramName] || '';
+  }
 }

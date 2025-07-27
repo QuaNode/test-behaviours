@@ -8,9 +8,7 @@ import {
 } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-import { IntegrationService } from '../../../../test-behaviours-core/services/integration-services/integration.service';
-import { debounceTime } from 'rxjs/operators';
-import { Subscription } from 'rxjs';
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
 
 @Component({
   selector: 'app-parameters-and-returns',
@@ -20,18 +18,22 @@ import { Subscription } from 'rxjs';
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
-  private integrationService = inject(IntegrationService);
-
+  private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
-  private valueChangesSubscription: Subscription | undefined;
 
   form: FormGroup;
   parametersList: string[] = [];
-  typesList: string[] = [];
+  typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
+  response = this.behaviourService.responseSignal();
 
-  response = signal<any>('');
-  responseTime: number = 120;
-  responseView: 'json' | 'tree' = 'tree';
+  responseView: 'json' | 'tree' | 'returns' = 'returns';
+  returns: any = {};
+  returnKeys: string[] = [];
+  copied = false;
+
+  error = signal<any>(null);
+  responseTime = signal<number | null>(null);
+  activeInputIndex: number | null = null;
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -40,42 +42,64 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
     effect(() => {
       const data = this.requestsService.theRequest();
-
       if (data?.parameters) {
         this.parameters.clear();
-        this.parametersList = Object.keys(data.parameters);
-        this.typesList = Array.from(new Set(Object.values(data.parameters)));
-
-        Object.entries(data.parameters).forEach(
-          ([paramName, paramData]: [string, any]) => {
-            const type =
-              typeof paramData === 'object' && paramData?.type
-                ? paramData.type
-                : 'String';
-            this.parameters.push(
-              this.fb.group({
-                paramName: [paramName],
-                value: [''],
-                type: [type],
-              })
-            );
-          }
+        const filteredParams = Object.entries(data.parameters).filter(
+          ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
         );
+        this.parametersList = filteredParams.map(([paramName]) => paramName);
+        const currentApiName = data.name;
+        filteredParams.forEach(([paramName, paramData]: [string, any]) => {
+          const type = paramData?.type || 'String';
+          const savedValue = this.requestsService.getDraftParam(
+            currentApiName,
+            paramName
+          );
+          this.parameters.push(
+            this.fb.group({
+              paramName: [paramName],
+              value: [savedValue || ''],
+              type: ['String'],
+            })
+          );
+        });
         const initialParams = this.jsonPreview;
         this.lastParams = initialParams;
-        this.integrationService.updateParameters(initialParams);
+        this.behaviourService.updateParameters(initialParams);
       }
     });
 
     // Ameen Integration
     effect(() => {
-      this.response = this.integrationService.responseSignal();
+      this.response = this.behaviourService.responseSignal();
+      this.returns = this.response;
+      this.returnKeys = Object.keys(this.returns);
+      this.error.update((prev) => this.behaviourService.errorSignal());
+      this.responseTime.update((prev) =>
+        this.behaviourService.responseTimeSignal()
+      );
     });
-    this.setupFormChanges();
   }
 
   ngOnInit() {
     this.addRow();
+    if (this.response) {
+      this.returns = this.response;
+      this.returnKeys = Object.keys(this.returns);
+    }
+  }
+
+  ngOnDestroy() {
+    // حفظ القيم عند تدمير المكون (اختياري)
+    const currentApiName = this.requestsService.theRequest().name;
+    const currentParams = this.jsonPreview;
+    for (const paramName in currentParams) {
+      this.requestsService.updateDraftParam(
+        currentApiName,
+        paramName,
+        currentParams[paramName]
+      );
+    }
   }
 
   get parameters(): FormArray {
@@ -84,9 +108,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   createRow(): FormGroup {
     return this.fb.group({
-      paramName: [{ value: 'id', disabled: true }],
+      paramName: [{ value: '', disabled: false }],
       value: [''],
-      type: [{ value: 'String', disabled: true }],
+      type: [{ value: 'String', disabled: false }],
     });
   }
 
@@ -102,33 +126,92 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   get jsonPreview(): any {
     const result: any = {};
-    const rawParams = this.parameters.getRawValue();
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      const paramName = group.get('paramName')?.value;
+      const value = group.get('value')?.value;
+      const type = group.get('type')?.value;
 
-    rawParams.forEach((row: any) => {
-      if (row.paramName) {
-        result[row.paramName] = row.value;
+      if (paramName && value !== undefined) {
+        switch (type) {
+          case 'Number':
+            result[paramName] = Number(value);
+            break;
+          case 'Boolean':
+            result[paramName] = value === 'true';
+            break;
+          case 'Date':
+            result[paramName] = new Date(value).toISOString();
+            break;
+          case 'Object':
+            try {
+              result[paramName] = JSON.parse(value);
+            } catch (e) {
+              console.error(`Invalid JSON for parameter ${paramName}`);
+              result[paramName] = value;
+            }
+            break;
+          default:
+            result[paramName] = value;
+        }
       }
     });
 
     return result;
   }
 
-  // Ameen Integration
-  private setupFormChanges(): void {
-    this.valueChangesSubscription = this.parameters.valueChanges
-      .pipe(debounceTime(300))
-      .subscribe(() => {
-        const currentParams = this.jsonPreview;
-        if (JSON.stringify(currentParams) !== JSON.stringify(this.lastParams)) {
-          this.integrationService.updateParameters(currentParams);
-          this.lastParams = currentParams;
-        }
-      });
+  onBlur(index: number): void {
+    if (this.activeInputIndex === index) {
+      const currentApiName = this.requestsService.theRequest().name;
+      const currentParams = this.jsonPreview;
+      for (const paramName in currentParams) {
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          currentParams[paramName]
+        );
+      }
+      this.behaviourService.updateParameters(currentParams);
+      this.lastParams = currentParams;
+      this.activeInputIndex = null;
+    }
   }
 
-  ngOnDestroy() {
-    if (this.valueChangesSubscription) {
-      this.valueChangesSubscription.unsubscribe();
+  onFocus(index: number): void {
+    this.activeInputIndex = index;
+  }
+
+  isPrimitive(value: any): boolean {
+    return typeof value !== 'object' || value === null;
+  }
+
+  copyJsonToClipboard() {
+    const jsonString = JSON.stringify(this.response, null, 2);
+    navigator.clipboard.writeText(jsonString).then(() => {
+      this.copied = true;
+      setTimeout(() => {
+        this.copied = false;
+      }, 2000);
+    });
+  }
+
+  getErrorClass(): string {
+    const code = this.error()?.code;
+    switch (code) {
+      case 400:
+      case 401:
+      case 500:
+        return 'bg-danger';
+      case 404:
+        return 'bg-warning';
+      case 200:
+        return 'bg-success';
+      default:
+        return 'bg-secondary';
     }
+  }
+
+  objectKeys(obj: any): string[] {
+    return obj ? Object.keys(obj) : [];
   }
 }

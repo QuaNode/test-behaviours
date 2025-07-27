@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FormPaneComponent } from './form-pane.component';
+import { BehaviourDetailsComponent } from './behaviour-details.component';
 
 describe('FormPaneComponent', () => {
-  let component: FormPaneComponent;
-  let fixture: ComponentFixture<FormPaneComponent>;
+  let component: BehaviourDetailsComponent;
+  let fixture: ComponentFixture<BehaviourDetailsComponent>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [FormPaneComponent]
+      declarations: [BehaviourDetailsComponent],
     });
-    fixture = TestBed.createComponent(FormPaneComponent);
+    fixture = TestBed.createComponent(BehaviourDetailsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
