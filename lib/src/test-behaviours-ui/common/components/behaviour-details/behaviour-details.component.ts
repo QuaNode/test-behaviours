@@ -1,9 +1,9 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 
 import { environment } from '../../../../environment/environment';
-import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
 @Component({
   selector: 'app-behaviour-details',
   templateUrl: './behaviour-details.component.html',

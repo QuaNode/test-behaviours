@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { signal } from '@angular/core';
 import { Behaviours } from 'ng-behaviours';
-import { RequestsService } from '../requests-services/requests.service';
+import { RequestsService } from '../requests-service/requests.service';
 
 @Injectable({
   providedIn: 'root',
@@ -60,14 +60,13 @@ export class BehaviorService {
 
           this.responseTimeSignal.set(delay);
 
-          this.requestsService.updateRequestParametersWithDraft(
+          this.requestsService.updateDraft_RequestParameters(
             requestData.name
           );
 
           this.updateResponse(response);
           this.loadingSignal.set(false);
 
-          // mahmoud
           this.requestsService.setParameterValuesForRequest(
             requestData.name,
             params

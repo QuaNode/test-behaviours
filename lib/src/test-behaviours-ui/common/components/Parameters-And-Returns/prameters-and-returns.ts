@@ -7,8 +7,8 @@ import {
   signal,
 } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
+import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
 
 @Component({
   selector: 'app-parameters-and-returns',

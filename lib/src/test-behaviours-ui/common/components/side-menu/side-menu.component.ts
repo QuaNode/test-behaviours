@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 
 @Component({
   selector: 'app-side-menu',

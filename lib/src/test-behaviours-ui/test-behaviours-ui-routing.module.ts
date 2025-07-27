@@ -8,7 +8,7 @@ export function routesFactory(): Routes {
   return [
     {
       path: '',
-      redirectTo: 'behaviours',
+      redirectTo: config.path,
       pathMatch: 'full',
     },
     {
@@ -29,4 +29,4 @@ export function routesFactory(): Routes {
   ],
   exports: [RouterModule],
 })
-export class TestBehavioursUiRoutingModule {}
+export class TestBehavioursUiRoutingModule { }

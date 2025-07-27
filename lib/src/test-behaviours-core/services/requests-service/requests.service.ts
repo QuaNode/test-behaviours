@@ -30,7 +30,7 @@ export class RequestsService {
     events: false,
   });
 
-  draftData = signal<any>({}); // تخزين المسودات
+  draftData = signal<any>({});
   currentParams = signal<any>({});
 
   readonly theRequests = computed(() => this.requests());
@@ -102,7 +102,6 @@ export class RequestsService {
 
   setRequest(data: BehavioursResponse) {
     this.request.set(data as Request);
-    // console.log('Request Set:', this.request());
   }
 
 
@@ -130,14 +129,9 @@ export class RequestsService {
         };
       });
     });
-
-    // console.log(
-    //   `Parameters for "${requestName}" updated in requests[]`,
-    //   this.requests()
-    // );
   }
 
-  updateRequestParametersWithDraft(apiName: string): void {
+  updateDraft_RequestParameters(apiName: string): void {
     const currentRequest = this.request();
     if (currentRequest.parameters) {
       const updatedParameters = { ...currentRequest.parameters };
@@ -152,7 +146,6 @@ export class RequestsService {
         }
       }
 
-      // original data
       this.request.update((req) => ({
         ...req,
         parameters: updatedParameters,
