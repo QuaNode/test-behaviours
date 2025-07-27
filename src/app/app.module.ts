@@ -19,7 +19,7 @@ export function getBehaviours(http: HttpClient) {
     BrowserModule,
     AppRoutingModule,
     TestBehavioursUiModule.config({
-      defaultRoute: 'behaviours',
+      path: 'behaviours',
       baseURL: 'http://localhost:8282',
       prefix: '/api/v1'
     }),

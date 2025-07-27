@@ -12,7 +12,7 @@ export function routesFactory(): Routes {
       pathMatch: 'full',
     },
     {
-      path: config.defaultRoute,
+      path: config.path,
       component: LayoutComponent,
     },
   ];
@@ -29,4 +29,4 @@ export function routesFactory(): Routes {
   ],
   exports: [RouterModule],
 })
-export class TestBehavioursUiRoutingModule { }
+export class TestBehavioursUiRoutingModule {}

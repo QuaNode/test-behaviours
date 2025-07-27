@@ -8,7 +8,6 @@ import { RequestsService } from '../../../../test-behaviours-core/services/reque
   standalone: false,
 })
 export class SideMenuComponent {
-
   methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
   private requestsService = inject(RequestsService);
 

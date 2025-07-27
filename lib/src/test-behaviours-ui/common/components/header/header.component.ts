@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ExportService } from '../../../../test-behaviours-core/services/export-services/export.service';
 
 @Component({
