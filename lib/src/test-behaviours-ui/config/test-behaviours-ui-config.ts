@@ -1,4 +1,3 @@
-// test-behaviours-ui-config.ts
 import { InjectionToken } from '@angular/core';
 
 export interface TestBehavioursUiConfig {

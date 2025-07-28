@@ -1,9 +1,9 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
-
-import { environment } from '../../../../environment/environment';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
+import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../config/test-behaviours-ui-config';
+
 @Component({
   selector: 'app-behaviour-details',
   templateUrl: './behaviour-details.component.html',
@@ -13,9 +13,10 @@ import { BehaviorService } from '../../../../test-behaviours-core/services/behav
 export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);
   private behaviourService = inject(BehaviorService);
+  private config = inject(TEST_BEHAVIOURS_UI_CONFIG);
+
 
   loading = signal<boolean>(false);
-
 
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
@@ -24,8 +25,14 @@ export class BehaviourDetailsComponent {
   requestData = computed(() => {
     const request = this.requestsService.theRequest();
     const isValid = this.requestsService.isValidData();
+
+    const base = this.config.baseURL ?? '';
+
+    const baseForURL = base || window.location.origin;
+
+    const fullURL = new URL(this.config.prefix.replace(/^\/+/, ''), baseForURL).toString();
     return {
-      url: isValid ? `${environment.apiUrl}${request?.path ?? ''}` : '',
+      url: isValid ? `${fullURL}${request?.path ?? ''}` : '',
       method: request?.method ?? '',
       version: request?.version ?? '',
       prefix: request?.prefix ?? '',

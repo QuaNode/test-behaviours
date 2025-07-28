@@ -105,51 +105,19 @@ export class RequestsService {
   }
 
 
-  setParameterValuesForRequest(
-    requestName: string,
-    values: Record<string, any>
-  ) {
-    this.requests.update((prev) => {
-      if (!prev) return null;
-
-      return prev.map((def) => {
-        if (def.name !== requestName) return def;
-
-        const updatedParams: any = {};
-        for (const key in def.parameters) {
-          updatedParams[key] = {
-            ...def.parameters[key],
-            value: values[key] ?? '',
-          };
-        }
-
-        return {
-          ...def,
-          parameters: updatedParams,
-        };
-      });
-    });
-  }
-
-  updateDraft_RequestParameters(apiName: string): void {
+  updateRequestParameters(apiName: string): void {
     const currentRequest = this.request();
     if (currentRequest.parameters) {
-      const updatedParameters = { ...currentRequest.parameters };
+      const currentParameters = currentRequest.parameters;
       const draft = this.draftData()[apiName]?.parameters || {};
 
-      for (const paramName in updatedParameters) {
-        if (draft[paramName] !== undefined) {
-          updatedParameters[paramName] = {
-            ...updatedParameters[paramName],
-            value: draft[paramName],
-          };
+      for (const paramName in currentRequest.parameters) {
+        const currentParameter = currentParameters[paramName];
+        const draftParameter = draft[paramName];
+        if (draftParameter !== undefined) {
+          currentParameter.value = draftParameter;
         }
       }
-
-      this.request.update((req) => ({
-        ...req,
-        parameters: updatedParameters,
-      }));
     }
   }
 

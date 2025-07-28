@@ -77,10 +77,20 @@
   }
 }
 
-.View {
-  max-height: 300px;
-}
 
 .response-viewer {
   overflow: auto;
+}
+textarea::placeholder {
+  color: #bcbbbb; 
+  opacity: 1;  
+}
+
+
+
+
+@media (max-width: 576px) {
+  .response-delay {
+    display: none !important;
+  }
 }

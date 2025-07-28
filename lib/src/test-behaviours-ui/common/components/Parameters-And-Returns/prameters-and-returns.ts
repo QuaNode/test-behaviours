@@ -5,7 +5,10 @@ import {
   OnInit,
   OnDestroy,
   signal,
+  ViewChild,
+  ElementRef,
 } from '@angular/core';
+
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
@@ -20,21 +23,27 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
   private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
-
+  @ViewChild('jsonView') jsonView!: ElementRef;
+  @ViewChild('treeView') treeView!: ElementRef;
+  @ViewChild('returnView') returnView!: ElementRef;
   form: FormGroup;
   parametersList: string[] = [];
-  typesList = signal<string[]>(['String', 'Number', 'Date', 'Object']);
-  response = this.behaviourService.responseSignal();
+  typesList(): string[] {
+    return ['String', 'Number', 'Boolean', 'Object'];
+  }
 
+  response = this.behaviourService.responseSignal();
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
   showHintIndex: number | null = null;
-
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
   activeInputIndex: number | null = null;
+
+  visibleEditorIndex: number | null = null;
+  jsonEditorValue: string = '';
 
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({
@@ -59,7 +68,12 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           this.parameters.push(
             this.fb.group({
               paramName: [paramName],
-              value: [savedValue || ''],
+              rawValue: [
+                typeof savedValue === 'object'
+                  ? JSON.stringify(savedValue)
+                  : savedValue || '',
+              ],
+
               type: ['String'],
             })
           );
@@ -108,7 +122,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   createRow(): FormGroup {
     return this.fb.group({
       paramName: [{ value: '', disabled: false }],
-      value: [''],
+      rawValue: [''],
       type: ['String'],
     });
   }
@@ -128,30 +142,30 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     this.parameters.controls.forEach((control) => {
       const group = control as FormGroup;
       const paramName = group.get('paramName')?.value;
-      const value = group.get('value')?.value;
+      const rawValue = group.get('rawValue')?.value;
       const type = group.get('type')?.value;
 
-      if (paramName && value !== undefined) {
-        switch (type) {
-          case 'Number':
-            result[paramName] = Number(value);
-            break;
-          case 'Boolean':
-            result[paramName] = value === 'true';
-            break;
-          case 'Date':
-            result[paramName] = new Date(value).toISOString();
-            break;
-          case 'Object':
-            try {
-              result[paramName] = JSON.parse(value);
-            } catch (e) {
-              console.error(`Invalid JSON for parameter ${paramName}`);
-              result[paramName] = value;
-            }
-            break;
-          default:
-            result[paramName] = value;
+      if (paramName && rawValue !== undefined) {
+        try {
+          switch (type) {
+            case 'Number':
+              result[paramName] = Number(rawValue);
+              break;
+            case 'Boolean':
+              result[paramName] = rawValue === 'true';
+              break;
+            case 'Date':
+              result[paramName] = new Date(rawValue).toISOString();
+              break;
+            case 'Object':
+              result[paramName] = JSON.parse(rawValue);
+              break;
+            default:
+              result[paramName] = rawValue;
+          }
+        } catch (e) {
+          console.error(`Invalid JSON for parameter ${paramName}`);
+          result[paramName] = rawValue;
         }
       }
     });
@@ -159,7 +173,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return result;
   }
 
-  onBlur(index: number): void {
+  inputsBlur(index: number): void {
     if (this.activeInputIndex === index) {
       const currentApiName = this.requestsService.theRequest().name;
       const currentParams = this.jsonPreview;
@@ -176,20 +190,51 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     }
   }
 
-  onFocus(index: number): void {
+  inputFocus(index: number): void {
     this.activeInputIndex = index;
   }
+
 
   isPrimitive(value: any): boolean {
     return typeof value !== 'object' || value === null;
   }
 
+
   copyJsonToClipboard() {
-    const jsonString = JSON.stringify(this.response, null, 2);
-    navigator.clipboard.writeText(jsonString).then(() => {
-      this.copied = true;
-      setTimeout(() => (this.copied = false), 1500); // Reset after 1.5 seconds
-    });
+    let element: HTMLElement | null = null;
+
+    switch (this.responseView) {
+      case 'json':
+        element = this.jsonView?.nativeElement;
+        break;
+      case 'tree':
+        element = this.treeView?.nativeElement;
+        break;
+      case 'returns':
+        element = this.returnView?.nativeElement;
+        break;
+    }
+
+    if (element) {
+      const text = element.innerText || element.textContent || '';
+      navigator.clipboard.writeText(text).then(() => {
+        this.copied = true;
+        setTimeout(() => (this.copied = false), 1500);
+      });
+    }
+  }
+
+  get copiedViewLabel(): string {
+    switch (this.responseView) {
+      case 'json':
+        return 'The JSON view ';
+      case 'tree':
+        return 'The Tree view';
+      case 'returns':
+        return 'The Return view';
+      default:
+        return 'Response';
+    }
   }
 
   getErrorClass(): string {
@@ -212,7 +257,31 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return obj ? Object.keys(obj) : [];
   }
 
-  toggleHint(index: number): void {
-    this.showHintIndex = this.showHintIndex === index ? null : index;
+
+  openJsonEditor(index: number) {
+    this.visibleEditorIndex = index;
+
+    const value = this.parameters.at(index).get('rawValue')?.value;
+    try {
+      this.jsonEditorValue = JSON.stringify(JSON.parse(value), null, 2);
+    } catch {
+      this.jsonEditorValue = value;
+    }
+  }
+
+  saveJson(index: number) {
+    const control = this.parameters.at(index).get('rawValue');
+    if (control) {
+      control.setValue(this.jsonEditorValue);
+      control.markAsTouched();
+      control.updateValueAndValidity();
+      this.form.markAsDirty();
+      this.visibleEditorIndex = null;
+    }
+  }
+
+  cancelJson() {
+    this.visibleEditorIndex = null;
+    this.jsonEditorValue = '';
   }
 }

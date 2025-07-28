@@ -60,17 +60,13 @@ export class BehaviorService {
 
           this.responseTimeSignal.set(delay);
 
-          this.requestsService.updateDraft_RequestParameters(
+          this.requestsService.updateRequestParameters(
             requestData.name
           );
 
           this.updateResponse(response);
           this.loadingSignal.set(false);
 
-          this.requestsService.setParameterValuesForRequest(
-            requestData.name,
-            params
-          );
 
           if (onSuccess) {
             onSuccess(response);

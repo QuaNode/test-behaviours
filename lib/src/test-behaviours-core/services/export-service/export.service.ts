@@ -1,19 +1,13 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { RequestsService } from '../requests-service/requests.service';
-import { SafeResourceUrl } from '@angular/platform-browser';
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/test-behaviours-ui-config';
+
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
   private requestsService = inject(RequestsService);
-
-  private config = inject(TEST_BEHAVIOURS_UI_CONFIG)
-
-  fileUrl = signal<SafeResourceUrl | null>(null);
-
-  downloadedData = computed(() => this.requestsService.theRequest());
-  isValidData = computed(() => this.requestsService.isValidData());
+  private config = inject(TEST_BEHAVIOURS_UI_CONFIG);
 
   exportPostmanCollection(): void {
     const collection = this.generatePostmanCollection();
@@ -21,7 +15,6 @@ export class ExportService {
       type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-
     this.triggerDownload(url, 'Behaviours.json');
   }
 
@@ -33,100 +26,141 @@ export class ExportService {
     URL.revokeObjectURL(blobUrl);
   }
 
-
   generatePostmanCollection(): any {
     const requests = this.requestsService.theRequests();
 
-    const behaviourDefs = (requests ?? [])
-      .filter((def) => def.name !== 'behaviours')
-      .map((def: any) => {
-        const method = def.method || 'GET';
-        let path = def.path || '';
-
-        //module configurations
-        const baseURL = this.config.baseURL || 'http://localhost:8282';
-        const prefix = this.config.prefix || '/api/v1';
-
-
-
-        const headers: any[] = [];
-        const bodyParams: Record<string, any> = {};
-        const queryParams: any[] = [];
-
-        for (const [key, param] of Object.entries(def.parameters ?? {})) {
-          const paramKey = (param as any).key ?? key;
-          const paramType = (param as any).type;
-          const paramValue = (param as any).value ?? `{{${paramKey}}}`;
-
-          switch (paramType) {
-            case 'header':
-              headers.push({ key: paramKey, value: paramValue, type: 'text' });
-              break;
-
-            case 'body':
-              const pathParts = paramKey.split('.');
-              let nestedRef = bodyParams;
-
-              for (let i = 0; i < pathParts.length; i++) {
-                const part = pathParts[i];
-                if (i === pathParts.length - 1) {
-                  nestedRef[part] = paramValue;
-                } else {
-                  if (!nestedRef[part]) nestedRef[part] = {};
-                  nestedRef = nestedRef[part];
-                }
-              }
-              break;
-
-            case 'query':
-              queryParams.push({ key: paramKey, value: paramValue });
-              break;
-
-            case 'path':
-              path = path.replace(`:${paramKey}`, paramValue);
-              break;
-          }
-        }
-
-        const request: any = {
-          method: method.toUpperCase(),
-          header: headers,
-          url: {
-            raw: `${baseURL}${prefix}${path}${queryParams.length
-              ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
-              : ''
-              }`,
-            host: ['localhost'],
-            port: '8282',
-            path: `${prefix}${path}`.replace(/^\//, '').split('/'),
-            query: queryParams.length ? queryParams : undefined,
-          },
-        };
-
-        if (
-          Object.keys(bodyParams).length &&
-          ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
-        ) {
-          request.body = {
-            mode: 'raw',
-            raw: JSON.stringify(bodyParams, null, 2),
-            options: { raw: { language: 'json' } },
-          };
-        }
-
-        return {
-          name: def.name,
-          request,
-        };
-      });
+    const items = (requests ?? [])
+      .filter(def => def.name !== 'behaviours')
+      .map(def => ({
+        name: def.name,
+        request: this.buildRequest(def),
+      }));
 
     return {
       info: {
         name: 'Behaviours',
-        schema:
-          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+        schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
       },
-      item: behaviourDefs,
+      item: items,
     };
+  }
+
+  private buildRequest(def: any): any {
+    const method = def.method?.toUpperCase() || 'GET';
+    let path = def.path || '';
+    const parameters = def.parameters ?? {};
+
+    const queryParams = this.buildQueryParams(parameters);
+    const headers = this.buildHeaders(parameters);
+    const bodyParams = this.buildBodyParams(parameters);
+    path = this.replacePathParams(path, parameters);
+
+    const url = this.buildUrl(this.config.baseURL, this.config.prefix, path, queryParams);
+
+    const request: any = {
+      method,
+      header: headers,
+      url,
+    };
+
+    if (Object.keys(bodyParams).length && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      request.body = {
+        mode: 'raw',
+        raw: JSON.stringify(bodyParams, null, 2),
+        options: { raw: { language: 'json' } },
+      };
+    }
+
+    return request;
+  }
+
+  private buildUrl(baseURL: string = '', prefix: string = '', path: string, queryParams: any[]): any {
+    const urlPrefix = prefix.replace(/^\/+|\/+$/g, '');
+    const urlPath = path.replace(/^\/+/, '');
+    const queryString = queryParams.length
+      ? '?' + queryParams.map(p => `${p.key}=${p.value}`).join('&')
+      : '';
+
+    const fullUrl = new URL(`${urlPrefix}/${urlPath}${queryString}`, baseURL || 'http://localhost');
+
+    return {
+      raw: fullUrl.toString(),
+      host: fullUrl.hostname.split('.'),
+      port: fullUrl.port || undefined,
+      path: fullUrl.pathname.split('/').filter(Boolean),
+      query: queryParams.length ? queryParams : undefined,
+    };
+  }
+
+  private buildHeaders(parameters: any): any[] {
+    const headers: any[] = [];
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'header') {
+        headers.push({ key: paramKey, value: paramValue, type: 'text' });
+      }
+    }
+
+    return headers;
+  }
+
+  private buildQueryParams(parameters: any): any[] {
+    const queryParams: any[] = [];
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'query') {
+        queryParams.push({ key: paramKey, value: paramValue });
+      }
+    }
+
+    return queryParams;
+  }
+
+  private buildBodyParams(parameters: any): Record<string, any> {
+    const bodyParams: Record<string, any> = {};
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'body') {
+        const parts = paramKey.split('.');
+        let ref = bodyParams;
+
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          if (i === parts.length - 1) {
+            ref[part] = paramValue;
+          } else {
+            ref[part] = ref[part] || {};
+            ref = ref[part];
+          }
+        }
+      }
+    }
+
+    return bodyParams;
+  }
+
+  private replacePathParams(path: string, parameters: any): string {
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'path') {
+        path = path.replace(`:${paramKey}`, paramValue);
+      }
+    }
+    return path;
   }
 }

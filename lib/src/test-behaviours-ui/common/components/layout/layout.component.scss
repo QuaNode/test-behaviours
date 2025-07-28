@@ -1,61 +1,70 @@
- .page-wrapper {
-   min-height: 100vh;
-   display: flex;
-   flex-direction: column;
-   overflow: hidden;
- }
+.page-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 
- .layout {
-   flex: 1;
-   padding-top: 3rem;
+.layout {
+  flex: 1;
+  padding-top: 3rem;
 
-   &__grid {
-     display: flex;
-     flex-direction: row;
-   }
+  &__grid {
+    display: flex;
+    flex-direction: row;
+  }
+  &__grid {
+    display: flex;
+    flex-direction: row;
+  }
 
-   &__sidebar {
-     border-right: 1px solid #dee2e6;
-     padding-top: 3rem;
-     background-color: linear-gradient(to bottom, #fef7ed, #feefee);
-   }
+  &__sidebar {
+    border-right: 1px solid #dee2e6;
+    padding-top: 3rem;
+    background-color: linear-gradient(to bottom, #fef7ed, #feefee);
+  }
 
-   &__content {
-     padding-top: 0.5rem;
-   }
+  &__content {
+    padding-top: 0.5rem;
+  }
+  &__offcanvas {
+    background: linear-gradient(to bottom, #fef7ed, #feefee);
+  }
 
-   &__offcanvas-header {
-     display: flex;
-     justify-content: flex-end;
-     padding: 1rem;
-   }
+  &__offcanvas-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
 
-   &__offcanvas-body {
-     padding: 1rem;
-   }
- }
+  &__offcanvas-body {
+    padding: 1rem;
+  }
+  .offcanvas {
+    background-color: linear-gradient(to bottom, #fef7ed, #feefee);
+  }
+}
 
- // Optional reusable sidebar object (if used elsewhere)
- .fixed-sidebar {
-   position: fixed;
-   top: 61px;
-   bottom: 0;
-   left: 0;
-   width: 200px;
-   padding: 10px;
-   z-index: 999;
-   overflow-y: auto;
-   background-color: #f8f9fa;
+.fixed-sidebar {
+  position: fixed;
+  top: 61px;
+  bottom: 0;
+  left: 0;
+  width: 200px;
+  padding: 10px;
+  z-index: 999;
+  overflow-y: auto;
+  background-color: #f8f9fa;
 
-   &::-webkit-scrollbar {
-     width: 8px;
-   }
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
 
-   &::-webkit-scrollbar-track {
-     background-color: #e9ecef;
-   }
+  &::-webkit-scrollbar-track {
+    background-color: #e9ecef;
+  }
 
-   &::-webkit-scrollbar-thumb {
-     background-color: #495057;
-   }
- }
+  &::-webkit-scrollbar-thumb {
+    background-color: #495057;
+  }
+}
