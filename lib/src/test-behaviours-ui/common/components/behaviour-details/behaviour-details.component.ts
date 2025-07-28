@@ -16,7 +16,6 @@ export class BehaviourDetailsComponent {
 
   loading = signal<boolean>(false);
 
-
   methodClass = computed(() => {
     return this.requestsService.getMethodClass();
   });

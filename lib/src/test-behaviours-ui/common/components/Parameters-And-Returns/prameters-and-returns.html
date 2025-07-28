@@ -24,22 +24,62 @@
           <div
             class="parameters-form__input-inner d-flex align-items-center gap-2"
           >
-            <input
-              class="form-control parameters-form__input pe-5"
-              formControlName="value"
-              placeholder="Enter value"
-              (focus)="onFocus(i)"
-              (blur)="onBlur(i)"
-            />
-            <button
-              type="button"
-              class="parameters-form__toggle-hint btn position-absolute top-50 translate-middle-y end-0 me-2 p-0 border-0 bg-transparent"
-              *ngIf="row.get('type')?.value === 'Object'"
-              (click)="toggleHint(i)"
-              title="Show JSON hint"
-            >
-              <i class="fa-regular fa-eye"></i>
-            </button>
+            <div class="flex-grow-1 d-flex flex-column">
+              <div class="position-relative">
+                <input
+                  class="form-control parameters-form__input pe-5"
+                  formControlName="rawValue"
+                  placeholder="Enter value"
+                  (focus)="onFocus(i)"
+                  (blur)="onBlur(i)"
+                />
+
+                <!-- jsoin etitor -->
+                <div *ngIf="visibleEditorIndex === i" class="mt-2">
+                  <textarea
+                    class="form-control bg-black text-white"
+                    rows="5"
+                    [(ngModel)]="jsonEditorValue"
+                    [ngModelOptions]="{ standalone: true }"
+                    (keydown.enter)="saveJson(i)"
+                    placeholder="Enter JSON here"
+                  ></textarea>
+
+                  <div class="text-end mt-1">
+                    <button
+                      class="btn btn-sm btn-primary"
+                      (click)="saveJson(i)"
+                    >
+                      Save
+                    </button>
+                    <button
+                      class="btn btn-sm btn-secondary ms-1"
+                      (click)="cancelJson()"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+                <!--  -->
+
+                <button
+                  type="button"
+                  class="parameters-form__toggle-hint btn position-absolute top-50 translate-middle-y end-0 me-2 p-0 border-0 bg-transparent text-center"
+                  *ngIf="row.get('type')?.value === 'Object'"
+                  (click)="openJsonEditor(i)"
+                  title="Show JSON hint"
+                >
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+
+              <div
+                class="text-danger mt-1 small"
+                *ngIf="row.get('type')?.value === 'Object'"
+              >
+                Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
+              </div>
+            </div>
           </div>
 
           <div
@@ -62,7 +102,7 @@
           formControlName="type"
           class="form-select parameters-form__dropdown"
         >
-          <option *ngFor="let type of typesList()" [ngValue]="type">
+          <option *ngFor="let type of typesList()" [value]="type">
             {{ type }}
           </option>
         </select>
@@ -114,7 +154,6 @@
         >
           {{ error().code }}
         </span>
-
         <button
           class="response-viewer__copy-btn btn btn-sm d-inline-flex align-items-center border-0 bg-transparent text-decoration-none p-0"
           (click)="copyJsonToClipboard()"
@@ -133,7 +172,10 @@
           ></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
-        <span class="badge bg-secondary" *ngIf="responseTime() !== null"
+
+        <span
+          class="response-delay badge bg-secondary"
+          *ngIf="responseTime() !== null"
           >Delay: {{ responseTime() }} ms</span
         >
         <select
@@ -148,7 +190,7 @@
     </div>
 
     <!-- JSON View -->
-    <ng-container *ngIf="responseView === 'json'">
+    <div *ngIf="responseView === 'json'" #jsonView>
       <pre
         *ngIf="response && objectKeys(response).length > 0; else emptyJson"
         class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto"
@@ -166,10 +208,10 @@
           <p>Please send a request to see the result.</p>
         </div>
       </ng-template>
-    </ng-container>
+    </div>
 
     <!-- Tree View -->
-    <ng-container *ngIf="responseView === 'tree'">
+    <div *ngIf="responseView === 'tree'" #treeView>
       <div
         *ngIf="response && objectKeys(response).length > 0; else emptyTree"
         class="response-viewer__tree bg-light p-3 rounded overflow-auto"
@@ -187,10 +229,10 @@
           <p>Please send a request to see the result.</p>
         </div>
       </ng-template>
-    </ng-container>
+    </div>
 
     <!-- Return View -->
-    <ng-container *ngIf="responseView === 'returns'">
+    <div *ngIf="responseView === 'returns'" #returnView>
       <div
         *ngIf="returnKeys && returnKeys.length > 0; else emptyReturns"
         class="response-viewer__returns bg-light p-3 rounded overflow-auto"
@@ -219,14 +261,15 @@
           <p>Please send a request to see the result.</p>
         </div>
       </ng-template>
-    </ng-container>
+    </div>
 
+    <!-- copied message  -->
     <div
-      *ngIf="responseView === 'json' && copied"
+      *ngIf="(responseView === 'json' || responseView === 'tree' || responseView === 'returns') && copied"
       class="response-viewer__alert alert alert-success mt-2 p-1 py-2"
       role="alert"
     >
-      Response is copied
+      {{ copiedViewLabel }} content has been copied
     </div>
   </div>
 </div>
