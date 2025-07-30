@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { ExportService } from '../../../../test-behaviours-core/services/export-service/export.service';
 
 @Component({
-  selector: 'app-header',
+  selector: 'header-component',
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.scss'],
   standalone: false,

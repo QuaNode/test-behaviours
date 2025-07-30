@@ -5,7 +5,7 @@ import { BehaviorService } from '../../../../test-behaviours-core/services/behav
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../config/test-behaviours-ui-config';
 
 @Component({
-  selector: 'app-behaviour-details',
+  selector: 'behaviour-details',
   templateUrl: './behaviour-details.component.html',
   styleUrls: ['./behaviour-details.component.scss'],
   standalone: false,

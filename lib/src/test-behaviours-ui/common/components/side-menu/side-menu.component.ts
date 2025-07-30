@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, signal } from '@angular/core';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 
 @Component({
-  selector: 'app-side-menu',
+  selector: 'side-menu',
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss'],
   standalone: false,
