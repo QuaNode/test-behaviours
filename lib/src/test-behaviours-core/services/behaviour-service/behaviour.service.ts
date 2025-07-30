@@ -1,7 +1,7 @@
 import { Injectable, Inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Behaviours } from 'ng-behaviours';
-import { RequestsService } from '../requests-services/requests.service';
+import { RequestsService } from '../requests-service/requests.service';
 
 @Injectable({
   providedIn: 'root',
@@ -58,18 +58,13 @@ export class BehaviorService {
 
           this.responseTimeSignal.next(delay);
 
-          this.requestsService.updateRequestParametersWithDraft(
+          this.requestsService.updateRequestParameters(
             requestData.name
           );
 
           this.updateResponse(response);
           this.loadingSignal.next(false);
 
-          // mahmoud
-          this.requestsService.setParameterValuesForRequest(
-            requestData.name,
-            params
-          );
 
           if (onSuccess) {
             onSuccess(response);

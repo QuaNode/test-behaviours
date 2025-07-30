@@ -3,14 +3,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { TestBehavioursUiModule } from 'lib';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-import { Behaviours } from 'ng-behaviours';
-import { environment } from 'lib/src/environment/environment';
-import { FormsModule } from '@angular/forms';
 
-export function getBehaviours(http: HttpClient) {
-  return new Behaviours(http, `${environment.apiUrl}`);
-}
+import { FormsModule } from '@angular/forms';
+import { environment } from 'lib/src/environment/environment';
+
+
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,20 +16,13 @@ export function getBehaviours(http: HttpClient) {
     BrowserModule,
     AppRoutingModule,
     TestBehavioursUiModule.config({
-      defaultRoute: 'behaviours',
-      baseURL: 'http://localhost:8282',
-      prefix: '/api/v1'
+      path:  `${environment.path}`,
+      baseURL: `${environment.baseURL}`,
+      prefix: `${environment.prefix}`
     }),
-    HttpClientModule,
     FormsModule,
   ],
-  providers: [
-    {
-      provide: Behaviours,
-      useFactory: getBehaviours,
-      deps: [HttpClient],
-    },
-  ],
+  
   bootstrap: [AppComponent],
 })
 export class AppModule { }

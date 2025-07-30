@@ -1,30 +1,37 @@
 <div class="page-wrapper">
-  <app-header></app-header>
+  <header-component></header-component>
 
   <div class="layout container-fluid pt-5">
-    <!-- Offcanvas Menu (Mobile Only) -->
-    <div class="layout__offcanvas offcanvas offcanvas-start d-lg-none" tabindex="-1" id="sideMenu"
-      aria-labelledby="sideMenuLabel">
+    <div
+      class="layout__offcanvas offcanvas offcanvas-start d-lg-none"
+      tabindex="-1"
+      id="sideMenu"
+      aria-labelledby="sideMenuLabel"
+    >
       <div class="layout__offcanvas-header offcanvas-header">
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="offcanvas"
+          aria-label="Close"
+        ></button>
       </div>
 
       <div class="layout__offcanvas-body offcanvas-body">
-        <app-side-menu></app-side-menu>
+        <side-menu></side-menu>
       </div>
     </div>
 
-    <!-- Main Grid -->
     <div class="layout__grid row">
       <div class="layout__sidebar col-lg-2 d-none d-lg-block border-end pt-5">
-        <app-side-menu></app-side-menu>
+        <side-menu></side-menu>
       </div>
 
       <div class="layout__content col-12 col-lg-10 pt-1">
-        <app-behaviour-details></app-behaviour-details>
+        <behaviour-details></behaviour-details>
       </div>
     </div>
   </div>
 
-  <app-footer></app-footer>
+  <footer-component></footer-component>
 </div>

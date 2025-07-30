@@ -1,9 +1,5 @@
 .request-form {
-
-  background-color: #fef7ed;
-
   &__method-select {
-
     background-image: none;
     font-weight: bold;
     padding: 0.5rem;
@@ -36,7 +32,6 @@
   }
 }
 
-/* OOCSS-style method coloring */
 .method-get {
   color: #00e182;
 }
@@ -57,7 +52,6 @@
   color: #ef5350;
 }
 
-/* Shared badge styling */
 .badge {
   background-color: #f1f3f5;
   padding: 14px 24px;

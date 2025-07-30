@@ -23,8 +23,13 @@ export class RequestsService implements OnDestroy {
     events: false,
   });
 
+<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
   draftData = new BehaviorSubject<any>({}); 
   currentParams = new BehaviorSubject<any>({});
+=======
+  draftData = signal<any>({});
+  currentParams = signal<any>({});
+>>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
 
   readonly theRequests = this.requests.asObservable();
   readonly theRequest = this.request.asObservable();
@@ -106,6 +111,7 @@ export class RequestsService implements OnDestroy {
   }
 
   setRequest(data: BehavioursResponse) {
+<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
     this.request.next(data as Request);
     // console.log('Request Set:', this.request());
   }
@@ -142,21 +148,34 @@ export class RequestsService implements OnDestroy {
     if (currentRequest.parameters) {
       const updatedParameters = { ...currentRequest.parameters };
       const draft = this.draftData.value[apiName]?.parameters || {};
+=======
+    this.request.set(data as Request);
+  }
 
-      for (const paramName in updatedParameters) {
-        if (draft[paramName] !== undefined) {
-          updatedParameters[paramName] = {
-            ...updatedParameters[paramName],
-            value: draft[paramName],
-          };
+
+  updateRequestParameters(apiName: string): void {
+    const currentRequest = this.request();
+    if (currentRequest.parameters) {
+      const currentParameters = currentRequest.parameters;
+      const draft = this.draftData()[apiName]?.parameters || {};
+>>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
+
+      for (const paramName in currentRequest.parameters) {
+        const currentParameter = currentParameters[paramName];
+        const draftParameter = draft[paramName];
+        if (draftParameter !== undefined) {
+          currentParameter.value = draftParameter;
         }
       }
+<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
 
       // original data
       this.request.next({
         ...currentRequest,
         parameters: updatedParameters,
       });
+=======
+>>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
     }
   }
 

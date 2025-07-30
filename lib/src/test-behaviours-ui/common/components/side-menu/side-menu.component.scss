@@ -57,7 +57,6 @@
   }
 }
 
-// OOCSS: reusable color classes
 .method-get {
   color: #00e182;
 }
@@ -76,4 +75,21 @@
 
 .method-delete {
   color: #ef5350;
+}
+
+.side-menu,
+.side-menu__item,
+.side-menu__link {
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.side-menu__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 100%;
 }
