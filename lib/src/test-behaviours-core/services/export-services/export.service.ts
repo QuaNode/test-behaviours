@@ -1,19 +1,27 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { RequestsService } from '../requests-services/requests.service';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/test-behaviours-ui-config';
+
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
-  private requestsService = inject(RequestsService);
+  constructor(
+    private requestsService: RequestsService,
+    @Inject(TEST_BEHAVIOURS_UI_CONFIG) private config: any
+  ) {}
 
-  private config = inject(TEST_BEHAVIOURS_UI_CONFIG)
+  fileUrl = new BehaviorSubject<SafeResourceUrl | null>(null);
 
-  fileUrl = signal<SafeResourceUrl | null>(null);
+  get downloadedData() {
+    return this.requestsService.theRequest;
+  }
 
-  downloadedData = computed(() => this.requestsService.theRequest());
-  isValidData = computed(() => this.requestsService.isValidData());
+  get isValidData(): boolean {
+    return this.requestsService.isValidData;
+  }
 
   exportPostmanCollection(): void {
     const collection = this.generatePostmanCollection();
@@ -33,12 +41,11 @@ export class ExportService {
     URL.revokeObjectURL(blobUrl);
   }
 
-
   generatePostmanCollection(): any {
-    const requests = this.requestsService.theRequests();
+    const requests = this.requestsService.currentRequests || [];
 
-    const behaviourDefs = (requests ?? [])
-      .filter((def) => def.name !== 'behaviours')
+    const behaviourDefs = requests
+      .filter((def: any) => def.name !== 'behaviours')
       .map((def: any) => {
         const method = def.method || 'GET';
         let path = def.path || '';
@@ -46,8 +53,6 @@ export class ExportService {
         //module configurations
         const baseURL = this.config.baseURL || 'http://localhost:8282';
         const prefix = this.config.prefix || '/api/v1';
-
-
 
         const headers: any[] = [];
         const bodyParams: Record<string, any> = {};
@@ -92,10 +97,11 @@ export class ExportService {
           method: method.toUpperCase(),
           header: headers,
           url: {
-            raw: `${baseURL}${prefix}${path}${queryParams.length
-              ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
-              : ''
-              }`,
+            raw: `${baseURL}${prefix}${path}${
+              queryParams.length
+                ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
+                : ''
+            }`,
             host: ['localhost'],
             port: '8282',
             path: `${prefix}${path}`.replace(/^\//, '').split('/'),

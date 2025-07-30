@@ -1,14 +1,7 @@
-import {
-  Injectable,
-  signal,
-  effect,
-  computed,
-  inject,
-  DestroyRef,
-} from '@angular/core';
+import { Injectable, OnDestroy, Inject } from '@angular/core';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { BehavioursResponse, Request } from '../../models/collection';
 import { Behaviours } from 'ng-behaviours';
-
 
 export interface AppBehaviours extends Behaviours {
   behaviours(parameters: any): any;
@@ -17,11 +10,11 @@ export interface AppBehaviours extends Behaviours {
 @Injectable({
   providedIn: 'root',
 })
-export class RequestsService {
-  private behaviours = inject(Behaviours) as AppBehaviours;
-  private destroyRef = inject(DestroyRef);
-  private requests = signal<BehavioursResponse[] | null>(null);
-  private request = signal<Request>({
+export class RequestsService implements OnDestroy {
+  private subscription = new Subscription();
+
+  private requests = new BehaviorSubject<BehavioursResponse[] | null>(null);
+  private request = new BehaviorSubject<Request>({
     name: '',
     version: '',
     method: '',
@@ -30,22 +23,32 @@ export class RequestsService {
     events: false,
   });
 
-  draftData = signal<any>({}); // تخزين المسودات
-  currentParams = signal<any>({});
+  draftData = new BehaviorSubject<any>({}); 
+  currentParams = new BehaviorSubject<any>({});
 
-  readonly theRequests = computed(() => this.requests());
-  readonly theRequest = computed(() => this.request());
+  readonly theRequests = this.requests.asObservable();
+  readonly theRequest = this.request.asObservable();
 
-  isValidData = computed(() => {
+  get currentRequest() {
+    return this.request.value;
+  }
+
+  get currentRequests() {
+    return this.requests.value;
+  }
+
+  get isValidData(): boolean {
+    const currentRequest = this.request.value;
     return !!(
-      this.request().parameters ||
-      this.request().returns ||
-      this.request().name
+      currentRequest.parameters ||
+      currentRequest.returns ||
+      currentRequest.name
     );
-  });
+  }
 
-  getMethodClass = computed(() => {
-    switch (this.request().method.toLowerCase()) {
+  get getMethodClass(): string {
+    const currentRequest = this.request.value;
+    switch (currentRequest.method.toLowerCase()) {
       case 'get':
         return 'text-success';
       case 'post':
@@ -59,89 +62,86 @@ export class RequestsService {
       default:
         return 'text-secondary';
     }
-  });
+  }
 
-  constructor() {
+  constructor(@Inject(Behaviours) private behaviours: AppBehaviours) {
     localStorage.clear();
 
     const savedDraftData = localStorage.getItem('draftData');
     if (savedDraftData) {
-      this.draftData.set(JSON.parse(savedDraftData));
+      this.draftData.next(JSON.parse(savedDraftData));
     }
 
-    effect(() => {
-      if (!this.requests()) {
-        this.behaviours.ready(() => {
-          const subscription = this.behaviours.behaviours({}).subscribe({
-            next: (res: any) => {
-              this.requests.set(
-                Object.keys(res || {}).map((name) => ({
-                  name,
-                  ...res[name],
-                }))
-              );
-            },
-            error: (err: Error) => {
-              console.error('Error fetching behaviours:', err);
-              this.requests.set([]);
-            },
-          });
-
-          this.destroyRef.onDestroy(() => {
-            subscription.unsubscribe();
-          });
+    if (!this.requests.value) {
+      this.behaviours.ready(() => {
+        const subscription = this.behaviours.behaviours({}).subscribe({
+          next: (res: any) => {
+            this.requests.next(
+              Object.keys(res || {}).map((name) => ({
+                name,
+                ...res[name],
+              }))
+            );
+          },
+          error: (err: Error) => {
+            console.error('Error fetching behaviours:', err);
+            this.requests.next([]);
+          },
         });
-      }
-    });
 
-    effect(() => {
-      const currentDraftData = this.draftData();
-      localStorage.setItem('draftData', JSON.stringify(currentDraftData));
-    });
+        this.subscription.add(subscription);
+      });
+    }
+
+    // Watch for draft data changes
+    this.subscription.add(
+      this.draftData.subscribe((currentDraftData) => {
+        localStorage.setItem('draftData', JSON.stringify(currentDraftData));
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   setRequest(data: BehavioursResponse) {
-    this.request.set(data as Request);
+    this.request.next(data as Request);
     // console.log('Request Set:', this.request());
   }
-
 
   setParameterValuesForRequest(
     requestName: string,
     values: Record<string, any>
   ) {
-    this.requests.update((prev) => {
-      if (!prev) return null;
+    const prev = this.requests.value;
+    if (!prev) return;
 
-      return prev.map((def) => {
-        if (def.name !== requestName) return def;
+    const updated = prev.map((def: BehavioursResponse) => {
+      if (def.name !== requestName) return def;
 
-        const updatedParams: any = {};
-        for (const key in def.parameters) {
-          updatedParams[key] = {
-            ...def.parameters[key],
-            value: values[key] ?? '',
-          };
-        }
-
-        return {
-          ...def,
-          parameters: updatedParams,
+      const updatedParams: any = {};
+      for (const key in def.parameters) {
+        updatedParams[key] = {
+          ...def.parameters[key],
+          value: values[key] ?? '',
         };
-      });
+      }
+
+      return {
+        ...def,
+        parameters: updatedParams,
+      };
     });
 
-    // console.log(
-    //   `Parameters for "${requestName}" updated in requests[]`,
-    //   this.requests()
-    // );
+    this.requests.next(updated);
   }
 
   updateRequestParametersWithDraft(apiName: string): void {
-    const currentRequest = this.request();
+    const currentRequest = this.request.value;
     if (currentRequest.parameters) {
       const updatedParameters = { ...currentRequest.parameters };
-      const draft = this.draftData()[apiName]?.parameters || {};
+      const draft = this.draftData.value[apiName]?.parameters || {};
 
       for (const paramName in updatedParameters) {
         if (draft[paramName] !== undefined) {
@@ -153,15 +153,15 @@ export class RequestsService {
       }
 
       // original data
-      this.request.update((req) => ({
-        ...req,
+      this.request.next({
+        ...currentRequest,
         parameters: updatedParameters,
-      }));
+      });
     }
   }
 
   updateDraftParam(apiName: string, paramName: string, value: any): void {
-    const currentDrafts = this.draftData() || {};
+    const currentDrafts = this.draftData.value || {};
     const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
 
     const updatedParameters = {
@@ -177,11 +177,11 @@ export class RequestsService {
       },
     };
 
-    this.draftData.set(updatedDrafts);
+    this.draftData.next(updatedDrafts);
   }
 
   getDraftParam(apiName: string, paramName: string): any {
-    const draft = this.draftData()[apiName];
+    const draft = this.draftData.value[apiName];
     return draft?.parameters?.[paramName] || '';
   }
 }

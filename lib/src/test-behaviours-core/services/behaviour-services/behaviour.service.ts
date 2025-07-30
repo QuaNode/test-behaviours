@@ -1,5 +1,5 @@
-import { inject, Injectable } from '@angular/core';
-import { signal } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { Behaviours } from 'ng-behaviours';
 import { RequestsService } from '../requests-services/requests.service';
 
@@ -7,26 +7,24 @@ import { RequestsService } from '../requests-services/requests.service';
   providedIn: 'root',
 })
 export class BehaviorService {
-  private behaviours = inject(Behaviours);
-  private parametersSignal = signal<any>(null);
-  private requestsService = inject(RequestsService);
-  responseSignal = signal<any>({});
+  private parametersSignal = new BehaviorSubject<any>(null);
+  responseSignal = new BehaviorSubject<any>({});
 
-  loadingSignal = signal<boolean>(false);
-  errorSignal = signal<any>(null);
-  responseTimeSignal = signal<number | null>(null);
+  loadingSignal = new BehaviorSubject<boolean>(false);
+  errorSignal = new BehaviorSubject<any>(null);
+  responseTimeSignal = new BehaviorSubject<number | null>(null);
 
   updateParameters(params: any) {
-    this.parametersSignal.set(params);
+    this.parametersSignal.next(params);
   }
 
   hasParameters(): boolean {
-    const params = this.parametersSignal();
+    const params = this.parametersSignal.value;
     return params && Object.keys(params).length > 0;
   }
 
   updateResponse(response: any) {
-    this.responseSignal.set(response);
+    this.responseSignal.next(response);
   }
 
   downloadJSON(data: any, fileName: string = 'response.json') {
@@ -48,8 +46,8 @@ export class BehaviorService {
 
     const startTime = performance.now();
 
-    this.loadingSignal.set(true);
-    this.errorSignal.set(null);
+    this.loadingSignal.next(true);
+    this.errorSignal.next(null);
 
     this.behaviours
       .getBehaviour(requestData.name)(params)
@@ -58,14 +56,14 @@ export class BehaviorService {
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
 
-          this.responseTimeSignal.set(delay);
+          this.responseTimeSignal.next(delay);
 
           this.requestsService.updateRequestParametersWithDraft(
             requestData.name
           );
 
           this.updateResponse(response);
-          this.loadingSignal.set(false);
+          this.loadingSignal.next(false);
 
           // mahmoud
           this.requestsService.setParameterValuesForRequest(
@@ -80,14 +78,14 @@ export class BehaviorService {
         (error: any) => {
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
-          this.responseTimeSignal.set(delay);
+          this.responseTimeSignal.next(delay);
 
           const formattedError = {
             message: error.message,
           };
           this.updateResponse(formattedError);
-          this.errorSignal.set(error);
-          this.loadingSignal.set(false);
+          this.errorSignal.next(error);
+          this.loadingSignal.next(false);
         }
       );
   }
@@ -98,11 +96,16 @@ export class BehaviorService {
 
   sendAndDownload(requestData: any) {
     this.send(requestData, (response) =>
-      this.downloadJSON(`response, ${requestData.name}_response.json`)
+      this.downloadJSON(response, `${requestData.name}_response.json`)
     );
   }
 
   get parameters() {
-    return this.parametersSignal();
+    return this.parametersSignal.value;
   }
+
+  constructor(
+    @Inject(Behaviours) private behaviours: Behaviours,
+    private requestsService: RequestsService
+  ) {}
 }

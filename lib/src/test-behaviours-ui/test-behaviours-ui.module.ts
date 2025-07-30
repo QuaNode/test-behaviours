@@ -10,9 +10,12 @@ import { HeaderComponent } from './common/components/header/header.component';
 import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.module';
 import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
-import { NgxJsonViewerModule } from 'ngx-json-viewer';
+// import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FooterComponent } from './common/components/footer/footer.component';
-import { TestBehavioursUiConfig, TEST_BEHAVIOURS_UI_CONFIG } from './config/test-behaviours-ui-config';
+import {
+  TestBehavioursUiConfig,
+  TEST_BEHAVIOURS_UI_CONFIG,
+} from './config/test-behaviours-ui-config';
 @NgModule({
   declarations: [
     SideMenuComponent,
@@ -23,24 +26,24 @@ import { TestBehavioursUiConfig, TEST_BEHAVIOURS_UI_CONFIG } from './config/test
     HeaderComponent,
     VersionFormatPipe,
     StringifyPipe,
+    FooterComponent,
   ],
   imports: [
     CommonModule,
     FormsModule,
     TestBehavioursUiRoutingModule,
     ReactiveFormsModule,
-    NgxJsonViewerModule,
-    FooterComponent,
+    // NgxJsonViewerModule,
   ],
   exports: [LayoutComponent, HeaderComponent, StringifyPipe],
 })
 export class TestBehavioursUiModule {
-  static config(config: TestBehavioursUiConfig): ModuleWithProviders<TestBehavioursUiModule> {
+  static config(
+    config: TestBehavioursUiConfig
+  ): ModuleWithProviders<TestBehavioursUiModule> {
     return {
       ngModule: TestBehavioursUiModule,
-      providers: [
-        { provide: TEST_BEHAVIOURS_UI_CONFIG, useValue: config }
-      ]
+      providers: [{ provide: TEST_BEHAVIOURS_UI_CONFIG, useValue: config }],
     };
   }
 }

@@ -1,32 +1,48 @@
 <div class="side-menu text-black-50">
   <h2 class="side-menu__title fs-3 fw-bold text-black">Requests</h2>
 
-
   <ul class="side-menu__list nav nav-pills flex-column mt-4">
-    @for (request of requests(); track request; let i = $index) { @if
-    (request.name !== 'behaviours') {
-    <li class="side-menu__item">
-      <button type="submit"
-        class="side-menu__link text-start d-flex align-items-center justify-content-start gap-2 bg-transparent border-0 fw-bold p-2 rounded-2 w-100"
-        (click)="selectRequest(i)" [class.side-menu__link--active]="i === selectedRequestIndex()">
-        <span class="side-menu__method" [ngClass]="{
-            'method-get':
-              request.method === 'GET' && i !== selectedRequestIndex(),
-            'method-post':
-              request.method === 'POST' && i !== selectedRequestIndex(),
-            'method-put':
-              request.method === 'PUT' && i !== selectedRequestIndex(),
-            'method-patch':
-              request.method === 'PATCH' && i !== selectedRequestIndex(),
-            'method-delete':
-              request.method === 'DELETE' && i !== selectedRequestIndex()
-          }">
-          {{ request.method }}
-        </span>
-        <span class="side-menu__name">{{ request.name }}</span>
-      </button>
-      <hr class="side-menu__divider text-black" />
+    <li
+      class="side-menu__item"
+      *ngFor="
+        let request of requests | async;
+        trackBy: trackByIndex;
+        let i = index
+      "
+    >
+      <ng-container *ngIf="request.name !== 'behaviours'">
+        <button
+          type="submit"
+          class="side-menu__link text-start d-flex align-items-center justify-content-start gap-2 bg-transparent border-0 fw-bold p-2 rounded-2 w-100"
+          (click)="selectRequest(i)"
+          [class.side-menu__link--active]="i === (selectedRequestIndex | async)"
+        >
+          <span
+            class="side-menu__method"
+            [ngClass]="{
+              'method-get':
+                request.method === 'GET' &&
+                i !== (selectedRequestIndex | async),
+              'method-post':
+                request.method === 'POST' &&
+                i !== (selectedRequestIndex | async),
+              'method-put':
+                request.method === 'PUT' &&
+                i !== (selectedRequestIndex | async),
+              'method-patch':
+                request.method === 'PATCH' &&
+                i !== (selectedRequestIndex | async),
+              'method-delete':
+                request.method === 'DELETE' &&
+                i !== (selectedRequestIndex | async)
+            }"
+          >
+            {{ request.method }}
+          </span>
+          <span class="side-menu__name">{{ request.name }}</span>
+        </button>
+        <hr class="side-menu__divider text-black" />
+      </ng-container>
     </li>
-    } }
   </ul>
 </div>

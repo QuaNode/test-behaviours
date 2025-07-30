@@ -1,10 +1,9 @@
-import { NgModule, inject } from '@angular/core';
+import { NgModule, Inject } from '@angular/core';
 import { RouterModule, Routes, ROUTES } from '@angular/router';
 import { TEST_BEHAVIOURS_UI_CONFIG } from './config/test-behaviours-ui-config';
 import { LayoutComponent } from './common/components/layout/layout.component';
 
-export function routesFactory(): Routes {
-  const config = inject(TEST_BEHAVIOURS_UI_CONFIG);
+export function routesFactory(config: any): Routes {
   return [
     {
       path: '',
@@ -24,9 +23,10 @@ export function routesFactory(): Routes {
     {
       provide: ROUTES,
       useFactory: routesFactory,
+      deps: [TEST_BEHAVIOURS_UI_CONFIG],
       multi: true,
     },
   ],
   exports: [RouterModule],
 })
-export class TestBehavioursUiRoutingModule { }
+export class TestBehavioursUiRoutingModule {}

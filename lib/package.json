@@ -6,11 +6,11 @@
     "test": "test"
   },
   "peerDependencies": {
-    "@angular/common": ">=16.1.0",
-    "@angular/core": ">=16.1.0",
-    "@angular/forms": ">=16.1.0",
-    "@angular/router": ">=16.1.0",
-    "rxjs": ">=7.8.0"
+    "@angular/common": ">=11.0.0",
+    "@angular/core": ">=11.0.0",
+    "@angular/forms": ">=11.0.0",
+    "@angular/router": ">=11.0.0",
+    "rxjs": ">=6.6.0"
   },
   "repository": {
     "type": "git",

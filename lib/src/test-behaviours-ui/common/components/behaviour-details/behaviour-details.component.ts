@@ -1,29 +1,34 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { BehaviorSubject, Subscription } from 'rxjs';
 
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
 
 import { environment } from '../../../../environment/environment';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-services/behaviour.service';
+
 @Component({
   selector: 'app-behaviour-details',
   templateUrl: './behaviour-details.component.html',
   styleUrls: ['./behaviour-details.component.scss'],
-  standalone: false,
 })
-export class BehaviourDetailsComponent {
-  private requestsService = inject(RequestsService);
-  private behaviourService = inject(BehaviorService);
+export class BehaviourDetailsComponent implements OnInit, OnDestroy {
+  private subscription = new Subscription();
 
-  loading = signal<boolean>(false);
+  constructor(
+    private requestsService: RequestsService,
+    private behaviourService: BehaviorService
+  ) {}
 
+  loading = new BehaviorSubject<boolean>(false);
 
-  methodClass = computed(() => {
-    return this.requestsService.getMethodClass();
-  });
+  get methodClass(): string {
+    return this.requestsService.getMethodClass;
+  }
 
-  requestData = computed(() => {
-    const request = this.requestsService.theRequest();
-    const isValid = this.requestsService.isValidData();
+  get requestData(): any {
+    // We need to get the current value from the BehaviorSubject directly
+    const request = this.requestsService.currentRequest || {};
+    const isValid = this.requestsService.isValidData;
     return {
       url: isValid ? `${environment.apiUrl}${request?.path ?? ''}` : '',
       method: request?.method ?? '',
@@ -31,21 +36,28 @@ export class BehaviourDetailsComponent {
       prefix: request?.prefix ?? '',
       events: request?.events ?? false,
       isValid,
-      name: request.name,
+      name: request?.name,
     };
-  });
+  }
 
-  constructor() {
-    effect(() => {
-      this.loading.update((prev) => this.behaviourService.loadingSignal());
-    });
+  ngOnInit() {
+    // Watch for loading changes
+    this.subscription.add(
+      this.behaviourService.loadingSignal.subscribe((loading) => {
+        this.loading.next(loading);
+      })
+    );
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
   onSend() {
-    this.behaviourService.sendOnly(this.requestData());
+    this.behaviourService.sendOnly(this.requestData);
   }
 
   onSendAndDownload() {
-    this.behaviourService.sendAndDownload(this.requestData());
+    this.behaviourService.sendAndDownload(this.requestData);
   }
 }
