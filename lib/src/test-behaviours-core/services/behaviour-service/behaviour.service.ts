@@ -51,22 +51,27 @@ export class BehaviorService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
+    let once = false;
+
     this.behaviours
       .getBehaviour(requestData.name)(params)
       .subscribe(
         (response: any) => {
-          const endTime = performance.now();
-          const delay = Math.round(endTime - startTime);
-
-          this.responseTimeSignal.set(delay);
 
           this.requestsService.updateRequestParameters(
             requestData.name
           );
 
           this.updateResponse(response);
+
+          if (once) return;
+          once = true;
+
           this.loadingSignal.set(false);
 
+          const endTime = performance.now();
+          const delay = Math.round(endTime - startTime);
+          this.responseTimeSignal.set(delay);
 
           if (onSuccess) {
             onSuccess(response);

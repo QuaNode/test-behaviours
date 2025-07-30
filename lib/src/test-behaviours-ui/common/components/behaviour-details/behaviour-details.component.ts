@@ -5,7 +5,7 @@ import { BehaviorService } from '../../../../test-behaviours-core/services/behav
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../config/test-behaviours-ui-config';
 
 @Component({
-  selector: 'app-behaviour-details',
+  selector: 'behaviour-details',
   templateUrl: './behaviour-details.component.html',
   styleUrls: ['./behaviour-details.component.scss'],
   standalone: false,
@@ -26,11 +26,10 @@ export class BehaviourDetailsComponent {
     const request = this.requestsService.theRequest();
     const isValid = this.requestsService.isValidData();
 
-    const base = this.config.baseURL ?? '';
+    const base = this.config.baseURL || window.location.origin;
+    const prefix = this.config.prefix;
 
-    const baseForURL = base || window.location.origin;
-
-    const fullURL = new URL(this.config.prefix.replace(/^\/+/, ''), baseForURL).toString();
+    const fullURL = new URL(prefix, base).href;
     return {
       url: isValid ? `${fullURL}${request?.path ?? ''}` : '',
       method: request?.method ?? '',

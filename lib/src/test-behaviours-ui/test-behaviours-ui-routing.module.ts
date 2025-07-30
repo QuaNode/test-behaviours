@@ -14,6 +14,7 @@ export function routesFactory(): Routes {
     {
       path: config.path,
       component: LayoutComponent,
+      canActivate: config.canActivate,
     },
   ];
 }

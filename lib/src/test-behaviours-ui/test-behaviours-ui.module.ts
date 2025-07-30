@@ -1,4 +1,4 @@
-import { NgModule, ModuleWithProviders,inject } from '@angular/core';
+import { NgModule, ModuleWithProviders, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
 import { BehaviourDetailsComponent } from './common/components/behaviour-details/behaviour-details.component';
@@ -23,15 +23,22 @@ import {
 export function getBehaviours(http: HttpClient): Behaviours {
   const config = inject(TEST_BEHAVIOURS_UI_CONFIG);
 
-  const base = config.baseURL ?? '';
+  if (!config.prefix) {
+    throw new Error('[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL');
+  }
 
-  const baseForURL = base || window.location.origin;
+  const base = config.baseURL;
+  const prefix = config.prefix;
 
-  const fullURL = new URL(config.prefix.replace(/^\/+/, ''), baseForURL).toString();
+  let fullURL = prefix;
+
+  if (base) {
+
+    fullURL = new URL(prefix, base).href;
+  }
 
   return new Behaviours(http, fullURL);
 }
-
 
 
 @NgModule({

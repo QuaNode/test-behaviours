@@ -13,25 +13,26 @@ import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
 
+declare var bootstrap: any;
+
 @Component({
-  selector: 'app-parameters-and-returns',
+  selector: 'parameters-and-returns',
   templateUrl: './prameters-and-returns.html',
   styleUrls: ['./prameters-and-returns.scss'],
   standalone: false,
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
-  private requestsService = inject(RequestsService);
-  private behaviourService = inject(BehaviorService);
-  private lastParams: any = null;
+
   @ViewChild('jsonView') jsonView!: ElementRef;
   @ViewChild('treeView') treeView!: ElementRef;
   @ViewChild('returnView') returnView!: ElementRef;
+
+  private requestsService = inject(RequestsService);
+  private behaviourService = inject(BehaviorService);
+  private lastParams: any = null;
+
   form: FormGroup;
   parametersList: string[] = [];
-  typesList(): string[] {
-    return ['String', 'Number', 'Boolean', 'Object'];
-  }
-
   response = this.behaviourService.responseSignal();
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
@@ -41,57 +42,81 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
   activeInputIndex: number | null = null;
-
   visibleEditorIndex: number | null = null;
-  jsonEditorValue: string = '';
+  jsonEditorValue = '';
+
+
+  get parameters(): FormArray {
+    return this.form.get('parameters') as FormArray;
+  }
+
+  get jsonPreview(): any {
+    const result: any = {};
+
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      const paramName = group.get('paramName')?.value;
+      const rawValue = group.get('rawValue')?.value;
+      const type = group.get('type')?.value;
+
+      if (!paramName || rawValue === undefined) return;
+
+      try {
+        result[paramName] = this.castValueByType(rawValue, type);
+      } catch {
+        console.error(`Invalid JSON for parameter ${paramName}`);
+        result[paramName] = rawValue;
+      }
+    });
+
+    return result;
+  }
+
+    get copiedViewLabel(): string {
+    const labelMap = {
+      json: 'The JSON view',
+      tree: 'The Tree view',
+      returns: 'The Return view',
+    };
+    return labelMap[this.responseView] || 'Response';
+  }
 
   constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({
-      parameters: this.fb.array([]),
-    });
+    this.form = this.fb.group({ parameters: this.fb.array([]) });
 
     effect(() => {
       const data = this.requestsService.theRequest();
-      if (data?.parameters) {
-        this.parameters.clear();
-        const filteredParams = Object.entries(data.parameters).filter(
-          ([_, paramData]: [string, any]) => paramData.type !== 'middleware'
-        );
-        this.parametersList = filteredParams.map(([paramName]) => paramName);
-        const currentApiName = data.name;
-        filteredParams.forEach(([paramName, paramData]: [string, any]) => {
-          const type = paramData?.type || 'String';
-          const savedValue = this.requestsService.getDraftParam(
-            currentApiName,
-            paramName
-          );
-          this.parameters.push(
-            this.fb.group({
-              paramName: [paramName],
-              rawValue: [
-                typeof savedValue === 'object'
-                  ? JSON.stringify(savedValue)
-                  : savedValue || '',
-              ],
+      if (!data?.parameters) return;
 
-              type: ['String'],
-            })
-          );
-        });
-        const initialParams = this.jsonPreview;
-        this.lastParams = initialParams;
-        this.behaviourService.updateParameters(initialParams);
-      }
+      this.parameters.clear();
+
+      const filteredParams = Object.entries(data.parameters).filter(
+        ([, paramData]: [string, any]) => paramData.type !== 'middleware'
+      );
+
+      this.parametersList = filteredParams.map(([paramName]) => paramName);
+
+      filteredParams.forEach(([paramName, paramData]: [string, any]) => {
+        const savedValue = this.requestsService.getDraftParam(data.name, paramName);
+        this.parameters.push(
+          this.fb.group({
+            paramName: [paramName],
+            rawValue: [typeof savedValue === 'object' ? JSON.stringify(savedValue) : savedValue || ''],
+            type: ['String'],
+          })
+        );
+      });
+
+      this.lastParams = this.jsonPreview;
+      this.behaviourService.updateParameters(this.lastParams);
     });
 
     effect(() => {
       this.response = this.behaviourService.responseSignal();
       this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
-      this.error.update((prev) => this.behaviourService.errorSignal());
-      this.responseTime.update((prev) =>
-        this.behaviourService.responseTimeSignal()
-      );
+      this.error.update(() => this.behaviourService.errorSignal());
+      this.responseTime.update(() => this.behaviourService.responseTimeSignal());
     });
   }
 
@@ -103,25 +128,13 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    const currentApiName = this.requestsService.theRequest().name;
-    const currentParams = this.jsonPreview;
-    for (const paramName in currentParams) {
-      this.requestsService.updateDraftParam(
-        currentApiName,
-        paramName,
-        currentParams[paramName]
-      );
-    }
-  }
-
-  get parameters(): FormArray {
-    return this.form.get('parameters') as FormArray;
+  typesList(): string[] {
+    return ['String', 'Number', 'Boolean', 'Object'];
   }
 
   createRow(): FormGroup {
     return this.fb.group({
-      paramName: [{ value: '', disabled: false }],
+      paramName: [''],
       rawValue: [''],
       type: ['String'],
     });
@@ -132,65 +145,36 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   removeRow(index: number) {
-    if (this.parameters.length > 1) {
-      this.parameters.removeAt(index);
+    if (this.parameters.length > 1) this.parameters.removeAt(index);
+  }
+
+
+  castValueByType(value: any, type: string) {
+    switch (type) {
+      case 'Number': return Number(value);
+      case 'Boolean': return value === 'true';
+      case 'Date': return new Date(value).toISOString();
+      case 'Object': return JSON.parse(value);
+      default: return value;
     }
   }
 
-  get jsonPreview(): any {
-    const result: any = {};
-    this.parameters.controls.forEach((control) => {
-      const group = control as FormGroup;
-      const paramName = group.get('paramName')?.value;
-      const rawValue = group.get('rawValue')?.value;
-      const type = group.get('type')?.value;
+  updateDraftAndParameters(index: number): void {
+    if (this.activeInputIndex !== index) return;
 
-      if (paramName && rawValue !== undefined) {
-        try {
-          switch (type) {
-            case 'Number':
-              result[paramName] = Number(rawValue);
-              break;
-            case 'Boolean':
-              result[paramName] = rawValue === 'true';
-              break;
-            case 'Date':
-              result[paramName] = new Date(rawValue).toISOString();
-              break;
-            case 'Object':
-              result[paramName] = JSON.parse(rawValue);
-              break;
-            default:
-              result[paramName] = rawValue;
-          }
-        } catch (e) {
-          console.error(`Invalid JSON for parameter ${paramName}`);
-          result[paramName] = rawValue;
-        }
-      }
+    const currentApiName = this.requestsService.theRequest().name;
+    const currentParams = this.jsonPreview;
+
+    Object.entries(currentParams).forEach(([paramName, value]) => {
+      this.requestsService.updateDraftParam(currentApiName, paramName, value);
     });
 
-    return result;
+    this.behaviourService.updateParameters(currentParams);
+    this.lastParams = currentParams;
+    this.activeInputIndex = null;
   }
 
-  inputsBlur(index: number): void {
-    if (this.activeInputIndex === index) {
-      const currentApiName = this.requestsService.theRequest().name;
-      const currentParams = this.jsonPreview;
-      for (const paramName in currentParams) {
-        this.requestsService.updateDraftParam(
-          currentApiName,
-          paramName,
-          currentParams[paramName]
-        );
-      }
-      this.behaviourService.updateParameters(currentParams);
-      this.lastParams = currentParams;
-      this.activeInputIndex = null;
-    }
-  }
-
-  inputFocus(index: number): void {
+  currentInputIndex(index: number): void {
     this.activeInputIndex = index;
   }
 
@@ -199,24 +183,17 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return typeof value !== 'object' || value === null;
   }
 
-
   copyJsonToClipboard() {
-    let element: HTMLElement | null = null;
+    const elementMap = {
+      json: this.jsonView,
+      tree: this.treeView,
+      returns: this.returnView,
+    };
 
-    switch (this.responseView) {
-      case 'json':
-        element = this.jsonView?.nativeElement;
-        break;
-      case 'tree':
-        element = this.treeView?.nativeElement;
-        break;
-      case 'returns':
-        element = this.returnView?.nativeElement;
-        break;
-    }
+    const element = elementMap[this.responseView]?.nativeElement;
+    const text = element?.innerText || element?.textContent || '';
 
-    if (element) {
-      const text = element.innerText || element.textContent || '';
+    if (text) {
       navigator.clipboard.writeText(text).then(() => {
         this.copied = true;
         setTimeout(() => (this.copied = false), 1500);
@@ -224,43 +201,26 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     }
   }
 
-  get copiedViewLabel(): string {
-    switch (this.responseView) {
-      case 'json':
-        return 'The JSON view ';
-      case 'tree':
-        return 'The Tree view';
-      case 'returns':
-        return 'The Return view';
-      default:
-        return 'Response';
-    }
-  }
+
 
   getErrorClass(): string {
     const code = this.error()?.code;
-    switch (code) {
-      case 400:
-      case 401:
-      case 500:
-        return 'bg-danger';
-      case 404:
-        return 'bg-warning';
-      case 200:
-        return 'bg-success';
-      default:
-        return 'bg-secondary';
-    }
+    const classMap: Record<number, string> = {
+      200: 'bg-success',
+      400: 'bg-danger',
+      401: 'bg-danger',
+      404: 'bg-warning',
+      500: 'bg-danger',
+    };
+    return classMap[code] || 'bg-secondary';
   }
 
   objectKeys(obj: any): string[] {
     return obj ? Object.keys(obj) : [];
   }
 
-
   openJsonEditor(index: number) {
     this.visibleEditorIndex = index;
-
     const value = this.parameters.at(index).get('rawValue')?.value;
     try {
       this.jsonEditorValue = JSON.stringify(JSON.parse(value), null, 2);
@@ -278,10 +238,33 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.form.markAsDirty();
       this.visibleEditorIndex = null;
     }
+    this.hideJsonModal();
   }
 
   cancelJson() {
     this.visibleEditorIndex = null;
     this.jsonEditorValue = '';
   }
+
+  openJsonModal(index: number) {
+    this.visibleEditorIndex = index;
+    const modalElement = document.getElementById('jsonModal');
+    if (modalElement) new bootstrap.Modal(modalElement).show();
+  }
+
+  hideJsonModal() {
+    const modalElement = document.getElementById('jsonModal');
+    const modalInstance = bootstrap.Modal.getInstance(modalElement!);
+    modalInstance?.hide();
+  }
+
+
+  ngOnDestroy() {
+    const currentApiName = this.requestsService.theRequest().name;
+    const currentParams = this.jsonPreview;
+    Object.entries(currentParams).forEach(([paramName, value]) => {
+      this.requestsService.updateDraftParam(currentApiName, paramName, value);
+    });
+  }
+  
 }
