@@ -1,22 +1,13 @@
-<<<<<<< HEAD
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
-=======
-import { Component, computed, effect, inject, signal } from '@angular/core';
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
->>>>>>> origin/mahmoudrabea
 
 @Component({
-  selector: 'side-menu',
+  selector: 'app-side-menu',
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss'],
 })
-<<<<<<< HEAD
 export class SideMenuComponent implements OnInit, OnDestroy {
-=======
-export class SideMenuComponent {
->>>>>>> origin/mahmoudrabea
   methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
   private subscription = new Subscription();
 

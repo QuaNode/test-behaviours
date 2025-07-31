@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { RequestsService } from '../requests-service/requests.service';
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/test-behaviours-ui-config';
 
@@ -6,8 +6,10 @@ import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/te
   providedIn: 'root',
 })
 export class ExportService {
-  private requestsService = inject(RequestsService);
-  private config = inject(TEST_BEHAVIOURS_UI_CONFIG);
+  constructor(
+    private requestsService: RequestsService,
+    @Inject(TEST_BEHAVIOURS_UI_CONFIG) private config: any
+  ) {}
 
   exportPostmanCollection(): void {
     const collection = this.generatePostmanCollection();
@@ -27,11 +29,11 @@ export class ExportService {
   }
 
   generatePostmanCollection(): any {
-    const requests = this.requestsService.theRequests();
+    const requests = this.requestsService.currentRequests || [];
 
     const items = (requests ?? [])
-      .filter(def => def.name !== 'behaviours')
-      .map(def => ({
+      .filter((def) => def.name !== 'behaviours')
+      .map((def) => ({
         name: def.name,
         request: this.buildRequest(def),
       }));
@@ -39,7 +41,8 @@ export class ExportService {
     return {
       info: {
         name: 'Behaviours',
-        schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+        schema:
+          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
       },
       item: items,
     };
@@ -55,7 +58,12 @@ export class ExportService {
     const bodyParams = this.buildBodyParams(parameters);
     path = this.replacePathParams(path, parameters);
 
-    const url = this.buildUrl(this.config.baseURL, this.config.prefix, path, queryParams);
+    const url = this.buildUrl(
+      this.config.baseURL,
+      this.config.prefix,
+      path,
+      queryParams
+    );
 
     const request: any = {
       method,
@@ -63,7 +71,10 @@ export class ExportService {
       url,
     };
 
-    if (Object.keys(bodyParams).length && ['POST', 'PUT', 'PATCH'].includes(method)) {
+    if (
+      Object.keys(bodyParams).length &&
+      ['POST', 'PUT', 'PATCH'].includes(method)
+    ) {
       request.body = {
         mode: 'raw',
         raw: JSON.stringify(bodyParams, null, 2),
@@ -74,14 +85,22 @@ export class ExportService {
     return request;
   }
 
-  private buildUrl(baseURL: string = '', prefix: string = '', path: string, queryParams: any[]): any {
+  private buildUrl(
+    baseURL: string = '',
+    prefix: string = '',
+    path: string,
+    queryParams: any[]
+  ): any {
     const urlPrefix = prefix.replace(/^\/+|\/+$/g, '');
     const urlPath = path.replace(/^\/+/, '');
     const queryString = queryParams.length
-      ? '?' + queryParams.map(p => `${p.key}=${p.value}`).join('&')
+      ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
       : '';
 
-    const fullUrl = new URL(`${urlPrefix}/${urlPath}${queryString}`, baseURL || 'http://localhost');
+    const fullUrl = new URL(
+      `${urlPrefix}/${urlPath}${queryString}`,
+      baseURL || 'http://localhost'
+    );
 
     return {
       raw: fullUrl.toString(),

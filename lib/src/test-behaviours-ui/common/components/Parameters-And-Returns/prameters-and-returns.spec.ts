@@ -8,7 +8,7 @@ describe('ParametersAndReturnsComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [ParametersAndReturnsComponent]
+      declarations: [ParametersAndReturnsComponent],
     });
     fixture = TestBed.createComponent(ParametersAndReturnsComponent);
     component = fixture.componentInstance;

@@ -1,35 +1,40 @@
 import { Injectable, OnDestroy, Inject } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
-import { BehavioursResponse, Request } from '../../models/collection';
 import { Behaviours } from 'ng-behaviours';
 
 export interface AppBehaviours extends Behaviours {
   behaviours(parameters: any): any;
 }
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface Request {
+  name: string;
+  method: string;
+  parameters: any;
+  path?: string;
+  version?: string;
+  prefix?: string;
+  events?: boolean;
+}
+
+export interface BehavioursResponse {
+  name: string;
+  method: string;
+  parameters: any;
+}
+
+@Injectable()
 export class RequestsService implements OnDestroy {
   private subscription = new Subscription();
 
   private requests = new BehaviorSubject<BehavioursResponse[] | null>(null);
   private request = new BehaviorSubject<Request>({
     name: '',
-    version: '',
     method: '',
-    path: '',
-    prefix: '',
-    events: false,
+    parameters: {},
   });
 
-<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
-  draftData = new BehaviorSubject<any>({}); 
+  draftData = new BehaviorSubject<any>({});
   currentParams = new BehaviorSubject<any>({});
-=======
-  draftData = signal<any>({});
-  currentParams = signal<any>({});
->>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
 
   readonly theRequests = this.requests.asObservable();
   readonly theRequest = this.request.asObservable();
@@ -43,17 +48,12 @@ export class RequestsService implements OnDestroy {
   }
 
   get isValidData(): boolean {
-    const currentRequest = this.request.value;
-    return !!(
-      currentRequest.parameters ||
-      currentRequest.returns ||
-      currentRequest.name
-    );
+    return this.requests.value !== null && this.requests.value.length > 0;
   }
 
   get getMethodClass(): string {
-    const currentRequest = this.request.value;
-    switch (currentRequest.method.toLowerCase()) {
+    const method = this.request.value?.method?.toLowerCase();
+    switch (method) {
       case 'get':
         return 'text-success';
       case 'post':
@@ -89,7 +89,6 @@ export class RequestsService implements OnDestroy {
             );
           },
           error: (err: Error) => {
-            console.error('Error fetching behaviours:', err);
             this.requests.next([]);
           },
         });
@@ -111,54 +110,14 @@ export class RequestsService implements OnDestroy {
   }
 
   setRequest(data: BehavioursResponse) {
-<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
     this.request.next(data as Request);
-    // console.log('Request Set:', this.request());
   }
-
-  setParameterValuesForRequest(
-    requestName: string,
-    values: Record<string, any>
-  ) {
-    const prev = this.requests.value;
-    if (!prev) return;
-
-    const updated = prev.map((def: BehavioursResponse) => {
-      if (def.name !== requestName) return def;
-
-      const updatedParams: any = {};
-      for (const key in def.parameters) {
-        updatedParams[key] = {
-          ...def.parameters[key],
-          value: values[key] ?? '',
-        };
-      }
-
-      return {
-        ...def,
-        parameters: updatedParams,
-      };
-    });
-
-    this.requests.next(updated);
-  }
-
-  updateRequestParametersWithDraft(apiName: string): void {
-    const currentRequest = this.request.value;
-    if (currentRequest.parameters) {
-      const updatedParameters = { ...currentRequest.parameters };
-      const draft = this.draftData.value[apiName]?.parameters || {};
-=======
-    this.request.set(data as Request);
-  }
-
 
   updateRequestParameters(apiName: string): void {
-    const currentRequest = this.request();
+    const currentRequest = this.request.value;
     if (currentRequest.parameters) {
       const currentParameters = currentRequest.parameters;
-      const draft = this.draftData()[apiName]?.parameters || {};
->>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
+      const draft = this.draftData.value[apiName]?.parameters || {};
 
       for (const paramName in currentRequest.parameters) {
         const currentParameter = currentParameters[paramName];
@@ -167,15 +126,6 @@ export class RequestsService implements OnDestroy {
           currentParameter.value = draftParameter;
         }
       }
-<<<<<<< HEAD:lib/src/test-behaviours-core/services/requests-services/requests.service.ts
-
-      // original data
-      this.request.next({
-        ...currentRequest,
-        parameters: updatedParameters,
-      });
-=======
->>>>>>> origin/mahmoudrabea:lib/src/test-behaviours-core/services/requests-service/requests.service.ts
     }
   }
 

@@ -1,26 +1,18 @@
-<<<<<<< HEAD
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-=======
-declare var bootstrap: any;
 import {
   Component,
-  effect,
-  inject,
   OnInit,
   OnDestroy,
-  signal,
   ViewChild,
   ElementRef,
 } from '@angular/core';
-
->>>>>>> origin/mahmoudrabea
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
+declare var bootstrap: any;
 
 @Component({
-  selector: 'parameters-and-returns',
+  selector: 'app-parameters-and-returns',
   templateUrl: './prameters-and-returns.html',
   styleUrls: ['./prameters-and-returns.scss'],
 })
@@ -34,22 +26,19 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
   parametersList: string[] = [];
-<<<<<<< HEAD
-  typesList = ['String', 'Number', 'Date', 'Object'];
   response = new BehaviorSubject<any>({});
-=======
->>>>>>> origin/mahmoudrabea
-
-  response = this.behaviourService.responseSignal();
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
-<<<<<<< HEAD
+  showHintIndex: number | null = null;
 
   error = new BehaviorSubject<any>(null);
   responseTime = new BehaviorSubject<number | null>(null);
   activeInputIndex: number | null = null;
+
+  visibleEditorIndex: number | null = null;
+  jsonEditorValue = '';
 
   constructor(
     private fb: FormBuilder,
@@ -58,52 +47,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   ) {
     this.form = this.fb.group({
       parameters: this.fb.array([]),
-=======
-  showHintIndex: number | null = null;
-  error = signal<any>(null);
-  responseTime = signal<number | null>(null);
-  activeInputIndex: number | null = null;
-
-  visibleEditorIndex: number | null = null;
-  jsonEditorValue = '';
-
-  constructor(private fb: FormBuilder) {
-    this.form = this.fb.group({ parameters: this.fb.array([]) });
-
-    effect(() => {
-      const data = this.requestsService.theRequest();
-      if (!data?.parameters) return;
-
-      this.parameters.clear();
-
-      const filteredParams = Object.entries(data.parameters).filter(
-        ([, paramData]: [string, any]) => paramData.type !== 'middleware'
-      );
-
-      this.parametersList = filteredParams.map(([paramName]) => paramName);
-
-      filteredParams.forEach(([paramName, paramData]: [string, any]) => {
-        const savedValue = this.requestsService.getDraftParam(data.name, paramName);
-        this.parameters.push(
-          this.fb.group({
-            paramName: [paramName],
-            rawValue: [typeof savedValue === 'object' ? JSON.stringify(savedValue) : savedValue || ''],
-            type: ['String'],
-          })
-        );
-      });
-
-      this.lastParams = this.jsonPreview;
-      this.behaviourService.updateParameters(this.lastParams);
-    });
-
-    effect(() => {
-      this.response = this.behaviourService.responseSignal();
-      this.returns = this.response;
-      this.returnKeys = Object.keys(this.returns);
-      this.error.update(() => this.behaviourService.errorSignal());
-      this.responseTime.update(() => this.behaviourService.responseTimeSignal());
->>>>>>> origin/mahmoudrabea
     });
   }
 
@@ -129,7 +72,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
             this.parameters.push(
               this.fb.group({
                 paramName: [paramName],
-                value: [savedValue || ''],
+                rawValue: [savedValue || ''],
                 type: [type],
               })
             );
@@ -175,25 +118,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-<<<<<<< HEAD
-    // حفظ القيم عند تدمير المكون (اختياري)
     const currentApiName = this.requestsService.currentRequest?.name;
-    const currentParams = this.jsonPreview;
-    for (const paramName in currentParams) {
-      this.requestsService.updateDraftParam(
-        currentApiName,
-        paramName,
-        currentParams[paramName]
-      );
-    }
-    this.subscription.unsubscribe();
-=======
-    const currentApiName = this.requestsService.theRequest().name;
     const currentParams = this.jsonPreview;
     Object.entries(currentParams).forEach(([paramName, value]) => {
       this.requestsService.updateDraftParam(currentApiName, paramName, value);
     });
->>>>>>> origin/mahmoudrabea
   }
 
   get parameters(): FormArray {
@@ -207,11 +136,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   createRow(): FormGroup {
     return this.fb.group({
       paramName: [''],
-<<<<<<< HEAD
-      value: [''],
-=======
       rawValue: [''],
->>>>>>> origin/mahmoudrabea
       type: ['String'],
     });
   }
@@ -221,18 +146,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   removeRow(index: number) {
-<<<<<<< HEAD
-    this.parameters.removeAt(index);
-  }
-
-  get jsonPreview(): any {
-    const params: any = {};
-    this.parameters.controls.forEach((control: any) => {
-      const paramName = control.get('paramName')?.value;
-      const value = control.get('value')?.value;
-      if (paramName) {
-        params[paramName] = value;
-=======
     if (this.parameters.length > 1) this.parameters.removeAt(index);
   }
 
@@ -250,45 +163,31 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       try {
         result[paramName] = this.castValueByType(rawValue, type);
       } catch {
-        console.error(`Invalid JSON for parameter ${paramName}`);
         result[paramName] = rawValue;
->>>>>>> origin/mahmoudrabea
       }
     });
-    return params;
+    return result;
   }
 
-<<<<<<< HEAD
-  onBlur(index: number): void {
-    if (this.activeInputIndex === index) {
-      const currentApiName = this.requestsService.currentRequest?.name;
-      const currentParams = this.jsonPreview;
-      for (const paramName in currentParams) {
-        this.requestsService.updateDraftParam(
-          currentApiName,
-          paramName,
-          currentParams[paramName]
-        );
-      }
-      this.behaviourService.updateParameters(currentParams);
-      this.lastParams = currentParams;
-      this.activeInputIndex = null;
-=======
   castValueByType(value: any, type: string) {
     switch (type) {
-      case 'Number': return Number(value);
-      case 'Boolean': return value === 'true';
-      case 'Date': return new Date(value).toISOString();
-      case 'Object': return JSON.parse(value);
-      default: return value;
->>>>>>> origin/mahmoudrabea
+      case 'Number':
+        return Number(value);
+      case 'Boolean':
+        return value === 'true';
+      case 'Date':
+        return new Date(value).toISOString();
+      case 'Object':
+        return JSON.parse(value);
+      default:
+        return value;
     }
   }
 
   inputsBlur(index: number): void {
     if (this.activeInputIndex !== index) return;
 
-    const currentApiName = this.requestsService.theRequest().name;
+    const currentApiName = this.requestsService.currentRequest?.name;
     const currentParams = this.jsonPreview;
 
     Object.entries(currentParams).forEach(([paramName, value]) => {
@@ -304,37 +203,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     this.activeInputIndex = index;
   }
 
-
   isPrimitive(value: any): boolean {
     return value !== Object(value);
   }
 
   copyJsonToClipboard() {
-<<<<<<< HEAD
-    const jsonString = JSON.stringify(this.response.value, null, 2);
-    navigator.clipboard.writeText(jsonString).then(() => {
-      this.copied = true;
-      setTimeout(() => (this.copied = false), 2000);
-    });
-  }
-
-  getErrorClass(): string {
-    const code = this.error.value?.code;
-    switch (code) {
-      case 400:
-        return 'text-danger';
-      case 401:
-        return 'text-warning';
-      case 403:
-        return 'text-danger';
-      case 404:
-        return 'text-info';
-      case 500:
-        return 'text-danger';
-      default:
-        return 'text-secondary';
-    }
-=======
     const elementMap = {
       json: this.jsonView,
       tree: this.treeView,
@@ -362,7 +235,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   getErrorClass(): string {
-    const code = this.error()?.code;
+    const code = this.error.value?.code;
     const classMap: Record<number, string> = {
       200: 'bg-success',
       400: 'bg-danger',
@@ -371,7 +244,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       500: 'bg-danger',
     };
     return classMap[code] || 'bg-secondary';
->>>>>>> origin/mahmoudrabea
   }
 
   objectKeys(obj: any): string[] {

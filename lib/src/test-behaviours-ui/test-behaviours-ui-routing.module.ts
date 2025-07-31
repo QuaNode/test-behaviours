@@ -1,4 +1,4 @@
-import { NgModule, Inject } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { RouterModule, Routes, ROUTES } from '@angular/router';
 import { TEST_BEHAVIOURS_UI_CONFIG } from './config/test-behaviours-ui-config';
 import { LayoutComponent } from './common/components/layout/layout.component';

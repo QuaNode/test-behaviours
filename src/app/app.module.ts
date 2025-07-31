@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 
 import { FormsModule } from '@angular/forms';
 import { environment } from 'lib/src/environment/environment';
+import { NgxJsonViewerModule } from 'ngx-json-viewer';
 
 
 
@@ -15,6 +16,7 @@ import { environment } from 'lib/src/environment/environment';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    NgxJsonViewerModule,
     TestBehavioursUiModule.config({
       path:  `${environment.path}`,
       baseURL: `${environment.baseURL}`,

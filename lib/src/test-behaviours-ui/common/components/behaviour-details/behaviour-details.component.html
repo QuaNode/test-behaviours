@@ -31,7 +31,6 @@
     <div class="request-form__actions row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
         <div class="request-form__send-group btn-group w-100">
-<<<<<<< HEAD
           <!-- الزرار الرئيسي "Send" -->
           <button
             type="button"
@@ -42,12 +41,6 @@
             <ng-container *ngIf="!(loading | async); else spinner">
               Send
             </ng-container>
-=======
-          <button type="button"
-            class="btn btn-primary w-75 text-white d-flex justify-content-center align-items-center gap-2 pe-1"
-            (click)="onSend()" [disabled]="loading()">
-            <ng-container *ngIf="!loading(); else spinner"> Send </ng-container>
->>>>>>> origin/mahmoudrabea
             <ng-template #spinner>
               <div
                 class="spinner-border spinner-border-sm text-white"
@@ -58,7 +51,6 @@
             </ng-template>
           </button>
 
-<<<<<<< HEAD
           <!-- زرار السهم لتحت -->
           <button
             type="button"
@@ -67,10 +59,6 @@
             aria-expanded="false"
             [disabled]="loading | async"
           >
-=======
-          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split w-25s ps-1"
-            data-bs-toggle="dropdown" aria-expanded="false" [disabled]="loading()">
->>>>>>> origin/mahmoudrabea
             <span class="visually-hidden">Toggle Dropdown</span>
           </button>
 
@@ -127,6 +115,6 @@
   </div>
 
   <div class="request-form__json mt-5 mb-5">
-    <parameters-and-returns></parameters-and-returns>
+    <app-parameters-and-returns></app-parameters-and-returns>
   </div>
 </div>

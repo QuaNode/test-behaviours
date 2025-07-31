@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { RequestsService } from '../requests-services/requests.service';
+import { RequestsService } from '../requests-service/requests.service';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../test-behaviours-ui/config/test-behaviours-ui-config';
 
