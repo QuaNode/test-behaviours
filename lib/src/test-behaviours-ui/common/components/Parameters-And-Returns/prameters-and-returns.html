@@ -30,8 +30,8 @@
                   class="form-control parameters-form__input pe-5"
                   formControlName="rawValue"
                   placeholder="Enter value"
-                  (focus)="inputFocus(i)"
-                  (blur)="inputsBlur(i)"
+                  (focus)="currentInputIndex(i)"
+                  (blur)="updateDraftAndParameters(i)"
                 />
 
                 <button
@@ -52,21 +52,6 @@
                 Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
               </div>
             </div>
-          </div>
-
-          <div
-            *ngIf="showHintIndex === i"
-            class="parameters-form__hint position-absolute top-100 start-0 bg-light border rounded p-2 mt-1 shadow-sm small z-3"
-            style="min-width: 220px"
-          >
-            Enter a value like: <code>{{ '{' }}"key": "value"{{ '}' }}</code>
-          </div>
-
-          <div
-            *ngIf="parameters.at(i).get('rawValue')?.touched && parameters.at(i).get('rawValue')?.hasError('invalidJson')"
-            class="parameters-form__error text-danger small mt-1"
-          >
-            Please enter a valid JSON object.
           </div>
         </div>
 
@@ -105,6 +90,7 @@
     </div>
   </form>
 
+  <!-- JSON Editor Modal -->
   <div
     class="modal fade"
     id="jsonModal"
@@ -128,7 +114,7 @@
             class="form-control bg-black text-white"
             rows="10"
             [(ngModel)]="jsonEditorValue"
-            [ngModelOptions]="{ standalone: true }"
+            name="jsonEditorValue"
             placeholder="Enter JSON here"
           ></textarea>
         </div>
@@ -139,6 +125,7 @@
           <button
             class="btn btn-primary"
             (click)="saveJson(visibleEditorIndex!)"
+            
           >
             Save
           </button>
@@ -147,6 +134,7 @@
     </div>
   </div>
 
+  <!-- Response Viewer -->
   <div
     class="response-viewer card p-3 mb-4 shadow-sm border rounded"
     *ngIf="response"
@@ -161,16 +149,16 @@
         class="response-viewer__controls d-flex align-items-center gap-2 ms-3"
       >
         <span
-          *ngIf="error | async"
+          *ngIf="error"
           [ngClass]="getErrorClass()"
           class="badge bg-secondary"
-          >{{ (error | async)?.code }}</span
+          >{{ error.code }}</span
         >
         <button
           class="response-viewer__copy-btn btn btn-sm d-inline-flex align-items-center border-0 bg-transparent text-decoration-none p-0"
           (click)="copyJsonToClipboard()"
           title="Copy to clipboard"
-          *ngIf="(responseTime | async) !== null"
+          *ngIf="responseTime !== null"
         >
           <i
             *ngIf="!copied"
@@ -186,13 +174,13 @@
         </button>
         <span
           class="response-delay badge bg-secondary"
-          *ngIf="(responseTime | async)"
-          >Delay: {{ responseTime | async }}ms</span
+          *ngIf="responseTime !== null"
+          >Delay: {{ responseTime }} ms</span
         >
-
         <select
           class="form-select form-select-sm w-auto overflow-hidden"
           [(ngModel)]="responseView"
+          name="responseView"
         >
           <option value="returns">Returns</option>
           <option value="json">JSON</option>
@@ -202,50 +190,41 @@
     </div>
 
     <ng-container [ngSwitch]="responseView">
-      <!-- JSON View -->
       <div *ngSwitchCase="'json'" #jsonView>
-        <ng-container
+        <pre
           *ngIf="response && objectKeys(response).length > 0; else emptyJson"
+          class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto"
         >
-          <pre
-            class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto"
-          >
-        {{ response | json }}
-      </pre
-          >
-        </ng-container>
+            {{ response | json }}
+        </pre>
       </div>
 
-      <!-- Tree View -->
       <div *ngSwitchCase="'tree'" #treeView>
-        <ng-container
+        <div
           *ngIf="response && objectKeys(response).length > 0; else emptyTree"
+          class="response-viewer__tree bg-light p-3 rounded overflow-auto"
         >
-          <div class="response-viewer__tree bg-light p-3 rounded overflow-auto">
-            <ngx-json-viewer [json]="response"></ngx-json-viewer>
-          </div>
-        </ng-container>
+          <ngx-json-viewer [json]="response"></ngx-json-viewer>
+        </div>
       </div>
 
-      <!-- Returns View -->
       <div *ngSwitchCase="'returns'" #returnView>
-        <ng-container *ngIf="returnKeys.length > 0; else emptyReturns">
+        <div
+          *ngIf="returnKeys.length > 0; else emptyReturns"
+          class="response-viewer__returns bg-light p-3 rounded overflow-auto"
+        >
           <div
-            class="response-viewer__returns bg-light p-3 rounded overflow-auto"
+            *ngFor="let key of returnKeys"
+            class="d-flex align-items-start mb-2"
           >
-            <div
-              *ngFor="let key of returnKeys"
-              class="d-flex align-items-start mb-2"
-            >
-              <strong class="me-2">{{ key }}:</strong>
-              <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
-              <ngx-json-viewer
-                *ngIf="!isPrimitive(returns[key])"
-                [json]="returns[key]"
-              ></ngx-json-viewer>
-            </div>
+            <strong class="me-2">{{ key }}:</strong>
+            <span *ngIf="isPrimitive(returns[key])">{{ returns[key] }}</span>
+            <ngx-json-viewer
+              *ngIf="!isPrimitive(returns[key])"
+              [json]="returns[key]"
+            ></ngx-json-viewer>
           </div>
-        </ng-container>
+        </div>
       </div>
     </ng-container>
 

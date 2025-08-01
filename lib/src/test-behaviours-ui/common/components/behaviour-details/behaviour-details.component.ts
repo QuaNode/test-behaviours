@@ -29,12 +29,10 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
     // We need to get the current value from the BehaviorSubject directly
     const request = this.requestsService.currentRequest || {};
     const isValid = this.requestsService.isValidData;
-    const base = this.config.baseURL ?? '';
-    const baseForURL = base || window.location.origin;
-    const fullURL = new URL(
-      this.config.prefix.replace(/^\/+/, ''),
-      baseForURL
-    ).toString();
+    const base = this.config.baseURL;
+    const prefix = this.config.prefix;
+
+    const fullURL = new URL(prefix, base).href;
     return {
       url: isValid ? `${fullURL}${request?.path ?? ''}` : '',
       method: request?.method ?? '',
@@ -42,7 +40,7 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
       prefix: request?.prefix ?? '',
       events: request?.events ?? false,
       isValid,
-      name: request?.name,
+      name: request.name,
     };
   }
 

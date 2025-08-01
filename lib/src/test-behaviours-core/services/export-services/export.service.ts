@@ -40,99 +40,142 @@ export class ExportService {
     a.click();
     URL.revokeObjectURL(blobUrl);
   }
-
-  generatePostmanCollection(): any {
+generatePostmanCollection(): any {
     const requests = this.requestsService.currentRequests || [];
-
-    const behaviourDefs = requests
-      .filter((def: any) => def.name !== 'behaviours')
-      .map((def: any) => {
-        const method = def.method || 'GET';
-        let path = def.path || '';
-
-        //module configurations
-        const baseURL = this.config.baseURL || 'http://localhost:8282';
-        const prefix = this.config.prefix || '/api/v1';
-
-        const headers: any[] = [];
-        const bodyParams: Record<string, any> = {};
-        const queryParams: any[] = [];
-
-        for (const [key, param] of Object.entries(def.parameters ?? {})) {
-          const paramKey = (param as any).key ?? key;
-          const paramType = (param as any).type;
-          const paramValue = (param as any).value ?? `{{${paramKey}}}`;
-
-          switch (paramType) {
-            case 'header':
-              headers.push({ key: paramKey, value: paramValue, type: 'text' });
-              break;
-
-            case 'body':
-              const pathParts = paramKey.split('.');
-              let nestedRef = bodyParams;
-
-              for (let i = 0; i < pathParts.length; i++) {
-                const part = pathParts[i];
-                if (i === pathParts.length - 1) {
-                  nestedRef[part] = paramValue;
-                } else {
-                  if (!nestedRef[part]) nestedRef[part] = {};
-                  nestedRef = nestedRef[part];
-                }
-              }
-              break;
-
-            case 'query':
-              queryParams.push({ key: paramKey, value: paramValue });
-              break;
-
-            case 'path':
-              path = path.replace(`:${paramKey}`, paramValue);
-              break;
-          }
-        }
-
-        const request: any = {
-          method: method.toUpperCase(),
-          header: headers,
-          url: {
-            raw: `${baseURL}${prefix}${path}${
-              queryParams.length
-                ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
-                : ''
-            }`,
-            host: ['localhost'],
-            port: '8282',
-            path: `${prefix}${path}`.replace(/^\//, '').split('/'),
-            query: queryParams.length ? queryParams : undefined,
-          },
-        };
-
-        if (
-          Object.keys(bodyParams).length &&
-          ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())
-        ) {
-          request.body = {
-            mode: 'raw',
-            raw: JSON.stringify(bodyParams, null, 2),
-            options: { raw: { language: 'json' } },
-          };
-        }
-
-        return {
-          name: def.name,
-          request,
-        };
-      });
+    const items = (requests ?? [])
+      .filter(def => def.name !== 'behaviours')
+      .map(def => ({
+        name: def.name,
+        request: this.buildRequest(def),
+      }));
 
     return {
       info: {
         name: 'Behaviours',
-        schema:
-          'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+        schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
       },
-      item: behaviourDefs,
+      item: items,
     };
   }
+
+  private buildRequest(def: any): any {
+    const method = def.method?.toUpperCase() || 'GET';
+    let path = def.path || '';
+    const parameters = def.parameters ?? {};
+
+    const queryParams = this.buildQueryParams(parameters);
+    const headers = this.buildHeaders(parameters);
+    const bodyParams = this.buildBodyParams(parameters);
+    path = this.replacePathParams(path, parameters);
+
+    const url = this.buildUrl(this.config.baseURL, this.config.prefix, path, queryParams);
+
+    const request: any = {
+      method,
+      header: headers,
+      url,
+    };
+
+    if (Object.keys(bodyParams).length && ['POST', 'PUT', 'PATCH'].includes(method)) {
+      request.body = {
+        mode: 'raw',
+        raw: JSON.stringify(bodyParams, null, 2),
+        options: { raw: { language: 'json' } },
+      };
+    }
+
+    return request;
+  }
+
+  private buildUrl(baseURL: string = '', prefix: string = '', path: string, queryParams: any[]): any {
+    
+    const queryString = queryParams.length
+      ? '?' + queryParams.map(p => `${p.key}=${p.value}`).join('&')
+      : '';
+
+      const fullUrl = new URL(prefix, baseURL).href;
+      const host = new URL(fullUrl).host;
+      const port = new URL(fullUrl).port;
+
+    return {
+      raw: fullUrl,
+      host: host,
+      port: port,
+      path: path,
+      query: queryParams.length ? queryParams : undefined,
+    };
+  }
+
+  private buildHeaders(parameters: any): any[] {
+    const headers: any[] = [];
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'header') {
+        headers.push({ key: paramKey, value: paramValue, type: 'text' });
+      }
+    }
+
+    return headers;
+  }
+
+  private buildQueryParams(parameters: any): any[] {
+    const queryParams: any[] = [];
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'query') {
+        queryParams.push({ key: paramKey, value: paramValue });
+      }
+    }
+
+    return queryParams;
+  }
+
+  private buildBodyParams(parameters: any): Record<string, any> {
+    const bodyParams: Record<string, any> = {};
+
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'body') {
+        const parts = paramKey.split('.');
+        let ref = bodyParams;
+
+        for (let i = 0; i < parts.length; i++) {
+          const part = parts[i];
+          if (i === parts.length - 1) {
+            ref[part] = paramValue;
+          } else {
+            ref[part] = ref[part] || {};
+            ref = ref[part];
+          }
+        }
+      }
+    }
+
+    return bodyParams;
+  }
+
+  private replacePathParams(path: string, parameters: any): string {
+    for (const [key, param] of Object.entries(parameters)) {
+      const paramKey = (param as any).key ?? key;
+      const paramType = (param as any).type;
+      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+
+      if (paramType === 'path') {
+        path = path.replace(`:${paramKey}`, paramValue);
+      }
+    }
+    return path;
+  }
+  
 }

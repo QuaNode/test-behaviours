@@ -5,10 +5,11 @@ import {
   ViewChild,
   ElementRef,
 } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
+
 declare var bootstrap: any;
 
 @Component({
@@ -26,17 +27,16 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   form: FormGroup;
   parametersList: string[] = [];
-  response = new BehaviorSubject<any>({});
+
+  response: any = {};
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
   showHintIndex: number | null = null;
-
-  error = new BehaviorSubject<any>(null);
-  responseTime = new BehaviorSubject<number | null>(null);
+  error: any = null;
+  responseTime: number | null = null;
   activeInputIndex: number | null = null;
-
   visibleEditorIndex: number | null = null;
   jsonEditorValue = '';
 
@@ -45,9 +45,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     private requestsService: RequestsService,
     private behaviourService: BehaviorService
   ) {
-    this.form = this.fb.group({
-      parameters: this.fb.array([]),
-    });
+    this.form = this.fb.group({ parameters: this.fb.array([]) });
   }
 
   ngOnInit() {
@@ -64,7 +62,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
           this.parametersList = filteredParams.map(([paramName]) => paramName);
           const currentApiName = data.name;
           filteredParams.forEach(([paramName, paramData]: [string, any]) => {
-            const type = paramData?.type || 'String';
+            const type = paramData?.type || 'Object';
             const savedValue = this.requestsService.getDraftParam(
               currentApiName,
               paramName
@@ -73,7 +71,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
               this.fb.group({
                 paramName: [paramName],
                 rawValue: [savedValue || ''],
-                type: [type],
+                type: ["String"],
               })
             );
           });
@@ -91,7 +89,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     // Watch for response changes
     this.subscription.add(
       this.behaviourService.responseSignal.subscribe((response) => {
-        this.response.next(response);
+        this.response = response;
         this.returns = response;
         this.returnKeys = Object.keys(this.returns);
       })
@@ -100,19 +98,19 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     // Watch for error changes
     this.subscription.add(
       this.behaviourService.errorSignal.subscribe((error) => {
-        this.error.next(error);
+        this.error = error;
       })
     );
 
     // Watch for response time changes
     this.subscription.add(
       this.behaviourService.responseTimeSignal.subscribe((time) => {
-        this.responseTime.next(time);
+        this.responseTime = time;
       })
     );
 
-    if (this.response.value) {
-      this.returns = this.response.value;
+    if (this.response) {
+      this.returns = this.response;
       this.returnKeys = Object.keys(this.returns);
     }
   }
@@ -163,9 +161,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       try {
         result[paramName] = this.castValueByType(rawValue, type);
       } catch {
+        console.error(`Invalid JSON for parameter ${paramName}`);
         result[paramName] = rawValue;
       }
     });
+
     return result;
   }
 
@@ -184,7 +184,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     }
   }
 
-  inputsBlur(index: number): void {
+  currentInputIndex(index: number): void {
+    this.activeInputIndex = index;
+  }
+
+  updateDraftAndParameters(index: number): void {
     if (this.activeInputIndex !== index) return;
 
     const currentApiName = this.requestsService.currentRequest?.name;
@@ -199,12 +203,8 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     this.activeInputIndex = null;
   }
 
-  inputFocus(index: number): void {
-    this.activeInputIndex = index;
-  }
-
   isPrimitive(value: any): boolean {
-    return value !== Object(value);
+    return typeof value !== 'object' || value === null;
   }
 
   copyJsonToClipboard() {
@@ -235,7 +235,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   getErrorClass(): string {
-    const code = this.error.value?.code;
+    const code = this.error?.code;
     const classMap: Record<number, string> = {
       200: 'bg-success',
       400: 'bg-danger',
@@ -247,7 +247,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   objectKeys(obj: any): string[] {
-    return Object.keys(obj || {});
+    return obj ? Object.keys(obj) : [];
   }
 
   openJsonEditor(index: number) {
@@ -280,12 +280,16 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   openJsonModal(index: number) {
     this.visibleEditorIndex = index;
     const modalElement = document.getElementById('jsonModal');
-    if (modalElement) new bootstrap.Modal(modalElement).show();
+    if (modalElement && typeof bootstrap !== 'undefined') {
+      new bootstrap.Modal(modalElement).show();
+    }
   }
 
   hideJsonModal() {
     const modalElement = document.getElementById('jsonModal');
-    const modalInstance = bootstrap.Modal.getInstance(modalElement!);
-    modalInstance?.hide();
+    if (modalElement && typeof bootstrap !== 'undefined') {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      modalInstance?.hide();
+    }
   }
 }

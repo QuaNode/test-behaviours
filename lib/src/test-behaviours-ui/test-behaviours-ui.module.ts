@@ -27,12 +27,15 @@ export function getBehaviours(
   http: HttpClient,
   config: TestBehavioursUiConfig
 ): Behaviours {
-  const base = config.baseURL ?? '';
-  const baseForURL = base || window.location.origin;
-  const fullURL = new URL(
-    config.prefix.replace(/^\/+/, ''),
-    baseForURL
-  ).toString();
+  if (!config.prefix) {
+    throw new Error('[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL');
+  }
+
+  const base = config.baseURL;
+  const prefix = config.prefix;
+
+  const fullURL = new URL(prefix, base).href;
+
   return new Behaviours(http, fullURL);
 }
 
