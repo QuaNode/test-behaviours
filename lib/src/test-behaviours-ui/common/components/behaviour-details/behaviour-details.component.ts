@@ -29,7 +29,7 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
     // We need to get the current value from the BehaviorSubject directly
     const request = this.requestsService.currentRequest || {};
     const isValid = this.requestsService.isValidData;
-    const base = this.config.baseURL;
+    const base = this.config.baseURL || window.location.origin;
     const prefix = this.config.prefix;
 
     const fullURL = new URL(prefix, base).href;

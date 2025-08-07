@@ -1,40 +1,42 @@
-import { NgModule, ModuleWithProviders } from '@angular/core';
+import { NgModule, ModuleWithProviders, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { HttpClient, HttpClientModule } from '@angular/common/http';
-
 import { SideMenuComponent } from './common/components/side-menu/side-menu.component';
 import { BehaviourDetailsComponent } from './common/components/behaviour-details/behaviour-details.component';
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HeaderComponent } from './common/components/header/header.component';
-import { FooterComponent } from './common/components/footer/footer.component';
-
 import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.module';
 import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
 
+import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Behaviours } from 'ng-behaviours';
 import {
   TestBehavioursUiConfig,
   TEST_BEHAVIOURS_UI_CONFIG,
 } from './config/test-behaviours-ui-config';
 import { ParametersAndReturnsComponent } from './common/components/Parameters-And-Returns/prameters-and-returns';
-import { RequestsService } from '../test-behaviours-core/services/requests-service/requests.service';
+import { FooterComponent } from './common/components/footer/footer.component';
 
-export function getBehaviours(
-  http: HttpClient,
-  config: TestBehavioursUiConfig
-): Behaviours {
+export function getBehaviours(http: HttpClient): Behaviours {
+  const config = inject(TEST_BEHAVIOURS_UI_CONFIG);
+
   if (!config.prefix) {
-    throw new Error('[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL');
+    throw new Error(
+      '[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL'
+    );
   }
 
   const base = config.baseURL;
   const prefix = config.prefix;
 
-  const fullURL = new URL(prefix, base).href;
+  let fullURL = prefix;
+
+  if (base) {
+    fullURL = new URL(prefix, base).href;
+  }
 
   return new Behaviours(http, fullURL);
 }
@@ -54,8 +56,8 @@ export function getBehaviours(
   imports: [
     CommonModule,
     FormsModule,
-    ReactiveFormsModule,
     TestBehavioursUiRoutingModule,
+    ReactiveFormsModule,
     NgxJsonViewerModule,
     HttpClientModule,
   ],
@@ -63,9 +65,8 @@ export function getBehaviours(
     {
       provide: Behaviours,
       useFactory: getBehaviours,
-      deps: [HttpClient, TEST_BEHAVIOURS_UI_CONFIG],
+      deps: [HttpClient],
     },
-    RequestsService,
   ],
   exports: [LayoutComponent, HeaderComponent, StringifyPipe],
 })

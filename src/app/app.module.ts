@@ -6,8 +6,7 @@ import { AppComponent } from './app.component';
 
 import { FormsModule } from '@angular/forms';
 import { environment } from 'lib/src/environment/environment';
-import { NgxJsonViewerModule } from 'ngx-json-viewer';
-
+import { AuthGuard } from '../../lib/src/test-behaviours-core/Guards/auth.guard';
 
 
 @NgModule({
@@ -16,11 +15,11 @@ import { NgxJsonViewerModule } from 'ngx-json-viewer';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    NgxJsonViewerModule,
     TestBehavioursUiModule.config({
       path:  `${environment.path}`,
       baseURL: `${environment.baseURL}`,
-      prefix: `${environment.prefix}`
+      prefix: `${environment.prefix}`,
+      canActivate: [AuthGuard],
     }),
     FormsModule,
   ],

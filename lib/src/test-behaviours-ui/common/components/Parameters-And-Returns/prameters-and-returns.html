@@ -53,6 +53,21 @@
               </div>
             </div>
           </div>
+
+          <div
+            *ngIf="showHintIndex === i"
+            class="parameters-form__hint position-absolute top-100 start-0 bg-light border rounded p-2 mt-1 shadow-sm small z-3"
+            style="min-width: 220px"
+          >
+            Enter a value like: <code>{{ '{' }}"key": "value"{{ '}' }}</code>
+          </div>
+
+          <div
+            *ngIf="parameters.at(i).get('value')?.touched && parameters.at(i).get('value')?.hasError('invalidJson')"
+            class="parameters-form__error text-danger small mt-1"
+          >
+            Please enter a valid JSON object.
+          </div>
         </div>
 
         <select
@@ -90,7 +105,6 @@
     </div>
   </form>
 
-  <!-- JSON Editor Modal -->
   <div
     class="modal fade"
     id="jsonModal"
@@ -114,7 +128,7 @@
             class="form-control bg-black text-white"
             rows="10"
             [(ngModel)]="jsonEditorValue"
-            name="jsonEditorValue"
+            [ngModelOptions]="{ standalone: true }"
             placeholder="Enter JSON here"
           ></textarea>
         </div>
@@ -125,7 +139,6 @@
           <button
             class="btn btn-primary"
             (click)="saveJson(visibleEditorIndex!)"
-            
           >
             Save
           </button>
@@ -134,7 +147,6 @@
     </div>
   </div>
 
-  <!-- Response Viewer -->
   <div
     class="response-viewer card p-3 mb-4 shadow-sm border rounded"
     *ngIf="response"
@@ -180,7 +192,6 @@
         <select
           class="form-select form-select-sm w-auto overflow-hidden"
           [(ngModel)]="responseView"
-          name="responseView"
         >
           <option value="returns">Returns</option>
           <option value="json">JSON</option>

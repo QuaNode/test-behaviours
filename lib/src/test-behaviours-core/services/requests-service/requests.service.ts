@@ -22,7 +22,9 @@ export interface BehavioursResponse {
   parameters: any;
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class RequestsService implements OnDestroy {
   private subscription = new Subscription();
 

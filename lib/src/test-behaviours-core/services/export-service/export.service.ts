@@ -53,17 +53,13 @@ export class ExportService {
     let path = def.path || '';
     const parameters = def.parameters ?? {};
 
+    const base = this.config.baseURL || window.location.origin;
     const queryParams = this.buildQueryParams(parameters);
     const headers = this.buildHeaders(parameters);
     const bodyParams = this.buildBodyParams(parameters);
     path = this.replacePathParams(path, parameters);
 
-    const url = this.buildUrl(
-      this.config.baseURL,
-      this.config.prefix,
-      path,
-      queryParams
-    );
+    const url = this.buildUrl(base, this.config.prefix, path, queryParams);
 
     const request: any = {
       method,
@@ -91,22 +87,19 @@ export class ExportService {
     path: string,
     queryParams: any[]
   ): any {
-    const urlPrefix = prefix.replace(/^\/+|\/+$/g, '');
-    const urlPath = path.replace(/^\/+/, '');
     const queryString = queryParams.length
       ? '?' + queryParams.map((p) => `${p.key}=${p.value}`).join('&')
       : '';
 
-    const fullUrl = new URL(
-      `${urlPrefix}/${urlPath}${queryString}`,
-      baseURL || 'http://localhost'
-    );
+    const fullUrl = new URL(prefix, baseURL);
+    const host = fullUrl.host;
+    const port = fullUrl.port;
 
     return {
-      raw: fullUrl.toString(),
-      host: fullUrl.hostname.split('.'),
-      port: fullUrl.port || undefined,
-      path: fullUrl.pathname.split('/').filter(Boolean),
+      raw: fullUrl.href,
+      host: host,
+      port: port,
+      path: path,
       query: queryParams.length ? queryParams : undefined,
     };
   }
