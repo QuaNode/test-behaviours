@@ -23,7 +23,7 @@ export interface BehavioursResponse {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class RequestsService implements OnDestroy {
   private subscription = new Subscription();
@@ -131,13 +131,21 @@ export class RequestsService implements OnDestroy {
     }
   }
 
-  updateDraftParam(apiName: string, paramName: string, value: any): void {
+  updateDraftParam(
+    apiName: string,
+    paramName: string,
+    value: any,
+    type?: string
+  ): void {
     const currentDrafts = this.draftData.value || {};
     const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
 
     const updatedParameters = {
       ...draft.parameters,
-      [paramName]: value,
+      [paramName]: {
+        value: value,
+        type: type || 'String',
+      },
     };
 
     const updatedDrafts = {
@@ -153,6 +161,25 @@ export class RequestsService implements OnDestroy {
 
   getDraftParam(apiName: string, paramName: string): any {
     const draft = this.draftData.value[apiName];
-    return draft?.parameters?.[paramName] || '';
+    const paramData = draft?.parameters?.[paramName];
+
+    // Handle both old format (just value) and new format (object with value and type)
+    if (paramData && typeof paramData === 'object' && 'value' in paramData) {
+      return paramData.value;
+    }
+
+    return paramData || '';
+  }
+
+  getDraftParamType(apiName: string, paramName: string): string {
+    const draft = this.draftData.value[apiName];
+    const paramData = draft?.parameters?.[paramName];
+
+    // Handle both old format (just value) and new format (object with value and type)
+    if (paramData && typeof paramData === 'object' && 'type' in paramData) {
+      return paramData.type;
+    }
+
+    return 'String';
   }
 }

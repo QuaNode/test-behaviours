@@ -15,7 +15,7 @@ declare var bootstrap: any;
 @Component({
   selector: 'parameters-and-returns',
   templateUrl: './prameters-and-returns.html',
-  styleUrls: ['./prameters-and-returns.scss']
+  styleUrls: ['./prameters-and-returns.scss'],
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   @ViewChild('jsonView') jsonView!: ElementRef;
@@ -29,13 +29,13 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
-  showHintIndex: number | null = null;
   error: any = null;
   responseTime: number | null = null;
   activeInputIndex: number | null = null;
   visibleEditorIndex: number | null = null;
   jsonEditorValue = '';
   private lastParams: any = null;
+  private previousApiName: string = '';
   private subscriptions = new Subscription();
 
   constructor(
@@ -47,9 +47,47 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.addRow();
-
     const requestSub = this.requestsService.theRequest.subscribe((data) => {
+      const currentApiName = data?.name || '';
+
+      if (!currentApiName) {
+        this.response = {};
+        this.returns = {};
+        this.returnKeys = [];
+        this.error = null;
+        this.responseTime = null;
+        return;
+      }
+
+      // تحميل من الكاش إذا متوفر
+      if (this.behaviourService.hasCachedResponse(currentApiName)) {
+        const cachedResponse =
+          this.behaviourService.getCachedResponse(currentApiName);
+        const cachedError =
+          this.behaviourService.getCachedError(currentApiName);
+        const cachedResponseTime =
+          this.behaviourService.getCachedResponseTime(currentApiName);
+
+        this.response = cachedResponse;
+        this.returns = cachedResponse;
+        this.returnKeys = Object.keys(cachedResponse || {});
+        this.error = cachedError;
+        this.responseTime = cachedResponseTime;
+      } else if (
+        this.previousApiName &&
+        this.previousApiName !== currentApiName
+      ) {
+        // مسح النتائج القديمة إذا تغيّر اسم الـ API
+        this.response = {};
+        this.returns = {};
+        this.returnKeys = [];
+        this.error = null;
+        this.responseTime = null;
+      }
+
+      this.previousApiName = currentApiName;
+
+      // إعداد المعاملات
       if (!data?.parameters) return;
 
       this.parameters.clear();
@@ -61,12 +99,36 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.parametersList = filteredParams.map(([paramName]) => paramName);
 
       filteredParams.forEach(([paramName, paramData]: [string, any]) => {
-        const savedValue = this.requestsService.getDraftParam(data.name, paramName);
+        const savedValue = this.requestsService.getDraftParam(
+          data.name,
+          paramName
+        );
+        const savedType = this.requestsService.getDraftParamType(
+          data.name,
+          paramName
+        );
+
+        let rawValue = '';
+        if (savedValue !== '') {
+          if (savedType === 'Object' && typeof savedValue === 'object') {
+            rawValue = JSON.stringify(savedValue);
+          } else if (savedType === 'Object' && typeof savedValue === 'string') {
+            try {
+              JSON.parse(savedValue);
+              rawValue = savedValue;
+            } catch {
+              rawValue = savedValue;
+            }
+          } else {
+            rawValue = String(savedValue);
+          }
+        }
+
         this.parameters.push(
           this.fb.group({
             paramName: [paramName],
-            rawValue: [typeof savedValue === 'object' ? JSON.stringify(savedValue) : savedValue || ''],
-            type: ['String'],
+            rawValue: [rawValue],
+            type: [savedType],
           })
         );
       });
@@ -75,19 +137,23 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.behaviourService.updateParameters(this.lastParams);
     });
 
-    const responseSub = this.behaviourService.responseSignal.subscribe((res) => {
-      this.response = res;
-      this.returns = res;
-      this.returnKeys = Object.keys(this.returns || {});
-    });
+    const responseSub = this.behaviourService.responseSignal.subscribe(
+      (currentResponse) => {
+        this.response = currentResponse;
+        this.returns = currentResponse;
+        this.returnKeys = Object.keys(this.returns || {});
+      }
+    );
 
     const errorSub = this.behaviourService.errorSignal.subscribe((err) => {
       this.error = err;
     });
 
-    const timeSub = this.behaviourService.responseTimeSignal.subscribe((time) => {
-      this.responseTime = time;
-    });
+    const timeSub = this.behaviourService.responseTimeSignal.subscribe(
+      (time) => {
+        this.responseTime = time;
+      }
+    );
 
     this.subscriptions.add(requestSub);
     this.subscriptions.add(responseSub);
@@ -99,8 +165,20 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const currentApiName = this.requestsService.currentRequest?.name || '';
     const currentParams = this.jsonPreview;
 
-    Object.entries(currentParams).forEach(([paramName, value]) => {
-      this.requestsService.updateDraftParam(currentApiName, paramName, value);
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      const paramName = group.get('paramName')?.value;
+      const type = group.get('type')?.value;
+      const value = currentParams[paramName];
+
+      if (paramName && value !== undefined) {
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          value,
+          type
+        );
+      }
     });
 
     this.subscriptions.unsubscribe();
@@ -119,12 +197,15 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       const rawValue = group.get('rawValue')?.value;
       const type = group.get('type')?.value;
 
-      if (!paramName || rawValue === undefined) return;
+      if (!paramName || rawValue === undefined || rawValue === '') return;
 
       try {
         result[paramName] = this.castValueByType(rawValue, type);
-      } catch {
-        console.error(`Invalid JSON for parameter ${paramName}`);
+      } catch (error) {
+        // Only log error if it's actually a JSON parsing error for Object type
+        if (type === 'Object') {
+          console.error(`Invalid JSON for parameter ${paramName}:`, error);
+        }
         result[paramName] = rawValue;
       }
     });
@@ -164,12 +245,29 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   castValueByType(value: any, type: string) {
+    if (!value || value === '') return value;
     switch (type) {
-      case 'Number': return Number(value);
-      case 'Boolean': return value === 'true';
-      case 'Date': return new Date(value).toISOString();
-      case 'Object': return JSON.parse(value);
-      default: return value;
+      case 'Number':
+        return Number(value);
+      case 'Boolean':
+        return value === 'true';
+      case 'Date':
+        return new Date(value).toISOString();
+      case 'Object':
+        // Only try to parse if it looks like JSON
+        if (
+          typeof value === 'string' &&
+          (value.trim().startsWith('{') || value.trim().startsWith('['))
+        ) {
+          try {
+            return JSON.parse(value);
+          } catch {
+            return value;
+          }
+        }
+        return value;
+      default:
+        return value;
     }
   }
 
@@ -179,8 +277,20 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const currentApiName = this.requestsService.currentRequest?.name || '';
     const currentParams = this.jsonPreview;
 
-    Object.entries(currentParams).forEach(([paramName, value]) => {
-      this.requestsService.updateDraftParam(currentApiName, paramName, value);
+    this.parameters.controls.forEach((control) => {
+      const group = control as FormGroup;
+      const paramName = group.get('paramName')?.value;
+      const type = group.get('type')?.value;
+      const value = currentParams[paramName];
+
+      if (paramName && value !== undefined) {
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          value,
+          type
+        );
+      }
     });
 
     this.behaviourService.updateParameters(currentParams);
@@ -190,6 +300,67 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   currentInputIndex(index: number): void {
     this.activeInputIndex = index;
+  }
+
+  onTypeChange(index: number): void {
+    const currentApiName = this.requestsService.currentRequest.name;
+    const currentRow = this.parameters.at(index);
+    const paramName = currentRow.get('paramName')?.value;
+    const type = currentRow.get('type')?.value;
+    const rawValue = currentRow.get('rawValue')?.value;
+
+    if (paramName && type) {
+      let value = rawValue;
+      let displayValue = rawValue;
+
+      try {
+        if (type === 'Object') {
+          // If switching to Object type, try to parse the value
+          if (typeof rawValue === 'string' && rawValue.trim()) {
+            // Only try to parse if it looks like JSON
+            if (
+              rawValue.trim().startsWith('{') ||
+              rawValue.trim().startsWith('[')
+            ) {
+              try {
+                const parsed = JSON.parse(rawValue);
+                value = parsed;
+                displayValue = JSON.stringify(parsed, null, 2);
+              } catch {
+                // If parsing fails, keep the raw value
+                value = rawValue;
+                displayValue = rawValue;
+              }
+            } else {
+              // Not JSON, keep as string
+              value = rawValue;
+              displayValue = rawValue;
+            }
+          } else if (typeof rawValue === 'object') {
+            value = rawValue;
+            displayValue = JSON.stringify(rawValue, null, 2);
+          }
+        } else {
+          // For other types, cast the value
+          value = this.castValueByType(rawValue, type);
+          displayValue = String(value);
+        }
+      } catch {
+        // If casting fails, keep the raw value
+        value = rawValue;
+        displayValue = rawValue;
+      }
+
+      // Update the form control with the converted value
+      currentRow.get('rawValue')?.setValue(displayValue);
+
+      this.requestsService.updateDraftParam(
+        currentApiName,
+        paramName,
+        value,
+        type
+      );
+    }
   }
 
   isPrimitive(value: any): boolean {
@@ -230,31 +401,41 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return obj ? Object.keys(obj) : [];
   }
 
-  openJsonEditor(index: number) {
-    this.visibleEditorIndex = index;
-    const value = this.parameters.at(index).get('rawValue')?.value;
-    try {
-      this.jsonEditorValue = JSON.stringify(JSON.parse(value), null, 2);
-    } catch {
-      this.jsonEditorValue = value;
-    }
-  }
-
   saveJson(index: number) {
     const control = this.parameters.at(index).get('rawValue');
+    const typeControl = this.parameters.at(index).get('type');
     if (control) {
       control.setValue(this.jsonEditorValue);
       control.markAsTouched();
       control.updateValueAndValidity();
       this.form.markAsDirty();
       this.visibleEditorIndex = null;
+      // Save the updated value with its type
+      const currentApiName = this.requestsService.currentRequest.name;
+      const paramName = this.parameters.at(index).get('paramName')?.value;
+      const type = typeControl?.value || 'Object';
+
+      if (paramName) {
+        let value;
+        if (type === 'Object' && this.jsonEditorValue.trim()) {
+          try {
+            value = JSON.parse(this.jsonEditorValue);
+          } catch {
+            value = this.jsonEditorValue;
+          }
+        } else {
+          value = this.jsonEditorValue;
+        }
+
+        this.requestsService.updateDraftParam(
+          currentApiName,
+          paramName,
+          value,
+          type
+        );
+      }
     }
     this.hideJsonModal();
-  }
-
-  cancelJson() {
-    this.visibleEditorIndex = null;
-    this.jsonEditorValue = '';
   }
 
   openJsonModal(index: number) {
