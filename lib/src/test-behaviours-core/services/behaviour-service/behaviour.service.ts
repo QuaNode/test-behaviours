@@ -16,6 +16,11 @@ export class BehaviorService {
   errorSignal = signal<any>(null);
   responseTimeSignal = signal<number | null>(null);
 
+  // Cache for API responses
+  private responseCache = signal<Record<string, any>>({});
+  private errorCache = signal<Record<string, any>>({});
+  private responseTimeCache = signal<Record<string, number>>({});
+
   updateParameters(params: any) {
     this.parametersSignal.set(params);
   }
@@ -27,6 +32,69 @@ export class BehaviorService {
 
   updateResponse(response: any) {
     this.responseSignal.set(response);
+  }
+
+  // Cache management methods
+  cacheResponse(
+    apiName: string,
+    response: any,
+    error: any = null,
+    responseTime: number = 0
+  ) {
+    const currentCache = this.responseCache();
+    const currentErrorCache = this.errorCache();
+    const currentTimeCache = this.responseTimeCache();
+
+    this.responseCache.set({
+      ...currentCache,
+      [apiName]: response,
+    });
+
+    this.errorCache.set({
+      ...currentErrorCache,
+      [apiName]: error,
+    });
+
+    this.responseTimeCache.set({
+      ...currentTimeCache,
+      [apiName]: responseTime,
+    });
+  }
+
+  getCachedResponse(apiName: string): any {
+    return this.responseCache()[apiName];
+  }
+
+  getCachedError(apiName: string): any {
+    return this.errorCache()[apiName];
+  }
+
+  getCachedResponseTime(apiName: string): number | null {
+    return this.responseTimeCache()[apiName] || null;
+  }
+
+  hasCachedResponse(apiName: string): boolean {
+    return apiName in this.responseCache();
+  }
+
+  clearCache(apiName?: string) {
+    if (apiName) {
+      const currentCache = this.responseCache();
+      const currentErrorCache = this.errorCache();
+      const currentTimeCache = this.responseTimeCache();
+
+      delete currentCache[apiName];
+      delete currentErrorCache[apiName];
+      delete currentTimeCache[apiName];
+
+      this.responseCache.set({ ...currentCache });
+      this.errorCache.set({ ...currentErrorCache });
+      this.responseTimeCache.set({ ...currentTimeCache });
+    } else {
+      this.responseCache.set({});
+      this.errorCache.set({});
+      this.responseTimeCache.set({});
+    }
   }
 
   downloadJSON(data: any, fileName: string = 'response.json') {
@@ -57,10 +125,7 @@ export class BehaviorService {
       .getBehaviour(requestData.name)(params)
       .subscribe(
         (response: any) => {
-
-          this.requestsService.updateRequestParameters(
-            requestData.name
-          );
+          this.requestsService.updateRequestParameters(requestData.name);
 
           this.updateResponse(response);
 
@@ -72,6 +137,9 @@ export class BehaviorService {
           const endTime = performance.now();
           const delay = Math.round(endTime - startTime);
           this.responseTimeSignal.set(delay);
+
+          // Cache the successful response
+          this.cacheResponse(requestData.name, response, null, delay);
 
           if (onSuccess) {
             onSuccess(response);
@@ -88,6 +156,9 @@ export class BehaviorService {
           this.updateResponse(formattedError);
           this.errorSignal.set(error);
           this.loadingSignal.set(false);
+
+          // Cache the error response
+          this.cacheResponse(requestData.name, formattedError, error, delay);
         }
       );
   }

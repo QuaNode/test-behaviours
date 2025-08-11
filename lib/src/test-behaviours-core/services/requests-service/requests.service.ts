@@ -9,7 +9,6 @@ import {
 import { BehavioursResponse, Request } from '../../models/collection';
 import { Behaviours } from 'ng-behaviours';
 
-
 export interface AppBehaviours extends Behaviours {
   behaviours(parameters: any): any;
 }
@@ -104,7 +103,6 @@ export class RequestsService {
     this.request.set(data as Request);
   }
 
-
   updateRequestParameters(apiName: string): void {
     const currentRequest = this.request();
     if (currentRequest.parameters) {
@@ -121,13 +119,21 @@ export class RequestsService {
     }
   }
 
-  updateDraftParam(apiName: string, paramName: string, value: any): void {
+  updateDraftParam(
+    apiName: string,
+    paramName: string,
+    value: any,
+    type?: string
+  ): void {
     const currentDrafts = this.draftData() || {};
     const draft = currentDrafts[apiName] || { name: apiName, parameters: {} };
 
     const updatedParameters = {
       ...draft.parameters,
-      [paramName]: value,
+      [paramName]: {
+        value: value,
+        type: type || 'String',
+      },
     };
 
     const updatedDrafts = {
@@ -143,6 +149,25 @@ export class RequestsService {
 
   getDraftParam(apiName: string, paramName: string): any {
     const draft = this.draftData()[apiName];
-    return draft?.parameters?.[paramName] || '';
+    const paramData = draft?.parameters?.[paramName];
+
+    // Handle both old format (just value) and new format (object with value and type)
+    if (paramData && typeof paramData === 'object' && 'value' in paramData) {
+      return paramData.value;
+    }
+
+    return paramData || '';
+  }
+
+  getDraftParamType(apiName: string, paramName: string): string {
+    const draft = this.draftData()[apiName];
+    const paramData = draft?.parameters?.[paramName];
+
+    // Handle both old format (just value) and new format (object with value and type)
+    if (paramData && typeof paramData === 'object' && 'type' in paramData) {
+      return paramData.type;
+    }
+
+    return 'String';
   }
 }
