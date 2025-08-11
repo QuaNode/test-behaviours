@@ -81,8 +81,6 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
   }
 
   toggleDropdown(): void {
-    console.log('toggleDropdown called, current state:', this.isDropdownOpen);
     this.isDropdownOpen = !this.isDropdownOpen;
-    console.log('new state:', this.isDropdownOpen);
   }
 }
