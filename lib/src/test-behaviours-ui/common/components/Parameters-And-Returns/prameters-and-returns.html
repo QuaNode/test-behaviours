@@ -13,8 +13,8 @@
         <select
           formControlName="paramName"
           class="form-select parameters-form__dropdown"
-          readonly
         >
+        <option value="">Select parameter</option>
           <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
         </select>
 
@@ -47,7 +47,7 @@
 
               <div
                 class="text-danger mt-1 small"
-                *ngIf="row.get('type')?.value === 'Object'"
+                *ngIf="row.get('type')?.value === 'Object' && (!row.get('rawValue')?.value || !isValidJson(row.get('rawValue')?.value))"
               >
                 Enter a value like: {{ '{' }}"key": "value"{{ '}' }}
               </div>
@@ -74,7 +74,7 @@
 
         <div
           class="parameters-form__actions d-flex gap-1"
-          *ngIf="parameters.length > 1"
+           [ngClass]="{'invisible': i == 0 }"
         >
           <button
             type="button"

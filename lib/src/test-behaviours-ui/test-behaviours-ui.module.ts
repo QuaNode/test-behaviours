@@ -19,7 +19,8 @@ import {
 } from './config/test-behaviours-ui-config';
 import { ParametersAndReturnsComponent } from './common/components/Parameters-And-Returns/prameters-and-returns';
 import { FooterComponent } from './common/components/footer/footer.component';
-
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 export function getBehaviours(http: HttpClient): Behaviours {
   const config = inject(TEST_BEHAVIOURS_UI_CONFIG);
 
@@ -60,6 +61,8 @@ export function getBehaviours(http: HttpClient): Behaviours {
     ReactiveFormsModule,
     NgxJsonViewerModule,
     HttpClientModule,
+    MatTooltipModule,
+    BrowserAnimationsModule
   ],
   providers: [
     {

@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { FormsModule } from '@angular/forms';
 import { environment } from 'lib/src/environment/environment';
 import { AuthGuard } from '../../lib/src/test-behaviours-core/Guards/auth.guard';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 
 @NgModule({
@@ -22,6 +23,7 @@ import { AuthGuard } from '../../lib/src/test-behaviours-core/Guards/auth.guard'
       canActivate: [AuthGuard],
     }),
     FormsModule,
+    BrowserAnimationsModule,
   ],
   
   bootstrap: [AppComponent],

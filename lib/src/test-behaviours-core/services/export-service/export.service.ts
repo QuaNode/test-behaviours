@@ -54,10 +54,10 @@ export class ExportService {
     const parameters = def.parameters ?? {};
 
     const base = this.config.baseURL || window.location.origin;
-    const queryParams = this.buildQueryParams(parameters);
-    const headers = this.buildHeaders(parameters);
-    const bodyParams = this.buildBodyParams(parameters);
-    path = this.replacePathParams(path, parameters);
+    const queryParams = this.buildQueryParams(parameters, def.name);
+    const headers = this.buildHeaders(parameters, def.name);
+    const bodyParams = this.buildBodyParams(parameters, def.name);
+    path = this.replacePathParams(path, parameters, def.name);
 
     const url = this.buildUrl(base, this.config.prefix, path, queryParams);
 
@@ -92,25 +92,23 @@ export class ExportService {
       : '';
 
     const fullUrl = new URL(prefix, baseURL);
-    const host = fullUrl.host;
-    const port = fullUrl.port;
 
     return {
       raw: fullUrl.href,
-      host: host,
-      port: port,
-      path: path,
+      host: fullUrl.host,
+      path: fullUrl.pathname + path,
       query: queryParams.length ? queryParams : undefined,
     };
   }
 
-  private buildHeaders(parameters: any): any[] {
+  private buildHeaders(parameters: any, apiName: string): any[] {
     const headers: any[] = [];
 
     for (const [key, param] of Object.entries(parameters)) {
       const paramKey = (param as any).key ?? key;
       const paramType = (param as any).type;
-      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+      const actualValue = this.requestsService.getDraftParam(apiName, key);
+      const paramValue = actualValue || `{{${paramKey}}}`;
 
       if (paramType === 'header') {
         headers.push({ key: paramKey, value: paramValue, type: 'text' });
@@ -120,13 +118,14 @@ export class ExportService {
     return headers;
   }
 
-  private buildQueryParams(parameters: any): any[] {
+  private buildQueryParams(parameters: any, apiName: string): any[] {
     const queryParams: any[] = [];
 
     for (const [key, param] of Object.entries(parameters)) {
       const paramKey = (param as any).key ?? key;
       const paramType = (param as any).type;
-      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+      const actualValue = this.requestsService.getDraftParam(apiName, key);
+      const paramValue = actualValue || `{{${paramKey}}}`;
 
       if (paramType === 'query') {
         queryParams.push({ key: paramKey, value: paramValue });
@@ -136,13 +135,17 @@ export class ExportService {
     return queryParams;
   }
 
-  private buildBodyParams(parameters: any): Record<string, any> {
+  private buildBodyParams(
+    parameters: any,
+    apiName: string
+  ): Record<string, any> {
     const bodyParams: Record<string, any> = {};
 
     for (const [key, param] of Object.entries(parameters)) {
       const paramKey = (param as any).key ?? key;
       const paramType = (param as any).type;
-      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+      const actualValue = this.requestsService.getDraftParam(apiName, key);
+      const paramValue = actualValue || `{{${paramKey}}}`;
 
       if (paramType === 'body') {
         const parts = paramKey.split('.');
@@ -163,11 +166,16 @@ export class ExportService {
     return bodyParams;
   }
 
-  private replacePathParams(path: string, parameters: any): string {
+  private replacePathParams(
+    path: string,
+    parameters: any,
+    apiName: string
+  ): string {
     for (const [key, param] of Object.entries(parameters)) {
       const paramKey = (param as any).key ?? key;
       const paramType = (param as any).type;
-      const paramValue = (param as any).value ?? `{{${paramKey}}}`;
+      const actualValue = this.requestsService.getDraftParam(apiName, key);
+      const paramValue = actualValue || `{{${paramKey}}}`;
 
       if (paramType === 'path') {
         path = path.replace(`:${paramKey}`, paramValue);

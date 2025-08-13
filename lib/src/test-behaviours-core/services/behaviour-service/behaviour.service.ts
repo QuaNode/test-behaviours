@@ -57,6 +57,25 @@ export class BehaviorService {
       ...currentTimeCache,
       [apiName]: responseTime,
     });
+    this.saveCachedResponsesToStorage();
+  }
+
+
+
+  private saveCachedResponsesToStorage() {
+    try {
+      localStorage.setItem(
+        'apiResponses',
+        JSON.stringify(this.responseCache.value)
+      );
+      localStorage.setItem('apiErrors', JSON.stringify(this.errorCache.value));
+      localStorage.setItem(
+        'apiResponseTimes',
+        JSON.stringify(this.responseTimeCache.value)
+      );
+    } catch (error) {
+      console.error('Error saving cached responses to localStorage:', error);
+    }
   }
 
   getCachedResponse(apiName: string): any {
@@ -175,6 +194,28 @@ export class BehaviorService {
 
   constructor(
     @Inject(Behaviours) private behaviours: Behaviours,
-    private requestsService: RequestsService
-  ) {}
+    private requestsService: RequestsService,
+  ){
+    this.loadCachedResponsesFromStorage();
+  }
+
+  private loadCachedResponsesFromStorage() {
+    try {
+      const savedResponses = localStorage.getItem('apiResponses');
+      const savedErrors = localStorage.getItem('apiErrors');
+      const savedTimes = localStorage.getItem('apiResponseTimes');
+
+      if (savedResponses) {
+        this.responseCache.next(JSON.parse(savedResponses));
+      }
+      if (savedErrors) {
+        this.errorCache.next(JSON.parse(savedErrors));
+      }
+      if (savedTimes) {
+        this.responseTimeCache.next(JSON.parse(savedTimes));
+      }
+    } catch (error) {
+      console.error('Error loading cached responses from localStorage:', error);
+    }
+  }
 }

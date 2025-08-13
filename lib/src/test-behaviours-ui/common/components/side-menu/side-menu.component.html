@@ -12,6 +12,7 @@
     >
       <ng-container *ngIf="request.name !== 'behaviours'">
         <button
+          matTooltip="{{ request.name }}"
           type="submit"
           class="side-menu__link text-start d-flex align-items-center justify-content-start gap-2 bg-transparent border-0 fw-bold p-2 rounded-2 w-100"
           (click)="selectRequest(i)"

@@ -72,7 +72,6 @@ export class RequestsService implements OnDestroy {
   }
 
   constructor(@Inject(Behaviours) private behaviours: AppBehaviours) {
-    localStorage.clear();
 
     const savedDraftData = localStorage.getItem('draftData');
     if (savedDraftData) {
