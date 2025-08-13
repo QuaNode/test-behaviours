@@ -61,8 +61,7 @@ export class RequestsService {
   });
 
   constructor() {
-    localStorage.clear();
-
+    // Load saved draft data from localStorage
     const savedDraftData = localStorage.getItem('draftData');
     if (savedDraftData) {
       this.draftData.set(JSON.parse(savedDraftData));

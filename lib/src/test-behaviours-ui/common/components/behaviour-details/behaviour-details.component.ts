@@ -15,7 +15,6 @@ export class BehaviourDetailsComponent {
   private behaviourService = inject(BehaviorService);
   private config = inject(TEST_BEHAVIOURS_UI_CONFIG);
 
-
   loading = signal<boolean>(false);
 
   methodClass = computed(() => {

@@ -1,11 +1,12 @@
-<div class="side-menu text-black-50 ">
+<div class="side-menu text-black-50">
   <h2 class="side-menu__title fs-3 fw-bold text-black">Requests</h2>
 
-  <ul class="side-menu__list nav nav-pills flex-column mt-4 ">
+  <ul class="side-menu__list nav nav-pills flex-column mt-4">
     @for (request of requests(); track request; let i = $index) { @if
     (request.name !== 'behaviours') {
     <li class="side-menu__item">
       <button
+        matTooltip="{{ request.name }}"
         type="submit"
         class="side-menu__link text-start d-flex align-items-center justify-content-start gap-2 bg-transparent border-0 fw-bold p-2 rounded-2 w-100"
         (click)="selectRequest(i)"

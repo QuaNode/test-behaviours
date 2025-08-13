@@ -385,6 +385,17 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     return obj ? Object.keys(obj) : [];
   }
 
+  isValidJson(value: any): boolean {
+    if (!value || typeof value !== 'string') return false;
+
+    try {
+      const parsed = JSON.parse(value);
+      return typeof parsed === 'object' && parsed !== null;
+    } catch {
+      return false;
+    }
+  }
+
   saveJson(index: number) {
     const control = this.parameters.at(index).get('rawValue');
     const typeControl = this.parameters.at(index).get('type');

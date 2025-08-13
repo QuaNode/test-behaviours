@@ -12,6 +12,8 @@ import { VersionFormatPipe } from './common/pipe/format-version.pipe';
 import { StringifyPipe } from './common/pipe/stringify.pipe';
 import { NgxJsonViewerModule } from 'ngx-json-viewer';
 import { FooterComponent } from './common/components/footer/footer.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Behaviours } from 'ng-behaviours';
@@ -24,7 +26,9 @@ export function getBehaviours(http: HttpClient): Behaviours {
   const config = inject(TEST_BEHAVIOURS_UI_CONFIG);
 
   if (!config.prefix) {
-    throw new Error('[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL');
+    throw new Error(
+      '[TEST_BEHAVIOURS_UI_CONFIG] prefix is required to create Behaviours URL'
+    );
   }
 
   const base = config.baseURL;
@@ -33,13 +37,11 @@ export function getBehaviours(http: HttpClient): Behaviours {
   let fullURL = prefix;
 
   if (base) {
-
     fullURL = new URL(prefix, base).href;
   }
 
   return new Behaviours(http, fullURL);
 }
-
 
 @NgModule({
   declarations: [
@@ -60,6 +62,8 @@ export function getBehaviours(http: HttpClient): Behaviours {
     NgxJsonViewerModule,
     FooterComponent,
     HttpClientModule,
+    MatTooltipModule,
+    BrowserAnimationsModule,
   ],
   providers: [
     {

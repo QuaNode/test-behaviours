@@ -21,6 +21,11 @@ export class BehaviorService {
   private errorCache = signal<Record<string, any>>({});
   private responseTimeCache = signal<Record<string, number>>({});
 
+  constructor() {
+    // Load cached responses from localStorage
+    this.loadCachedResponsesFromStorage();
+  }
+
   updateParameters(params: any) {
     this.parametersSignal.set(params);
   }
@@ -59,6 +64,45 @@ export class BehaviorService {
       ...currentTimeCache,
       [apiName]: responseTime,
     });
+
+    // Save to localStorage
+    this.saveCachedResponsesToStorage();
+  }
+
+  private loadCachedResponsesFromStorage() {
+    try {
+      const savedResponses = localStorage.getItem('apiResponses');
+      const savedErrors = localStorage.getItem('apiErrors');
+      const savedTimes = localStorage.getItem('apiResponseTimes');
+
+      if (savedResponses) {
+        this.responseCache.set(JSON.parse(savedResponses));
+      }
+      if (savedErrors) {
+        this.errorCache.set(JSON.parse(savedErrors));
+      }
+      if (savedTimes) {
+        this.responseTimeCache.set(JSON.parse(savedTimes));
+      }
+    } catch (error) {
+      console.error('Error loading cached responses from localStorage:', error);
+    }
+  }
+
+  private saveCachedResponsesToStorage() {
+    try {
+      localStorage.setItem(
+        'apiResponses',
+        JSON.stringify(this.responseCache())
+      );
+      localStorage.setItem('apiErrors', JSON.stringify(this.errorCache()));
+      localStorage.setItem(
+        'apiResponseTimes',
+        JSON.stringify(this.responseTimeCache())
+      );
+    } catch (error) {
+      console.error('Error saving cached responses to localStorage:', error);
+    }
   }
 
   getCachedResponse(apiName: string): any {
@@ -169,7 +213,7 @@ export class BehaviorService {
 
   sendAndDownload(requestData: any) {
     this.send(requestData, (response) =>
-      this.downloadJSON(`response, ${requestData.name}_response.json`)
+      this.downloadJSON(response, `${requestData.name}_response.json`)
     );
   }
 
