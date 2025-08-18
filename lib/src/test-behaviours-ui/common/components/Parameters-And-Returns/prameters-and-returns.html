@@ -95,8 +95,8 @@
         <button
           class="response-viewer__copy-btn btn btn-sm d-inline-flex align-items-center border-0 bg-transparent text-decoration-none p-0"
           (click)="copyJsonToClipboard()" title="Copy to clipboard" *ngIf="responseTime !== null">
-          <i *ngIf="!copied" class="fa-regular fa-copy me-1" style="font-size: 1.2rem"></i>
-          <i *ngIf="copied" class="fa-solid fa-check text-success me-1" style="font-size: 1.22rem"></i>
+          <i *ngIf="!copied" class="fa-regular fa-copy me-1"></i>
+          <i *ngIf="copied" class="fa-solid fa-check text-success me-1"></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
         <span class="response-delay badge bg-secondary" *ngIf="responseTime !== null">Delay: {{ responseTime }}
@@ -112,31 +112,24 @@
     <ng-container [ngSwitch]="responseView">
       <div *ngSwitchCase="'json'" #jsonView>
         <pre *ngIf="response && objectKeys(response).length > 0; else emptyJson"
-          class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto" style="
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            white-space: pre-wrap;
-          ">
+          class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto">
             {{ response | json }}
         </pre>
       </div>
 
       <div *ngSwitchCase="'tree'" #treeView>
         <div *ngIf="response && objectKeys(response).length > 0; else emptyTree"
-          class="response-viewer__tree bg-light p-3 rounded overflow-auto"
-          style="word-wrap: break-word; overflow-wrap: break-word">
+          class="response-viewer__tree bg-light p-3 rounded overflow-auto">
           <ngx-json-viewer [json]="response"></ngx-json-viewer>
         </div>
       </div>
 
       <div *ngSwitchCase="'returns'" #returnView>
         <div *ngIf="returnKeys.length > 0; else emptyReturns"
-          class="response-viewer__returns bg-light p-3 rounded overflow-auto"
-          style="word-wrap: break-word; overflow-wrap: break-word">
+          class="response-viewer__returns bg-light p-3 rounded overflow-auto">
           <div *ngFor="let key of returnKeys" class="d-flex align-items-start mb-2">
             <strong class="me-2">{{ key }}:</strong>
-            <span *ngIf="isPrimitive(returns[key])" [ngClass]="{'text-danger': error}"
-              style="word-wrap: break-word; overflow-wrap: break-word">{{ returns[key] }}</span>
+            <span *ngIf="isPrimitive(returns[key])" [ngClass]="{'text-danger': error}">{{ returns[key] }}</span>
             <ngx-json-viewer *ngIf="!isPrimitive(returns[key])" [json]="returns[key]"></ngx-json-viewer>
           </div>
         </div>
