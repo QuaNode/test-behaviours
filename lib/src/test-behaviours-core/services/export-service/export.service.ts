@@ -9,7 +9,7 @@ export class ExportService {
   constructor(
     private requestsService: RequestsService,
     @Inject(TEST_BEHAVIOURS_UI_CONFIG) private config: any
-  ) {}
+  ) { }
 
   exportPostmanCollection(): void {
     const collection = this.generatePostmanCollection();

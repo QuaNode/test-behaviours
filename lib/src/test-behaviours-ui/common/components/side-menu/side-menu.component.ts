@@ -13,7 +13,7 @@ export class SideMenuComponent implements OnInit, OnDestroy {
 
   selectedRequestIndex = new BehaviorSubject<number | null>(null);
 
-  constructor(private requestsService: RequestsService) {}
+  constructor(private requestsService: RequestsService) { }
 
   requests = this.requestsService.theRequests;
 

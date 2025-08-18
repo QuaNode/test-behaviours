@@ -1,221 +1,175 @@
-import { Injectable, Inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { Behaviours } from 'ng-behaviours';
 import { RequestsService } from '../requests-service/requests.service';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class BehaviorService {
-  private parametersSignal = new BehaviorSubject<any>(null);
-  responseSignal = new BehaviorSubject<any>({});
 
+  constructor(
+    private behaviours: Behaviours,
+    private requestsService: RequestsService
+  ) {
+    this.loadCacheFromStorage();
+  }
+
+  parametersSignal = new BehaviorSubject<any>(null);
+  responseSignal = new BehaviorSubject<any>({});
   loadingSignal = new BehaviorSubject<boolean>(false);
   errorSignal = new BehaviorSubject<any>(null);
   responseTimeSignal = new BehaviorSubject<number | null>(null);
 
-  // Cache for API responses
   private responseCache = new BehaviorSubject<Record<string, any>>({});
   private errorCache = new BehaviorSubject<Record<string, any>>({});
   private responseTimeCache = new BehaviorSubject<Record<string, number>>({});
 
-  updateParameters(params: any) {
+  updateParameters(params: any): void {
     this.parametersSignal.next(params);
   }
 
   hasParameters(): boolean {
-    const params = this.parametersSignal.value;
+    const params = this.parametersSignal.getValue();
     return params && Object.keys(params).length > 0;
   }
 
-  updateResponse(response: any) {
+  updateResponse(response: any): void {
     this.responseSignal.next(response);
   }
 
-  // Cache management methods
-  cacheResponse(
-    apiName: string,
-    response: any,
-    error: any = null,
-    responseTime: number = 0
-  ) {
-    const currentCache = this.responseCache.value;
-    const currentErrorCache = this.errorCache.value;
-    const currentTimeCache = this.responseTimeCache.value;
-
-    this.responseCache.next({
-      ...currentCache,
-      [apiName]: response,
-    });
-
-    this.errorCache.next({
-      ...currentErrorCache,
-      [apiName]: error,
-    });
-
-    this.responseTimeCache.next({
-      ...currentTimeCache,
-      [apiName]: responseTime,
-    });
-    this.saveCachedResponsesToStorage();
-  }
-
-
-
-  private saveCachedResponsesToStorage() {
+  private loadCacheFromStorage(): void {
     try {
-      localStorage.setItem(
-        'apiResponses',
-        JSON.stringify(this.responseCache.value)
-      );
-      localStorage.setItem('apiErrors', JSON.stringify(this.errorCache.value));
-      localStorage.setItem(
-        'apiResponseTimes',
-        JSON.stringify(this.responseTimeCache.value)
-      );
-    } catch (error) {
-      console.error('Error saving cached responses to localStorage:', error);
+      const savedResponses = localStorage.getItem('apiResponses') || '{}';
+      const savedErrors = localStorage.getItem('apiErrors') || '{}';
+      const savedTimes = localStorage.getItem('apiResponseTimes') || '{}';
+
+      this.responseCache.next(JSON.parse(savedResponses));
+      this.errorCache.next(JSON.parse(savedErrors));
+      this.responseTimeCache.next(JSON.parse(savedTimes));
+    } catch (e) {
+      console.error('Cache load error:', e);
+      this.clearCache();
     }
   }
 
+  private saveCacheToStorage(): void {
+    localStorage.setItem('apiResponses', JSON.stringify(this.responseCache.getValue()));
+    localStorage.setItem('apiErrors', JSON.stringify(this.errorCache.getValue()));
+    localStorage.setItem('apiResponseTimes', JSON.stringify(this.responseTimeCache.getValue()));
+  }
+
+  cacheResponse(apiName: string, response: any, error: any = null, responseTime: number = 0): void {
+    const currentResponseCache = { ...this.responseCache.getValue(), [apiName]: response };
+    const currentErrorCache = { ...this.errorCache.getValue(), [apiName]: error };
+    const currentTimeCache = { ...this.responseTimeCache.getValue(), [apiName]: responseTime };
+
+    this.responseCache.next(currentResponseCache);
+    this.errorCache.next(currentErrorCache);
+    this.responseTimeCache.next(currentTimeCache);
+
+    this.saveCacheToStorage();
+  }
+
   getCachedResponse(apiName: string): any {
-    return this.responseCache.value[apiName];
+    return this.responseCache.getValue()[apiName];
   }
 
   getCachedError(apiName: string): any {
-    return this.errorCache.value[apiName];
+    return this.errorCache.getValue()[apiName];
   }
 
   getCachedResponseTime(apiName: string): number | null {
-    return this.responseTimeCache.value[apiName] || null;
+    return this.responseTimeCache.getValue()[apiName] || null;
   }
 
   hasCachedResponse(apiName: string): boolean {
-    return apiName in this.responseCache.value;
+    return apiName in this.responseCache.getValue();
   }
 
-  clearCache(apiName?: string) {
+  clearCache(apiName?: string): void {
     if (apiName) {
-      const currentCache = this.responseCache.value;
-      const currentErrorCache = this.errorCache.value;
-      const currentTimeCache = this.responseTimeCache.value;
+      const currentCache = { ...this.responseCache.getValue() };
+      const currentErrorCache = { ...this.errorCache.getValue() };
+      const currentTimeCache = { ...this.responseTimeCache.getValue() };
 
       delete currentCache[apiName];
       delete currentErrorCache[apiName];
       delete currentTimeCache[apiName];
 
-      this.responseCache.next({ ...currentCache });
-      this.errorCache.next({ ...currentErrorCache });
-      this.responseTimeCache.next({ ...currentTimeCache });
+      this.responseCache.next(currentCache);
+      this.errorCache.next(currentErrorCache);
+      this.responseTimeCache.next(currentTimeCache);
     } else {
       this.responseCache.next({});
       this.errorCache.next({});
       this.responseTimeCache.next({});
     }
+    this.saveCacheToStorage();
   }
 
-  downloadJSON(data: any, fileName: string = 'response.json') {
-    const json = JSON.stringify(data, null, 2);
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    a.click();
-
-    URL.revokeObjectURL(url);
-  }
-
-  private send(requestData: any, onSuccess?: (res: any) => void) {
-    const params = this.parameters;
+  private send(requestData: any, onSuccess?: (res: any) => void): void {
+    const params = this.parametersSignal.getValue();
     if (!params) return;
 
     const startTime = performance.now();
-
     this.loadingSignal.next(true);
     this.errorSignal.next(null);
-    let once = false;
 
-    this.behaviours
-      .getBehaviour(requestData.name)(params)
-      .subscribe(
-        (response: any) => {
-          this.requestsService.updateRequestParameters(requestData.name);
+    let handled = false;
+    const handleResponse = (): void => {
+      if (handled) return;
+      handled = true;
+      this.loadingSignal.next(false);
+    };
 
-          this.updateResponse(response);
+    this.behaviours.getBehaviour(requestData.name)(params).subscribe({
+      next: (response: any) => {
+        this.requestsService.updateRequestParameters(requestData.name);
+        this.updateResponse(response);
 
-          if (once) return;
-          once = true;
+        const delay = Math.round(performance.now() - startTime);
+        this.responseTimeSignal.next(delay);
+        this.cacheResponse(requestData.name, response, null, delay);
 
-          this.loadingSignal.next(false);
-
-          const endTime = performance.now();
-          const delay = Math.round(endTime - startTime);
-          this.responseTimeSignal.next(delay);
-
-          // Cache the successful response
-          this.cacheResponse(requestData.name, response, null, delay);
-
-          if (onSuccess) {
-            onSuccess(response);
-          }
-        },
-        (error: any) => {
-          const endTime = performance.now();
-          const delay = Math.round(endTime - startTime);
-          this.responseTimeSignal.next(delay);
-
-          const formattedError = {
-            message: error.message,
-          };
-          this.updateResponse(formattedError);
-          this.errorSignal.next(error);
-          this.loadingSignal.next(false);
-          // Cache the error response
-          this.cacheResponse(requestData.name, formattedError, error, delay);
+        if (onSuccess) {
+          onSuccess(response);
         }
-      );
+        handleResponse();
+      },
+      error: (error: any) => {
+        const delay = Math.round(performance.now() - startTime);
+        this.responseTimeSignal.next(delay);
+
+        const formattedError = { message: error.message };
+        this.updateResponse(formattedError);
+        this.errorSignal.next(error);
+        this.cacheResponse(requestData.name, formattedError, error, delay);
+
+        handleResponse();
+      }
+    });
   }
 
-  sendOnly(requestData: any) {
+  sendOnly(requestData: any): void {
     this.send(requestData);
   }
 
-  sendAndDownload(requestData: any) {
-    this.send(requestData, (response) =>
+  sendAndDownload(requestData: any): void {
+    this.send(requestData, (response: any) =>
       this.downloadJSON(response, `${requestData.name}_response.json`)
     );
   }
 
-  get parameters() {
-    return this.parametersSignal.value;
+  downloadJSON(data: any, fileName: string = 'response.json'): void {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
-  constructor(
-    @Inject(Behaviours) private behaviours: Behaviours,
-    private requestsService: RequestsService,
-  ){
-    this.loadCachedResponsesFromStorage();
-  }
-
-  private loadCachedResponsesFromStorage() {
-    try {
-      const savedResponses = localStorage.getItem('apiResponses');
-      const savedErrors = localStorage.getItem('apiErrors');
-      const savedTimes = localStorage.getItem('apiResponseTimes');
-
-      if (savedResponses) {
-        this.responseCache.next(JSON.parse(savedResponses));
-      }
-      if (savedErrors) {
-        this.errorCache.next(JSON.parse(savedErrors));
-      }
-      if (savedTimes) {
-        this.responseTimeCache.next(JSON.parse(savedTimes));
-      }
-    } catch (error) {
-      console.error('Error loading cached responses from localStorage:', error);
-    }
+  get parameters(): any {
+    return this.parametersSignal.getValue();
   }
 }

@@ -30,6 +30,9 @@
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/assets/bootstrap-icons/bootstrap-icons.css",
+              "src/assets/css/fonts.css",
+              "src/assets/fontawesome/css/all.min.css",
               "src/styles.scss"
             ],
             "scripts": [

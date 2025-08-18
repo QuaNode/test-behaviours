@@ -7,7 +7,7 @@ import { ExportService } from '../../../../test-behaviours-core/services/export-
   styleUrls: ['./header.component.scss'],
 })
 export class HeaderComponent {
-  constructor(private exportService: ExportService) {}
+  constructor(private exportService: ExportService) { }
 
   export() {
     this.exportService.exportPostmanCollection();

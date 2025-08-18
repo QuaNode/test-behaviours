@@ -3,7 +3,7 @@ import { CanActivate } from '@angular/router';
 import { environment } from '../../environment/environment';
 @Injectable({ providedIn: 'root' })
 export class AuthGuard implements CanActivate {
-  constructor() {}
+  constructor() { }
 
   canActivate(): boolean {
     if (!environment.canActivate) {

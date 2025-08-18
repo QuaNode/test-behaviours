@@ -29,4 +29,4 @@ export function routesFactory(config: any): Routes {
   ],
   exports: [RouterModule],
 })
-export class TestBehavioursUiRoutingModule {}
+export class TestBehavioursUiRoutingModule { }
