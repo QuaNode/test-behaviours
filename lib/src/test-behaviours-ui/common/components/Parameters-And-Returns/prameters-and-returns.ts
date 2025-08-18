@@ -63,10 +63,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       try {
         result[paramName] = this.castValueByType(rawValue, type);
       } catch (error) {
-        // Only log error if it's actually a JSON parsing error for Object type
-        if (type === 'Object') {
-          console.error(`Invalid JSON for parameter ${paramName}:`, error);
-        }
         result[paramName] = rawValue;
       }
     });
