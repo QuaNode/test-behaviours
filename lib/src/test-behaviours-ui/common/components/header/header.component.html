@@ -1,35 +1,17 @@
-<nav
-  class="navbar navbar-dark bg-dark navbar__container fixed-base spacing-standard"
->
-  <div
-    class="container-fluid d-flex align-items-center justify-content-between navbar__inner spacing-sm"
-  >
-    <button
-      class="btn navbar__toggle-button d-lg-none text-white button-base"
-      type="button"
-      data-bs-toggle="offcanvas"
-      data-bs-target="#sideMenu"
-      aria-controls="sideMenu"
-      aria-label="Open Sidebar Navigation"
-    >
+<nav class="navbar navbar-dark bg-dark navbar__container fixed-base spacing-standard">
+  <div class="container-fluid d-flex align-items-center justify-content-between navbar__inner spacing-sm">
+    <button class="btn navbar__toggle-button d-lg-none text-white button-base" type="button" data-bs-toggle="offcanvas"
+      data-bs-target="#sideMenu" aria-controls="sideMenu" aria-label="Open Sidebar Navigation">
       ☰
     </button>
 
     <a class="navbar__brand mx-auto mx-md-0" href="#">
-      <img
-        src="assets/images/logo.png"
-        alt="Application Logo"
-        class="d-inline-block align-text-top"
-        height="30"
-      />
+      <img src="assets/images/logo.png" alt="Application Logo" class="d-inline-block align-text-top" height="30" />
     </a>
 
     <div class="ms-auto navbar__export">
-      <button
-        class="btn navbar__export-button text-white fw-medium button-base"
-        aria-label="Export Data as JSON"
-        (click)="export()"
-      >
+      <button class="btn navbar__export-button text-white fw-medium button-base" aria-label="Export Data as JSON"
+        (click)="export()">
         Export
       </button>
     </div>

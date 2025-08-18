@@ -11,7 +11,6 @@ export class AuthGuard implements CanActivate {
         if (!environment.canActivate) {
             console.warn('Guard is disabled in the environment configuration.');
             return false;
-
         }
         return true;
     }

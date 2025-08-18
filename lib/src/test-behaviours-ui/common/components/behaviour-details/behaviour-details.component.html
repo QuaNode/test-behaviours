@@ -1,17 +1,13 @@
 <div class="request-form row mt-3">
   <div class="request-form__layout d-grid d-lg-flex m-auto gap-lg-3">
     <div class="request-form__method col-md-2 ms-md-4">
-      <select
-        class="request-form__method-select form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold"
-        [ngClass]="{
+      <select class="request-form__method-select form-select p-2 mb-3 mt-3 border-secondary-subtle fw-bold" [ngClass]="{
           'method-get': requestData().method === 'GET',
           'method-post': requestData().method === 'POST',
           'method-put': requestData().method === 'PUT',
           'method-patch': requestData().method === 'PATCH',
           'method-delete': requestData().method === 'DELETE'
-        }"
-        disabled
-      >
+        }" disabled>
         <option selected>
           {{ requestData().method }}
         </option>
@@ -19,52 +15,32 @@
     </div>
 
     <div class="request-form__url col-md-8 col-lg-8">
-      <input
-        type="text"
-        class="request-form__url-input form-control mb-3 mt-3 p-2"
-        [value]="requestData().url"
-        placeholder="Enter request url"
-        disabled
-      />
+      <input type="text" class="request-form__url-input form-control mb-3 mt-3 p-2" [value]="requestData().url"
+        placeholder="Enter request url" disabled />
     </div>
 
     <div class="request-form__actions row gap-sm-4 gap-md-0 text-center">
       <div class="col-sm-10 col-lg-12 m-auto">
         <div class="request-form__send-group btn-group w-100">
-          <button
-            type="button"
+          <button type="button"
             class="btn btn-primary w-75 text-white d-flex justify-content-center align-items-center gap-2 pe-1"
-            (click)="onSend()"
-            [disabled]="loading()"
-          >
+            (click)="onSend()" [disabled]="loading()">
             <ng-container *ngIf="!loading(); else spinner"> Send </ng-container>
             <ng-template #spinner>
-              <div
-                class="spinner-border spinner-border-sm text-white"
-                role="status"
-              >
+              <div class="spinner-border spinner-border-sm text-white" role="status">
                 <span class="visually-hidden">Loading...</span>
               </div>
             </ng-template>
           </button>
 
-          <button
-            type="button"
-            class="btn btn-primary dropdown-toggle dropdown-toggle-split w-25s ps-1"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            [disabled]="loading()"
-          >
+          <button type="button" class="btn btn-primary dropdown-toggle dropdown-toggle-split w-25s ps-1"
+            data-bs-toggle="dropdown" aria-expanded="false" [disabled]="loading()">
             <span class="visually-hidden">Toggle Dropdown</span>
           </button>
 
           <ul class="dropdown-menu">
             <li>
-              <button
-                class="dropdown-item text-dark"
-                type="button"
-                (click)="onSendAndDownload()"
-              >
+              <button class="dropdown-item text-dark" type="button" (click)="onSendAndDownload()">
                 Send and Download
               </button>
             </li>
@@ -75,9 +51,7 @@
   </div>
 
   @if (requestData().isValid) {
-  <div
-    class="request-form__badges d-flex flex-wrap align-items-center gap-3 mt-4 px-2 justify-content-center"
-  >
+  <div class="request-form__badges d-flex flex-wrap align-items-center gap-3 mt-4 px-2 justify-content-center">
     @if (requestData().version) {
     <span class="badge badge--version shadow-sm">
       <i class="bi bi-code-slash"></i>
@@ -92,20 +66,14 @@
     </span>
     } @if (requestData().events !== null && requestData().events !== undefined)
     {
-    <span
-      class="badge badge--events shadow-sm"
-      [ngClass]="{
+    <span class="badge badge--events shadow-sm" [ngClass]="{
         'badge--events-enabled': requestData().events,
         'badge--events-disabled': !requestData().events
-      }"
-    >
-      <i
-        class="bi bi-broadcast-pin"
-        [ngClass]="{
+      }">
+      <i class="bi bi-broadcast-pin" [ngClass]="{
           'text-success': requestData().events,
           'text-secondary': !requestData().events
-        }"
-      ></i>
+        }"></i>
       Events
       <span class="badge__tooltip">
         {{ requestData().events ? "Events Enabled" : "Events Disabled" }}

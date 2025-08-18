@@ -79,8 +79,7 @@ export class RequestsService {
                 }))
               );
             },
-            error: (err: Error) => {
-              console.error('Error fetching behaviours:', err);
+            error: () => {
               this.requests.set([]);
             },
           });

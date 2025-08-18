@@ -13,6 +13,7 @@
     display: flex;
     flex-direction: row;
   }
+
   &__grid {
     display: flex;
     flex-direction: row;
@@ -27,6 +28,7 @@
   &__content {
     padding-top: 0.5rem;
   }
+
   &__offcanvas {
     background: linear-gradient(to bottom, #fef7ed, #feefee);
   }
@@ -40,6 +42,7 @@
   &__offcanvas-body {
     padding: 1rem;
   }
+
   .offcanvas {
     background-color: linear-gradient(to bottom, #fef7ed, #feefee);
   }

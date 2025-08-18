@@ -16,14 +16,14 @@ import { AuthGuard } from '../../lib/src/test-behaviours-core/Guards/auth.guard'
     BrowserModule,
     AppRoutingModule,
     TestBehavioursUiModule.config({
-      path:  `${environment.path}`,
+      path: `${environment.path}`,
       baseURL: `${environment.baseURL}`,
       prefix: `${environment.prefix}`,
       canActivate: [AuthGuard],
     }),
     FormsModule,
   ],
-  
+
   bootstrap: [AppComponent],
 })
 export class AppModule { }
