@@ -30,6 +30,7 @@ export class RequestsService {
   });
 
   draftData = signal<any>({});
+  loadingSignal = signal<boolean>(false);
   currentParams = signal<any>({});
 
   readonly theRequests = computed(() => this.requests());
@@ -61,7 +62,6 @@ export class RequestsService {
   });
 
   constructor() {
-    // Load saved draft data from localStorage
     const savedDraftData = localStorage.getItem('draftData');
     if (savedDraftData) {
       this.draftData.set(JSON.parse(savedDraftData));
@@ -149,7 +149,6 @@ export class RequestsService {
     const draft = this.draftData()[apiName];
     const paramData = draft?.parameters?.[paramName];
 
-    // Handle both old format (just value) and new format (object with value and type)
     if (paramData && typeof paramData === 'object' && 'value' in paramData) {
       return paramData.value;
     }
@@ -161,11 +160,54 @@ export class RequestsService {
     const draft = this.draftData()[apiName];
     const paramData = draft?.parameters?.[paramName];
 
-    // Handle both old format (just value) and new format (object with value and type)
     if (paramData && typeof paramData === 'object' && 'type' in paramData) {
       return paramData.type;
     }
 
     return 'String';
+  }
+
+  cacheResponse(apiName: string, response: any, error: any = null, responseTime: number = 0): void {
+    const currentData = this.draftData() || {};
+    this.draftData.set({
+      ...currentData,
+      [apiName]: {
+        ...currentData[apiName],
+        response,
+        error,
+        responseTime,
+      }
+    });
+  }
+
+  getCachedResponse(apiName: string): any {
+    return this.draftData()?.[apiName]?.response;
+  }
+
+  getCachedError(apiName: string): any {
+    return this.draftData()?.[apiName]?.error;
+  }
+
+  getCachedResponseTime(apiName: string): number | null {
+    return this.draftData()?.[apiName]?.responseTime || null;
+  }
+
+  hasCachedResponse(apiName: string): boolean {
+    return !!this.draftData()?.[apiName]?.response;
+  }
+
+  clearCache(apiName?: string): void {
+    if (apiName) {
+      const currentData = { ...this.draftData() };
+      delete currentData[apiName];
+      this.draftData.set(currentData);
+    } else {
+      this.draftData.set({});
+    }
+    localStorage.setItem('draftData', JSON.stringify(this.draftData()));
+  }
+
+  setLoadingState(state: boolean): void {
+    this.loadingSignal.set(state);
   }
 }

@@ -42,7 +42,7 @@ export class BehaviourDetailsComponent {
 
   constructor() {
     effect(() => {
-      this.loading.update((prev) => this.behaviourService.loadingSignal());
+      this.loading.update((prev) => this.requestsService.loadingSignal());
     });
   }
 

@@ -99,15 +99,13 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Check if we have cached response for this API
-      if (this.behaviourService.hasCachedResponse(currentApiName)) {
-        // Load cached response
+      if (this.requestsService.hasCachedResponse(currentApiName)) {
         const cachedResponse =
-          this.behaviourService.getCachedResponse(currentApiName);
+          this.requestsService.getCachedResponse(currentApiName);
         const cachedError =
-          this.behaviourService.getCachedError(currentApiName);
+          this.requestsService.getCachedError(currentApiName);
         const cachedResponseTime =
-          this.behaviourService.getCachedResponseTime(currentApiName);
+          this.requestsService.getCachedResponseTime(currentApiName);
 
         this.response = cachedResponse;
         this.returns = cachedResponse;
