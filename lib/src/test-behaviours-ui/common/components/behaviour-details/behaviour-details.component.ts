@@ -33,7 +33,6 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
   }
 
   get requestData(): any {
-    // We need to get the current value from the BehaviorSubject directly
     const request = this.requestsService.currentRequest || {};
     const isValid = this.requestsService.isValidData;
     const base = this.config.baseURL || window.location.origin;
@@ -52,9 +51,8 @@ export class BehaviourDetailsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    // Watch for loading changes
     this.subscription.add(
-      this.behaviourService.loadingSignal.subscribe((loading) => {
+      this.requestsService.loadingSignal.subscribe((loading) => {
         this.loading.next(loading);
       })
     );

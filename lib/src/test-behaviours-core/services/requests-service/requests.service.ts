@@ -37,6 +37,7 @@ export class RequestsService implements OnDestroy {
 
   draftData = new BehaviorSubject<any>({});
   currentParams = new BehaviorSubject<any>({});
+  loadingSignal = new BehaviorSubject<boolean>(false);
 
   readonly theRequests = this.requests.asObservable();
   readonly theRequest = this.request.asObservable();
@@ -98,7 +99,6 @@ export class RequestsService implements OnDestroy {
       });
     }
 
-    // Watch for draft data changes
     this.subscription.add(
       this.draftData.subscribe((currentDraftData) => {
         localStorage.setItem('draftData', JSON.stringify(currentDraftData));
@@ -162,7 +162,6 @@ export class RequestsService implements OnDestroy {
     const draft = this.draftData.value[apiName];
     const paramData = draft?.parameters?.[paramName];
 
-    // Handle both old format (just value) and new format (object with value and type)
     if (paramData && typeof paramData === 'object' && 'value' in paramData) {
       return paramData.value;
     }
@@ -174,11 +173,54 @@ export class RequestsService implements OnDestroy {
     const draft = this.draftData.value[apiName];
     const paramData = draft?.parameters?.[paramName];
 
-    // Handle both old format (just value) and new format (object with value and type)
     if (paramData && typeof paramData === 'object' && 'type' in paramData) {
       return paramData.type;
     }
 
     return 'String';
+  }
+
+  cacheResponse(apiName: string, response: any, error: any = null, responseTime: number = 0): void {
+    const currentData = this.draftData.value || {};
+    this.draftData.next({
+      ...currentData,
+      [apiName]: {
+        ...currentData[apiName],
+        response,
+        error,
+        responseTime,
+      }
+    });
+  }
+
+  getCachedResponse(apiName: string): any {
+    return this.draftData.value?.[apiName]?.response;
+  }
+
+  getCachedError(apiName: string): any {
+    return this.draftData.value?.[apiName]?.error;
+  }
+
+  getCachedResponseTime(apiName: string): number | null {
+    return this.draftData.value?.[apiName]?.responseTime || null;
+  }
+
+  hasCachedResponse(apiName: string): boolean {
+    return !!this.draftData.value?.[apiName]?.response;
+  }
+
+  clearCache(apiName?: string): void {
+    if (apiName) {
+      const currentData = { ...this.draftData.value };
+      delete currentData[apiName];
+      this.draftData.value(currentData);
+    } else {
+      this.draftData.value({});
+    }
+    localStorage.setItem('draftData', JSON.stringify(this.draftData.value));
+  }
+
+  setLoadingState(state: boolean): void {
+    this.loadingSignal.next(state);
   }
 }

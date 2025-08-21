@@ -59,14 +59,13 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // تحميل من الكاش إذا متوفر
-      if (this.behaviourService.hasCachedResponse(currentApiName)) {
+      if (this.requestsService.hasCachedResponse(currentApiName)) {
         const cachedResponse =
-          this.behaviourService.getCachedResponse(currentApiName);
+          this.requestsService.getCachedResponse(currentApiName);
         const cachedError =
-          this.behaviourService.getCachedError(currentApiName);
+          this.requestsService.getCachedError(currentApiName);
         const cachedResponseTime =
-          this.behaviourService.getCachedResponseTime(currentApiName);
+          this.requestsService.getCachedResponseTime(currentApiName);
 
         this.response = cachedResponse;
         this.returns = cachedResponse;
@@ -86,7 +85,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
       this.previousApiName = currentApiName;
 
-      // إعداد المعاملات
       if (!data?.parameters) return;
 
       this.parameters.clear();
