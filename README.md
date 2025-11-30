@@ -2,7 +2,7 @@
 
 An interactive Angular-based internal developer tool for testing and visualizing API request–response behaviors based on a dynamic JSON definition format.
 
-This project is part of a company-assigned task and is built using **Angular >= 16**, **RxJS**, **ng-behaviours**, and **Bootstrap 5**.
+This project is built using **Angular >= 16**, **RxJS**, **ng-behaviours**, and **Bootstrap 5**.
 
 ---
 
