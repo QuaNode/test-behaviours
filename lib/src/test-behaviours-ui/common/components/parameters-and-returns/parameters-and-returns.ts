@@ -18,8 +18,8 @@ declare var bootstrap: any;
 
 @Component({
   selector: 'parameters-and-returns',
-  templateUrl: './prameters-and-returns.html',
-  styleUrls: ['./prameters-and-returns.scss'],
+  templateUrl: './parameters-and-returns.html',
+  styleUrls: ['./parameters-and-returns.scss'],
   standalone: false,
 })
 export class ParametersAndReturnsComponent implements OnInit, OnDestroy {

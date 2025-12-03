@@ -9,7 +9,7 @@
         class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2">
         <select formControlName="paramName" class="form-select parameters-form__dropdown">
           <option value="">Select parameter</option>
-          <option *ngFor="let p of parametersList" [value]="p">{{ p }}</option>
+          <option *ngFor="let parameter of parametersList" [value]="parameter">{{ parameter }}</option>
         </select>
 
         <div class="parameters-form__input-wrapper flex-grow-1 d-flex flex-column position-relative">
@@ -45,10 +45,10 @@
           </option>
         </select>
 
-        <div class="parameters-form__actions d-flex gap-1" [ngClass]="{'invisible': i == 0 }">
+        <div class="parameters-form__actions d-flex gap-1">
           <button type="button"
             class="parameters-form__add-btn btn btn-light btn-sm rounded-circle p-1 d-flex align-items-center justify-content-center border"
-            (click)="addRow()" title="Add">
+            [ngClass]="{'invisible': i < parameters.controls.length - 1 }" (click)="addRow()" title="Add">
             <i class="bi bi-plus text-primary"></i>
           </button>
           <button type="button"

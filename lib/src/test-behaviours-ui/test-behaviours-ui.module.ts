@@ -4,7 +4,7 @@ import { SideMenuComponent } from './common/components/side-menu/side-menu.compo
 import { BehaviourDetailsComponent } from './common/components/behaviour-details/behaviour-details.component';
 import { DropDownDirective } from './common/directives/drop-down.directive';
 import { LayoutComponent } from './common/components/layout/layout.component';
-import { ParametersAndReturnsComponent } from './common/components/parameters-and-returns/prameters-and-returns';
+import { ParametersAndReturnsComponent } from './common/components/parameters-and-returns/parameters-and-returns';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HeaderComponent } from './common/components/header/header.component';
 import { TestBehavioursUiRoutingModule } from './test-behaviours-ui-routing.module';

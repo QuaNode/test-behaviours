@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 
 import { FormsModule } from '@angular/forms';
 import { environment } from 'lib/src/environment/environment';
-import { AuthGuard } from '../../lib/src/test-behaviours-core/Guards/auth.guard';
+import { AuthGuard } from '../../lib/src/test-behaviours-core/guards/auth.guard';
 
 
 @NgModule({
