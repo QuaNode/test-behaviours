@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ParametersAndReturnsComponent } from './prameters-and-returns';
+import { ParametersAndReturnsComponent } from './parameters-and-returns';
 
 describe('ParametersAndReturnsComponent', () => {
   let component: ParametersAndReturnsComponent;

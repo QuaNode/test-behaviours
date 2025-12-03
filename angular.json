@@ -28,7 +28,11 @@
               "src/assets"
             ],
             "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "src/assets/bootstrap-icons/bootstrap-icons.css",
+              "src/assets/css/fonts.css",
+              "src/assets/fontawesome/css/all.min.css",
               "src/styles.scss"
             ],
             "scripts": [
@@ -132,6 +136,7 @@
               "src/assets"
             ],
             "styles": [
+              "@angular/material/prebuilt-themes/azure-blue.css",
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "src/styles.scss"
             ],

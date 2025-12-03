@@ -1,61 +1,43 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import { RequestsService } from '../../../../test-behaviours-core/services/requests-services/requests.service';
+import { Component, computed, effect, inject, signal } from '@angular/core';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
+
 
 @Component({
-  selector: 'app-side-menu',
+  selector: 'side-menu',
   templateUrl: './side-menu.component.html',
   styleUrls: ['./side-menu.component.scss'],
+  standalone: false,
 })
-export class SideMenuComponent implements OnInit, OnDestroy {
+export class SideMenuComponent {
   methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-  private subscription = new Subscription();
+  private requestsService = inject(RequestsService);
 
-  selectedRequestIndex = new BehaviorSubject<number | null>(null);
-
-  constructor(private requestsService: RequestsService) {}
+  selectedRequestIndex = signal<number | null>(null);
 
   requests = this.requestsService.theRequests;
 
-  get methodClass(): string {
-    return this.requestsService.getMethodClass;
-  }
+  methodClass = computed(() => {
+    return this.requestsService.getMethodClass();
+  });
 
   selectRequest(index: number) {
-    // We need to get the current value from the BehaviorSubject directly
-    const requests = this.requestsService.currentRequests || [];
+    const requests = this.requests() || [];
     const requestData = requests[index];
-    this.selectedRequestIndex.next(index);
+    this.selectedRequestIndex.set(index);
     this.requestsService.setRequest(requestData);
   }
 
-  ngOnInit() {
-    // Watch for requests changes
-    this.subscription.add(
-      this.requests.subscribe((reqs) => {
-        if (
-          !reqs ||
-          reqs.length === 0 ||
-          this.selectedRequestIndex.value !== null
-        )
-          return;
+  constructor() {
+    effect(() => {
+      const reqs = this.requests();
+      if (!reqs || reqs.length === 0 || this.selectedRequestIndex() !== null)
+        return;
 
-        const firstValidIndex = reqs.findIndex(
-          (r: any) => r.name !== 'behaviours'
-        );
-        if (firstValidIndex !== -1) {
-          this.selectRequest(firstValidIndex);
-        }
-      })
-    );
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
-  }
-
-  trackByIndex(index: number, item: any): number {
-    return index;
+      const firstValidIndex = reqs.findIndex((r) => r.name !== 'behaviours');
+      if (firstValidIndex !== -1) {
+        this.selectRequest(firstValidIndex);
+      }
+    });
   }
 
   getMethodClass(method: string) {

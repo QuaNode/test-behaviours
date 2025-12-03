@@ -7,12 +7,13 @@ export function routesFactory(config: any): Routes {
   return [
     {
       path: '',
-      redirectTo: 'behaviours',
+      redirectTo: config.path,
       pathMatch: 'full',
     },
     {
-      path: config.defaultRoute,
+      path: config.path,
       component: LayoutComponent,
+      canActivate: config.canActivate,
     },
   ];
 }
