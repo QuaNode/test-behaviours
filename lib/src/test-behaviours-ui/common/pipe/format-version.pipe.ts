@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'versionFormat',
+  standalone: false,
 })
 export class VersionFormatPipe implements PipeTransform {
   transform(value: string | number): string {

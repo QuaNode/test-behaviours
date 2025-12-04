@@ -102,8 +102,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       if (this.requestsService.hasCachedResponse(currentApiName)) {
         const cachedResponse =
           this.requestsService.getCachedResponse(currentApiName);
-        const cachedError =
-          this.requestsService.getCachedError(currentApiName);
+        const cachedError = this.requestsService.getCachedError(currentApiName);
         const cachedResponseTime =
           this.requestsService.getCachedResponseTime(currentApiName);
 

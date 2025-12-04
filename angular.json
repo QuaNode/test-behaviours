@@ -15,14 +15,17 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/test-behaviours-example",
+            "outputPath": {
+              "base": "dist/test-behaviours-example"
+            },
             "index": "src/index.html",
-            "main": "src/main.ts",
-            "polyfills": "src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "tsconfig.app.json",
-            "aot": true,
+            "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -38,99 +41,60 @@
             "scripts": [
               "node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"
             ],
-            "allowedCommonJsDependencies": [
-              "ng-behaviours",
-              "rxjs/add/observable/throw",
-              "rxjs/add/observable/empty",
-              "rxjs/add/observable/of",
-              "rxjs/add/observable/never",
-              "rxjs/add/operator/catch",
-              "rxjs/add/operator/expand",
-              "rxjs/add/operator/skipWhile",
-              "rxjs/add/operator/filter",
-              "rxjs/add/operator/map"
-            ]
+            "browser": "src/main.ts"
           },
           "configurations": {
             "production": {
-              "optimization": true,
-              "outputHashing": "all",
-              "sourceMap": false,
-              "namedChunks": false,
-              "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
-              "allowedCommonJsDependencies": [
-                "ng-behaviours",
-                "rxjs/add/observable/throw",
-                "rxjs/add/observable/empty",
-                "rxjs/add/observable/of",
-                "rxjs/add/observable/never",
-                "rxjs/add/operator/catch",
-                "rxjs/add/operator/expand",
-                "rxjs/add/operator/skipWhile",
-                "rxjs/add/operator/filter",
-                "rxjs/add/operator/map"
-              ],
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "5mb"
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "6kb",
-                  "maximumError": "10kb"
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
                 }
-              ]
+              ],
+              "outputHashing": "all"
             },
             "development": {
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true,
-              "namedChunks": true,
-              "allowedCommonJsDependencies": [
-                "ng-behaviours",
-                "rxjs/add/observable/throw",
-                "rxjs/add/observable/empty",
-                "rxjs/add/observable/of",
-                "rxjs/add/observable/never",
-                "rxjs/add/operator/catch",
-                "rxjs/add/operator/expand",
-                "rxjs/add/operator/skipWhile",
-                "rxjs/add/operator/filter",
-                "rxjs/add/operator/map"
-              ]
+              "namedChunks": true
             }
-          }
+          },
+          "defaultConfiguration": "production"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
-          "options": {
-            "browserTarget": "test-behaviours-example:build"
-          },
           "configurations": {
             "production": {
-              "browserTarget": "test-behaviours-example:build:production"
+              "buildTarget": "test-behaviours-example:build:production"
+            },
+            "development": {
+              "buildTarget": "test-behaviours-example:build:development"
             }
-          }
+          },
+          "defaultConfiguration": "development"
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "test-behaviours-example:build"
+            "buildTarget": "test-behaviours-example:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "src/test.ts",
             "polyfills": [
               "zone.js",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
+            "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
               "src/assets"
@@ -148,8 +112,7 @@
       }
     }
   },
-  "defaultProject": "test-behaviours-example",
   "cli": {
-    "analytics": "746026d7-8a04-4b55-be2d-31a05d63ae7a"
+    "analytics": "cad6d5b8-4123-46bc-9249-7e398fd654e2"
   }
 }

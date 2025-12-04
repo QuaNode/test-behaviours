@@ -4,5 +4,6 @@ import { Component } from '@angular/core';
   selector: 'layout',
   templateUrl: './layout.component.html',
   styleUrls: ['./layout.component.scss'],
+  standalone: false,
 })
 export class LayoutComponent {}
