@@ -1,7 +1,5 @@
 <div class="side-menu text-black-50">
-  <h2 class="side-menu__title fs-3 fw-bold text-black">Requests</h2>
-
-  <ul class="side-menu__list nav nav-pills flex-column mt-4">
+  <ul class="side-menu__list nav nav-pills flex-column mt-0">
     @for (request of requests(); track request; let i = $index) { @if
     (request.name !== 'behaviours') {
     <li class="side-menu__item">

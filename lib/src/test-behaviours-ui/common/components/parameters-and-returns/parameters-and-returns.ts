@@ -87,10 +87,10 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       () => this.requestsService.theRequest()?.name || ''
     );
 
+
     effect(() => {
       const currentApiName = apiName();
       if (!currentApiName) {
-        // Clear response when no API is selected
         this.response = {};
         this.returns = {};
         this.returnKeys = [];
