@@ -87,6 +87,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       () => this.requestsService.theRequest()?.name || ''
     );
 
+    // ! review 
     effect(() => {
       const currentApiName = apiName();
       if (!currentApiName) {

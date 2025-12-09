@@ -1,9 +1,10 @@
-import { Injectable, inject, signal, effect } from '@angular/core';
+import { Injectable, inject, signal, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Behaviours } from 'ng-behaviours';
 import { RequestsService } from '../requests-service/requests.service';
 
 @Injectable({ providedIn: 'root' })
-export class BehaviorService {
+export class BehaviorService implements OnDestroy { 
   private behaviours = inject(Behaviours);
   private requestsService = inject(RequestsService);
 
@@ -11,6 +12,8 @@ export class BehaviorService {
   responseSignal = signal<any>({});
   errorSignal = signal<any>(null);
   responseTimeSignal = signal<number | null>(null);
+
+  subscription: Subscription | null = null;
 
   private send(requestData: any, onSuccess?: (res: any) => void): void {
     if (!this.parametersSignal()) return;
@@ -20,13 +23,12 @@ export class BehaviorService {
     this.errorSignal.set(null);
 
     let handled = false;
-    const handleResponse = (): void => {
-      if (handled) return;
-      handled = true;
-      this.requestsService.setLoadingState(false);
-    };
 
-    this.behaviours.getBehaviour(requestData.name)(this.parametersSignal()).subscribe({
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    
+    this.subscription = this.behaviours.getBehaviour(requestData.name)(this.parametersSignal()).subscribe({
       next: (response: any) => {
         this.requestsService.updateRequestParameters(requestData.name);
         this.updateResponse(response);
@@ -35,10 +37,13 @@ export class BehaviorService {
         this.responseTimeSignal.set(delay);
         this.requestsService.cacheResponse(requestData.name, response, null, delay);
 
+        if (handled) return;
+        handled = true;
+
         if (onSuccess) {
           onSuccess(response);
         }
-        handleResponse();
+        this.requestsService.setLoadingState(false);
       },
       error: (error: any) => {
         const delay = Math.round(performance.now() - startTime);
@@ -49,7 +54,7 @@ export class BehaviorService {
         this.errorSignal.set(error);
         this.requestsService.cacheResponse(requestData.name, formattedError, error, delay);
 
-        handleResponse();
+        this.requestsService.setLoadingState(false);
       }
     });
   }
@@ -85,5 +90,12 @@ export class BehaviorService {
 
   updateResponse(response: any): void {
     this.responseSignal.set(response);
+  }
+
+
+  ngOnDestroy(): void {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 }
