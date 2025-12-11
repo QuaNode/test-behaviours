@@ -8,8 +8,7 @@
       <div *ngFor="let row of parameters.controls; let i = index" [formGroupName]="i"
         class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2">
         <select formControlName="paramName" class="form-select parameters-form__dropdown">
-          <option value="">Select parameter</option>
-          <option *ngFor="let parameter of parametersList" [value]="parameter">{{ parameter }}</option>
+          <option *ngFor="let parameter of getAvailableParameters(i)" [value]="parameter">{{ parameter }}</option>
         </select>
 
         <div class="parameters-form__input-wrapper flex-grow-1 d-flex flex-column position-relative">
@@ -84,21 +83,21 @@
     </div>
   </div>
 
-  <div class="response-viewer card p-3 mb-4 shadow-sm border rounded" *ngIf="response">
+  <div class="response-viewer card p-3 mb-4 shadow-sm border rounded" *ngIf="response()">
     <div class="response-viewer__header d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">
         {{ responseView === 'returns' ? 'Returns' : 'Response' }}
       </h5>
       <div class="response-viewer__controls d-flex align-items-center gap-2 ms-3">
-        <span *ngIf="error()" [ngClass]="getErrorClass()" class="badge bg-secondary">{{ error().code }}</span>
+        <span *ngIf="behaviourService.errorSignal()" [ngClass]="getErrorClass()" class="badge bg-secondary">{{ behaviourService.errorSignal().code }}</span>
         <button
           class="response-viewer__copy-btn btn btn-sm d-inline-flex align-items-center border-0 bg-transparent text-decoration-none p-0"
-          (click)="copyJsonToClipboard()" title="Copy to clipboard" *ngIf="responseTime() !== null">
+          (click)="copyJsonToClipboard()" title="Copy to clipboard" *ngIf="behaviourService.responseTimeSignal() !== null">
           <i *ngIf="!copied" class="fa-regular fa-copy me-1" style="font-size: 1.2rem"></i>
           <i *ngIf="copied" class="fa-solid fa-check text-success me-1" style="font-size: 1.22rem"></i>
           <span class="visually-hidden">Copy JSON</span>
         </button>
-        <span class="response-delay badge bg-secondary" *ngIf="responseTime() !== null">Delay: {{ responseTime() }}
+        <span class="response-delay badge bg-secondary" *ngIf="behaviourService.responseTimeSignal() !== null">Delay: {{ behaviourService.responseTimeSignal() }}
           ms</span>
         <select class="form-select form-select-sm w-auto overflow-hidden" [(ngModel)]="responseView">
           <option value="returns">Returns</option>
@@ -110,16 +109,16 @@
 
     <ng-container [ngSwitch]="responseView">
       <div *ngSwitchCase="'json'" #jsonView>
-        <pre *ngIf="response && objectKeys(response).length > 0; else emptyJson"
+        <pre *ngIf="response() && objectKeys(response()).length > 0; else emptyJson"
           class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto">
-            {{ response | json }}
+            {{ response() | json }}
         </pre>
       </div>
 
       <div *ngSwitchCase="'tree'" #treeView>
-        <div *ngIf="response && objectKeys(response).length > 0; else emptyTree"
+        <div *ngIf="response() && objectKeys(response()).length > 0; else emptyTree"
           class="response-viewer__tree bg-light p-3 rounded overflow-auto">
-          <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+          <ngx-json-viewer [json]="response()" [expanded]="true"></ngx-json-viewer>
         </div>
       </div>
 
@@ -128,7 +127,7 @@
           class="response-viewer__returns bg-light p-3 rounded overflow-auto">
           <div *ngFor="let key of returnKeys" class="d-flex align-items-start mb-2">
             <strong class="me-2">{{ key }}:</strong>
-            <span *ngIf="isPrimitive(returns[key])" [ngClass]="{'text-danger': error()}">{{ returns[key] }}</span>
+            <span *ngIf="isPrimitive(returns[key])" [ngClass]="{'text-danger': behaviourService.errorSignal()}">{{ returns[key] }}</span>
             <ngx-json-viewer *ngIf="!isPrimitive(returns[key])" [json]="returns[key]"
               [expanded]="true"></ngx-json-viewer>
           </div>

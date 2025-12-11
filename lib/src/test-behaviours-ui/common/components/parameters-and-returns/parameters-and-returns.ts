@@ -4,7 +4,6 @@ import {
   inject,
   OnInit,
   OnDestroy,
-  signal,
   ViewChild,
   ElementRef,
   computed,
@@ -28,19 +27,17 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   @ViewChild('returnView') returnView!: ElementRef;
 
   private requestsService = inject(RequestsService);
-  private behaviourService = inject(BehaviorService);
+  public behaviourService = inject(BehaviorService);
   private lastParams: any = null;
   private previousApiName: string = ''; // Track previous API name
 
   form: FormGroup;
   parametersList: string[] = [];
-  response = this.behaviourService.responseSignal();
+  response = computed(() => this.behaviourService.responseSignal());
   responseView: 'json' | 'tree' | 'returns' = 'returns';
   returns: any = {};
   returnKeys: string[] = [];
   copied = false;
-  error = signal<any>(null);
-  responseTime = signal<number | null>(null);
   activeInputIndex: number | null = null;
   visibleEditorIndex: number | null = null;
   jsonEditorValue = '';
@@ -91,14 +88,14 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     effect(() => {
       const currentApiName = apiName();
       if (!currentApiName) {
-        this.response = {};
         this.returns = {};
         this.returnKeys = [];
-        this.error.set(null);
-        this.responseTime.set(null);
+        this.behaviourService.errorSignal.set(null);
+        this.behaviourService.responseTimeSignal.set(null);
         return;
       }
 
+      // Use cached response for this specific API
       if (this.requestsService.hasCachedResponse(currentApiName)) {
         const cachedResponse =
           this.requestsService.getCachedResponse(currentApiName);
@@ -106,21 +103,19 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         const cachedResponseTime =
           this.requestsService.getCachedResponseTime(currentApiName);
 
-        this.response = cachedResponse;
         this.returns = cachedResponse;
         this.returnKeys = Object.keys(cachedResponse || {});
-        this.error.set(cachedError);
-        this.responseTime.set(cachedResponseTime);
+        this.behaviourService.errorSignal.set(cachedError);
+        this.behaviourService.responseTimeSignal.set(cachedResponseTime);
       } else if (
         this.previousApiName &&
         this.previousApiName !== currentApiName
       ) {
         // Clear response if this is a different API and no cache exists
-        this.response = {};
         this.returns = {};
         this.returnKeys = [];
-        this.error.set(null);
-        this.responseTime.set(null);
+        this.behaviourService.errorSignal.set(null);
+        this.behaviourService.responseTimeSignal.set(null);
       }
 
       // Update previous API name
@@ -179,24 +174,25 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.behaviourService.updateParameters(this.lastParams);
     });
 
+    // Keep UI returns in sync with reactive response signal (handles events updates)
     effect(() => {
-      const currentResponse = this.behaviourService.responseSignal();
-      this.response = currentResponse;
-      this.returns = currentResponse;
-      this.returnKeys = Object.keys(currentResponse || {});
-      this.error.update(() => this.behaviourService.errorSignal());
-      this.responseTime.update(() =>
-        this.behaviourService.responseTimeSignal()
-      );
+      const res = this.response();
+      this.returns = res || {};
+      this.returnKeys = Object.keys(this.returns || {});
     });
   }
 
   ngOnInit() {
-    this.addRow();
-    if (this.response) {
-      this.returns = this.response;
-      this.returnKeys = Object.keys(this.returns);
-    }
+    // No manual copy needed; effect above keeps it synced
+  }
+
+  // Get available parameters excluding already selected ones
+  getAvailableParameters(currentIndex: number): string[] {
+    const selectedParams = this.parameters.controls
+      .map((control, index) => index !== currentIndex ? control.get('paramName')?.value : null)
+      .filter(param => param && param !== '');
+    
+    return this.parametersList.filter(param => !selectedParams.includes(param));
   }
 
   typesList(): string[] {
@@ -363,7 +359,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   getErrorClass(): string {
-    const code = this.error()?.code;
+    const code = this.behaviourService.errorSignal()?.code;
     const classMap: Record<number, string> = {
       200: 'bg-success',
       400: 'bg-danger',
