@@ -8,8 +8,7 @@
       <div *ngFor="let row of parameters.controls; let i = index" [formGroupName]="i"
         class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2">
         <select formControlName="paramName" class="form-select parameters-form__dropdown">
-          <option value="">Select parameter</option>
-          <option *ngFor="let parameter of parametersList" [value]="parameter">{{ parameter }}</option>
+            <option *ngFor="let parameter of getAvailableParameters(i)" [value]="parameter">{{ parameter }}</option>
         </select>
 
         <div class="parameters-form__input-wrapper flex-grow-1 d-flex flex-column position-relative">

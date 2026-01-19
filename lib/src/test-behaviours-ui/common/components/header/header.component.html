@@ -15,5 +15,13 @@
         Export
       </button>
     </div>
+
+    <button type="button" class="btn btn-outline-secondary navbar__clear-button button-base ms-3 text-white"
+      (click)="onClear()" [disabled]="!hasData()">
+      Clear
+    </button>
   </div>
+
+
+
 </nav>

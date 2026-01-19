@@ -92,6 +92,19 @@ export class BehaviorService implements OnDestroy {
     this.responseSignal.set(response);
   }
 
+  clearAll(): void {
+  this.parametersSignal.set(null);
+  this.responseSignal.set(null);
+  this.errorSignal.set(null);
+  this.responseTimeSignal.set(null);
+
+  if (this.subscription) {
+    this.subscription.unsubscribe();
+    this.subscription = null;
+  }
+}
+
+
 
   ngOnDestroy(): void {
     if (this.subscription) {

@@ -210,4 +210,26 @@ export class RequestsService {
   setLoadingState(state: boolean): void {
     this.loadingSignal.set(state);
   }
+
+
+clearAll(): void {
+  const apiName = this.request().name;
+
+  if (apiName) {
+    this.clearCache(apiName);
+  }
+
+  this.currentParams.set({});
+  this.loadingSignal.set(false);
+
+  this.triggerReset();
+}
+
+resetSignal = signal<number>(0);
+
+triggerReset(): void {
+  this.resetSignal.update(v => v + 1);
+}
+
+
 }

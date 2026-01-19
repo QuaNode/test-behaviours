@@ -30,7 +30,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
   private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
-  private previousApiName: string = ''; // Track previous API name
+  private previousApiName: string = ''; 
 
   form: FormGroup;
   parametersList: string[] = [];
@@ -82,7 +82,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({ parameters: this.fb.array([]) });
 
-    // Create a computed to track API changes
+  
     const apiName = computed(
       () => this.requestsService.theRequest()?.name || ''
     );
@@ -115,7 +115,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         this.previousApiName &&
         this.previousApiName !== currentApiName
       ) {
-        // Clear response if this is a different API and no cache exists
+     
         this.response = {};
         this.returns = {};
         this.returnKeys = [];
@@ -123,7 +123,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
         this.responseTime.set(null);
       }
 
-      // Update previous API name
+ 
       this.previousApiName = currentApiName;
 
       const data = this.requestsService.theRequest();
@@ -192,11 +192,16 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.addRow();
-    if (this.response) {
-      this.returns = this.response;
-      this.returnKeys = Object.keys(this.returns);
-    }
+
+  }
+
+ 
+  getAvailableParameters(currentIndex: number): string[] {
+    const selectedParams = this.parameters.controls
+      .map((control, index) => index !== currentIndex ? control.get('paramName')?.value : null)
+      .filter(param => param && param !== '');
+    
+    return this.parametersList.filter(param => !selectedParams.includes(param));
   }
 
   typesList(): string[] {
@@ -230,7 +235,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       case 'Date':
         return new Date(value).toISOString();
       case 'Object':
-        // Only try to parse if it looks like JSON
+    
         if (
           typeof value === 'string' &&
           (value.trim().startsWith('{') || value.trim().startsWith('['))
@@ -253,7 +258,6 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const currentApiName = this.requestsService.theRequest().name;
     const currentParams = this.jsonPreview;
 
-    // Update each parameter with its corresponding type
     this.parameters.controls.forEach((control) => {
       const group = control as FormGroup;
       const paramName = group.get('paramName')?.value;
@@ -292,9 +296,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
       try {
         if (type === 'Object') {
-          // If switching to Object type, try to parse the value
+      
           if (typeof rawValue === 'string' && rawValue.trim()) {
-            // Only try to parse if it looks like JSON
+         
             if (
               rawValue.trim().startsWith('{') ||
               rawValue.trim().startsWith('[')
@@ -304,12 +308,12 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
                 value = parsed;
                 displayValue = JSON.stringify(parsed, null, 2);
               } catch {
-                // If parsing fails, keep the raw value
+        
                 value = rawValue;
                 displayValue = rawValue;
               }
             } else {
-              // Not JSON, keep as string
+             
               value = rawValue;
               displayValue = rawValue;
             }
@@ -318,17 +322,17 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
             displayValue = JSON.stringify(rawValue, null, 2);
           }
         } else {
-          // For other types, cast the value
+         
           value = this.castValueByType(rawValue, type);
           displayValue = String(value);
         }
       } catch {
-        // If casting fails, keep the raw value
+  
         value = rawValue;
         displayValue = rawValue;
       }
 
-      // Update the form control with the converted value
+   
       currentRow.get('rawValue')?.setValue(displayValue);
 
       this.requestsService.updateDraftParam(
@@ -399,7 +403,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.form.markAsDirty();
       this.visibleEditorIndex = null;
 
-      // Save the updated value with its type
+
       const currentApiName = this.requestsService.theRequest().name;
       const paramName = this.parameters.at(index).get('paramName')?.value;
       const type = typeControl?.value || 'Object';
@@ -438,6 +442,19 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     const modalInstance = bootstrap.Modal.getInstance(modalElement!);
     modalInstance?.hide();
   }
+
+
+  
+resetForm(): void {
+
+  const paramArray = this.form.get('parameters') as FormArray;
+  paramArray.clear();
+
+  this.addRow(); 
+}
+
+
+
 
   ngOnDestroy() {
     const currentApiName = this.requestsService.theRequest().name;
