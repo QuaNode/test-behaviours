@@ -12,11 +12,11 @@ import { computed } from '@angular/core';
 })
 export class HeaderComponent {
   private exportService = inject(ExportService);
-    private requestsService = inject(RequestsService);
-  private behaviourService = inject(BehaviorService);
+  private requestsService = inject(RequestsService);
+
   private resetForm(): void {
     // this.requestsService.draftData.set({});
-}
+  }
 
   export() {
     this.exportService.exportPostmanCollection();
@@ -24,21 +24,12 @@ export class HeaderComponent {
 
   loading = this.requestsService.loadingSignal;
 
-hasData = computed(() => {
-  return (
-    this.requestsService.isValidData() ||
-    !!this.behaviourService.responseSignal()
-  );
-});
+  hasData = computed(() => {
+    return this.requestsService.isValidData();
+  });
 
-onClear(): void {
-  this.behaviourService.responseSignal.set(null);
-  this.behaviourService.clearAll();
-  this.requestsService.clearAll();
-
-  this.resetForm();
-} 
-
-
-
+  onClear(): void {
+    this.requestsService.clearAll();
+    this.resetForm();
+  }
 }

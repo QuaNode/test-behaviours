@@ -137,7 +137,7 @@ export class RequestsService {
     const updatedDrafts = {
       ...currentDrafts,
       [apiName]: {
-        name: apiName,
+        ...draft,
         parameters: updatedParameters,
       },
     };
@@ -212,24 +212,18 @@ export class RequestsService {
   }
 
 
-clearAll(): void {
-  const apiName = this.request().name;
+  clearAll(): void {
+    localStorage.clear();
+    this.draftData.set({});
+    this.clearCache();
 
-  if (apiName) {
-    this.clearCache(apiName);
+    this.currentParams.set({});
+    this.loadingSignal.set(false);
+
+    this.clearSignal.update((v) => v + 1);
   }
 
-  this.currentParams.set({});
-  this.loadingSignal.set(false);
+  public clearSignal = signal<number>(0);
 
-  this.triggerReset();
-}
-
-resetSignal = signal<number>(0);
-
-triggerReset(): void {
-  this.resetSignal.update(v => v + 1);
-}
-
-
+  triggerReset(): void { }
 }

@@ -1,5 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
-
+import { Behaviours } from 'ng-behaviours';
 import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 import { BehaviorService } from '../../../../test-behaviours-core/services/behaviour-service/behaviour.service';
 import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../config/test-behaviours-ui-config';
@@ -9,6 +9,18 @@ import { TEST_BEHAVIOURS_UI_CONFIG } from '../../../config/test-behaviours-ui-co
   templateUrl: './behaviour-details.component.html',
   styleUrls: ['./behaviour-details.component.scss'],
   standalone: false,
+  providers: [
+    {
+      provide: BehaviorService,
+      useFactory: (behaviours: Behaviours, requestsService: RequestsService) => {
+        const name = requestsService.theRequest().name;
+        const service = new BehaviorService(behaviours, requestsService);
+        service.apiName = name;
+        return service;
+      },
+      deps: [Behaviours, RequestsService],
+    },
+  ],
 })
 export class BehaviourDetailsComponent {
   private requestsService = inject(RequestsService);

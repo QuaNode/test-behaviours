@@ -1,33 +1,48 @@
-import { Injectable, inject, signal, OnDestroy } from '@angular/core';
+import { Injectable, inject, signal, OnDestroy, effect } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Behaviours } from 'ng-behaviours';
 import { RequestsService } from '../requests-service/requests.service';
 
-@Injectable({ providedIn: 'root' })
-export class BehaviorService implements OnDestroy { 
-  private behaviours = inject(Behaviours);
-  private requestsService = inject(RequestsService);
+@Injectable()
+export class BehaviorService implements OnDestroy {
+  public apiName: string = '';
+
+  constructor(
+    private behaviours: Behaviours = inject(Behaviours),
+    private requestsService: RequestsService = inject(RequestsService)
+  ) {
+    const initialClearValue = this.requestsService.clearSignal();
+    effect(() => {
+      if (this.requestsService.clearSignal() > initialClearValue) {
+        this.clearAll();
+      }
+    });
+  }
 
   parametersSignal = signal<any>(null);
   responseSignal = signal<any>({});
   errorSignal = signal<any>(null);
   responseTimeSignal = signal<number | null>(null);
+  currentRequestNameSignal = signal<string | null>(null);
 
-  subscription: Subscription | null = null;
+  private subscription: Subscription | null = null;
 
   private send(requestData: any, onSuccess?: (res: any) => void): void {
-    if (!this.parametersSignal()) return;
+    if (!this.parametersSignal()) {
+      return;
+    }
 
     const startTime = performance.now();
     this.requestsService.setLoadingState(true);
     this.errorSignal.set(null);
 
     let handled = false;
+    this.currentRequestNameSignal.set(requestData.name);
 
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    
+
     this.subscription = this.behaviours.getBehaviour(requestData.name)(this.parametersSignal()).subscribe({
       next: (response: any) => {
         this.requestsService.updateRequestParameters(requestData.name);
@@ -83,27 +98,22 @@ export class BehaviorService implements OnDestroy {
     this.parametersSignal.set(params);
   }
 
-  hasParameters(): boolean {
-    const params = this.parametersSignal();
-    return params && Object.keys(params).length > 0;
-  }
-
   updateResponse(response: any): void {
     this.responseSignal.set(response);
   }
 
   clearAll(): void {
-  this.parametersSignal.set(null);
-  this.responseSignal.set(null);
-  this.errorSignal.set(null);
-  this.responseTimeSignal.set(null);
+    this.parametersSignal.set(null);
+    this.responseSignal.set({});
+    this.errorSignal.set(null);
+    this.responseTimeSignal.set(null);
+    this.currentRequestNameSignal.set(null);
 
-  if (this.subscription) {
-    this.subscription.unsubscribe();
-    this.subscription = null;
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+      this.subscription = null;
+    }
   }
-}
-
 
 
   ngOnDestroy(): void {

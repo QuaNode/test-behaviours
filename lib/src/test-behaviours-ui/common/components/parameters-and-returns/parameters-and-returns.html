@@ -8,7 +8,7 @@
       <div *ngFor="let row of parameters.controls; let i = index" [formGroupName]="i"
         class="parameters-form__row d-flex flex-wrap flex-md-nowrap align-items-start gap-4 mb-2">
         <select formControlName="paramName" class="form-select parameters-form__dropdown">
-            <option *ngFor="let parameter of getAvailableParameters(i)" [value]="parameter">{{ parameter }}</option>
+          <option *ngFor="let parameter of getAvailableParameters(i)" [value]="parameter">{{ parameter }}</option>
         </select>
 
         <div class="parameters-form__input-wrapper flex-grow-1 d-flex flex-column position-relative">
@@ -83,7 +83,7 @@
     </div>
   </div>
 
-  <div class="response-viewer card p-3 mb-4 shadow-sm border rounded" *ngIf="response">
+  <div class="response-viewer card p-3 mb-4 shadow-sm border rounded" *ngIf="response()">
     <div class="response-viewer__header d-flex justify-content-between align-items-center mb-3">
       <h5 class="mb-0">
         {{ responseView === 'returns' ? 'Returns' : 'Response' }}
@@ -109,26 +109,26 @@
 
     <ng-container [ngSwitch]="responseView">
       <div *ngSwitchCase="'json'" #jsonView>
-        <pre *ngIf="response && objectKeys(response).length > 0; else emptyJson"
+        <pre *ngIf="response() && objectKeys(response()).length > 0; else emptyJson"
           class="response-viewer__json bg-light text-dark p-3 rounded overflow-auto">
-            {{ response | json }}
+            {{ response() | json }}
         </pre>
       </div>
 
       <div *ngSwitchCase="'tree'" #treeView>
-        <div *ngIf="response && objectKeys(response).length > 0; else emptyTree"
+        <div *ngIf="response() && objectKeys(response()).length > 0; else emptyTree"
           class="response-viewer__tree bg-light p-3 rounded overflow-auto">
-          <ngx-json-viewer [json]="response" [expanded]="true"></ngx-json-viewer>
+          <ngx-json-viewer [json]="response()" [expanded]="true"></ngx-json-viewer>
         </div>
       </div>
 
       <div *ngSwitchCase="'returns'" #returnView>
-        <div *ngIf="returnKeys.length > 0; else emptyReturns"
+        <div *ngIf="returnKeys().length > 0; else emptyReturns"
           class="response-viewer__returns bg-light p-3 rounded overflow-auto">
-          <div *ngFor="let key of returnKeys" class="d-flex align-items-start mb-2">
+          <div *ngFor="let key of returnKeys()" class="d-flex align-items-start mb-2">
             <strong class="me-2">{{ key }}:</strong>
-            <span *ngIf="isPrimitive(returns[key])" [ngClass]="{'text-danger': error()}">{{ returns[key] }}</span>
-            <ngx-json-viewer *ngIf="!isPrimitive(returns[key])" [json]="returns[key]"
+            <span *ngIf="isPrimitive(returns()[key])" [ngClass]="{'text-danger': error()}">{{ returns()[key] }}</span>
+            <ngx-json-viewer *ngIf="!isPrimitive(returns()[key])" [json]="returns()[key]"
               [expanded]="true"></ngx-json-viewer>
           </div>
         </div>

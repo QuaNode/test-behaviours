@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { RequestsService } from '../../../../test-behaviours-core/services/requests-service/requests.service';
 
 @Component({
   selector: 'layout',
@@ -6,4 +7,6 @@ import { Component } from '@angular/core';
   styleUrls: ['./layout.component.scss'],
   standalone: false,
 })
-export class LayoutComponent {}
+export class LayoutComponent {
+  public requestsService = inject(RequestsService);
+}

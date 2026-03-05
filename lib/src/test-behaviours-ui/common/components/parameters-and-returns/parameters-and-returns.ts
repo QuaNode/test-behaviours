@@ -30,14 +30,14 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   private requestsService = inject(RequestsService);
   private behaviourService = inject(BehaviorService);
   private lastParams: any = null;
-  private previousApiName: string = ''; 
+  private previousApiName: string = '';
 
   form: FormGroup;
   parametersList: string[] = [];
-  response = this.behaviourService.responseSignal();
+  response = signal<any>(this.behaviourService.responseSignal());
   responseView: 'json' | 'tree' | 'returns' = 'returns';
-  returns: any = {};
-  returnKeys: string[] = [];
+  returns = signal<any>({});
+  returnKeys = signal<string[]>([]);
   copied = false;
   error = signal<any>(null);
   responseTime = signal<number | null>(null);
@@ -82,56 +82,71 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   constructor(private fb: FormBuilder) {
     this.form = this.fb.group({ parameters: this.fb.array([]) });
 
-  
     const apiName = computed(
       () => this.requestsService.theRequest()?.name || ''
     );
 
+    const initialClearValue = this.requestsService.clearSignal();
+    effect(() => {
+      if (this.requestsService.clearSignal() > initialClearValue) {
+        this.response.set({});
+        this.returns.set({});
+        this.returnKeys.set([]);
+        this.error.set(null);
+        this.responseTime.set(null);
+        this.parameters.clear();
+        this.addRow();
+        this.lastParams = null;
+        this.previousApiName = '';
+      }
+    });
 
     effect(() => {
       const currentApiName = apiName();
+
       if (!currentApiName) {
-        this.response = {};
-        this.returns = {};
-        this.returnKeys = [];
+        this.response.set({});
+        this.returns.set({});
+        this.returnKeys.set([]);
         this.error.set(null);
         this.responseTime.set(null);
+        this.previousApiName = '';
         return;
       }
 
-      if (this.requestsService.hasCachedResponse(currentApiName)) {
-        const cachedResponse =
-          this.requestsService.getCachedResponse(currentApiName);
+      // Load cached data from RequestsService on initialization
+      if (currentApiName !== this.previousApiName && this.requestsService.hasCachedResponse(currentApiName)) {
+        const cachedResponse = this.requestsService.getCachedResponse(currentApiName);
         const cachedError = this.requestsService.getCachedError(currentApiName);
-        const cachedResponseTime =
-          this.requestsService.getCachedResponseTime(currentApiName);
+        const cachedResponseTime = this.requestsService.getCachedResponseTime(currentApiName);
 
-        this.response = cachedResponse;
-        this.returns = cachedResponse;
-        this.returnKeys = Object.keys(cachedResponse || {});
+        this.response.set(cachedResponse);
+        this.returns.set(cachedResponse);
+        this.returnKeys.set(Object.keys(cachedResponse || {}));
         this.error.set(cachedError);
         this.responseTime.set(cachedResponseTime);
-      } else if (
-        this.previousApiName &&
-        this.previousApiName !== currentApiName
-      ) {
-     
-        this.response = {};
-        this.returns = {};
-        this.returnKeys = [];
-        this.error.set(null);
-        this.responseTime.set(null);
+
+        // Populate service signals with cached data
+        this.behaviourService.responseSignal.set(cachedResponse);
+        this.behaviourService.errorSignal.set(cachedError);
+        this.behaviourService.responseTimeSignal.set(cachedResponseTime);
       }
 
- 
-      this.previousApiName = currentApiName;
-
       const data = this.requestsService.theRequest();
+
+      // If the API name is the same, don't clear and re-populate the form
+      // This prevents losing focus/typing ability during realtime data updates
+      if (currentApiName === this.previousApiName) {
+        return;
+      }
+
       if (!data?.parameters) {
+        this.previousApiName = currentApiName;
         return;
       }
 
       this.parameters.clear();
+      this.previousApiName = currentApiName;
 
       const filteredParams = Object.entries(data.parameters).filter(
         ([, paramData]: [string, any]) => paramData.type !== 'middleware'
@@ -180,14 +195,17 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     });
 
     effect(() => {
-      const currentResponse = this.behaviourService.responseSignal();
-      this.response = currentResponse;
-      this.returns = currentResponse;
-      this.returnKeys = Object.keys(currentResponse || {});
-      this.error.update(() => this.behaviourService.errorSignal());
-      this.responseTime.update(() =>
-        this.behaviourService.responseTimeSignal()
-      );
+      // Sync local signals with behaviorService signals
+      const response = this.behaviourService.responseSignal();
+      const error = this.behaviourService.errorSignal();
+      const time = this.behaviourService.responseTimeSignal();
+
+      this.response.set(response || {});
+      this.returns.set(response || {});
+      this.returnKeys.set(Object.keys(response || {}));
+
+      this.error.set(error);
+      this.responseTime.set(time);
     });
   }
 
@@ -195,12 +213,11 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
   }
 
- 
   getAvailableParameters(currentIndex: number): string[] {
     const selectedParams = this.parameters.controls
       .map((control, index) => index !== currentIndex ? control.get('paramName')?.value : null)
       .filter(param => param && param !== '');
-    
+
     return this.parametersList.filter(param => !selectedParams.includes(param));
   }
 
@@ -235,7 +252,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       case 'Date':
         return new Date(value).toISOString();
       case 'Object':
-    
+
         if (
           typeof value === 'string' &&
           (value.trim().startsWith('{') || value.trim().startsWith('['))
@@ -255,7 +272,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   updateDraftAndParameters(index: number): void {
     if (this.activeInputIndex !== index) return;
 
-    const currentApiName = this.requestsService.theRequest().name;
+    const currentApiName = this.behaviourService.apiName;
     const currentParams = this.jsonPreview;
 
     this.parameters.controls.forEach((control) => {
@@ -284,7 +301,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
   }
 
   onTypeChange(index: number): void {
-    const currentApiName = this.requestsService.theRequest().name;
+    const currentApiName = this.behaviourService.apiName;
     const currentRow = this.parameters.at(index);
     const paramName = currentRow.get('paramName')?.value;
     const type = currentRow.get('type')?.value;
@@ -296,9 +313,9 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
 
       try {
         if (type === 'Object') {
-      
+
           if (typeof rawValue === 'string' && rawValue.trim()) {
-         
+
             if (
               rawValue.trim().startsWith('{') ||
               rawValue.trim().startsWith('[')
@@ -308,12 +325,12 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
                 value = parsed;
                 displayValue = JSON.stringify(parsed, null, 2);
               } catch {
-        
+
                 value = rawValue;
                 displayValue = rawValue;
               }
             } else {
-             
+
               value = rawValue;
               displayValue = rawValue;
             }
@@ -322,17 +339,16 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
             displayValue = JSON.stringify(rawValue, null, 2);
           }
         } else {
-         
+
           value = this.castValueByType(rawValue, type);
           displayValue = String(value);
         }
       } catch {
-  
+
         value = rawValue;
         displayValue = rawValue;
       }
 
-   
       currentRow.get('rawValue')?.setValue(displayValue);
 
       this.requestsService.updateDraftParam(
@@ -403,8 +419,7 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
       this.form.markAsDirty();
       this.visibleEditorIndex = null;
 
-
-      const currentApiName = this.requestsService.theRequest().name;
+      const currentApiName = this.behaviourService.apiName;
       const paramName = this.parameters.at(index).get('paramName')?.value;
       const type = typeControl?.value || 'Object';
 
@@ -443,22 +458,22 @@ export class ParametersAndReturnsComponent implements OnInit, OnDestroy {
     modalInstance?.hide();
   }
 
+  resetForm(): void {
 
-  
-resetForm(): void {
+    const paramArray = this.form.get('parameters') as FormArray;
+    paramArray.clear();
 
-  const paramArray = this.form.get('parameters') as FormArray;
-  paramArray.clear();
-
-  this.addRow(); 
-}
-
-
-
+    this.addRow();
+  }
 
   ngOnDestroy() {
-    const currentApiName = this.requestsService.theRequest().name;
+    const currentApiName = this.behaviourService.apiName;
     const currentParams = this.jsonPreview;
+
+    // Prevent re-saving if the data has been cleared or is empty
+    if (Object.keys(this.requestsService.draftData() || {}).length === 0) {
+      return;
+    }
 
     // Update each parameter with its corresponding type
     this.parameters.controls.forEach((control) => {

@@ -19,7 +19,11 @@
       </div>
 
       <div class="layout__content col-12 col-lg-10 pt-1">
+        @for (name of [requestsService.theRequest().name]; track name) {
+        @if (name) {
         <behaviour-details></behaviour-details>
+        }
+        }
       </div>
     </div>
   </div>
