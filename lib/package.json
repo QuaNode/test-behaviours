@@ -1,0 +1,30 @@
+{
+  "name": "test-behaviours",
+  "version": "0.0.1",
+  "main": "index.ts",
+  "scripts": {
+    "test": "test"
+  },
+  "peerDependencies": {
+    "@angular/common": ">=11.0.0",
+    "@angular/core": ">=11.0.0",
+    "@angular/forms": ">=11.0.0",
+    "@angular/router": ">=11.0.0",
+    "rxjs": ">=6.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/QuaNode/test-behaviours.git"
+  },
+  "keywords": [
+    "test",
+    "behaviour",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/QuaNode/test-behaviours/issues"
+  },
+  "homepage": "https://github.com/QuaNode/test-behaviours#readme"
+}

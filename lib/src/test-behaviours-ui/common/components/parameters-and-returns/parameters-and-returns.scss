@@ -1,0 +1,92 @@
+.bi {
+  color: #28a745;
+}
+
+.parameters-form {
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__input,
+  &__dropdown {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+  }
+
+  &__button {
+    &--add {
+      background-color: #28a745;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    &--remove {
+      background-color: #dc3545;
+      color: #fff;
+      font-weight: bold;
+    }
+  }
+}
+
+.parameters-form__dropdown[readonly] {
+  pointer-events: none;
+  background-color: #e9ecef;
+}
+
+.btn.rounded-circle {
+  width: 32px;
+  height: 32px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #f0f0f0;
+  }
+
+  i {
+    font-size: 1.1rem;
+  }
+}
+
+.response-viewer {
+  overflow: auto;
+
+  &__json,
+  &__tree,
+  &__returns {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: pre-wrap;
+    max-width: 100%;
+  }
+
+  &__json {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  &__returns {
+    span {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      max-width: 100%;
+    }
+  }
+}
+textarea::placeholder {
+  color: #bcbbbb;
+  opacity: 1;
+}
+
+@media (max-width: 576px) {
+  .response-delay {
+    display: none !important;
+  }
+}
